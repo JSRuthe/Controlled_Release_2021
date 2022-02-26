@@ -1,7 +1,7 @@
 import datetime
 import math
-import anemometerMethods_Stanford
-from UnitConversion_Stanford import convertUnits
+import anemometerMethods
+from UnitConversion import convertUnits
 from matchMethods import  calculatePassSpecificData
 import numpy as np
 import pandas as pd
