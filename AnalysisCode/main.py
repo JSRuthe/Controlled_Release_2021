@@ -9,7 +9,7 @@ def main():
 
     # Generate table of Stanford matched controlled releases
     # (1) Load data
-    operatorDF, quadrathermDF_All, sonicDF = loaddata()
+    operatorDF, meterDF_All, sonicDF = loaddata()
     # (2) match bridger data with release data
     
     Stanford_matched = performMatching(bridgerDF, quadrathermDF, sonicDF,

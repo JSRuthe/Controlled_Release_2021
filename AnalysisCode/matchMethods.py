@@ -10,7 +10,7 @@ import pytz
 import os.path
 
 
-def performMatching_Stanford(bridgerDF, quadrathermDF, sonicDF, minPlumeLength, cr_averageperiod_sec, CH4_frac):
+def performMatching(bridgerDF, quadrathermDF, sonicDF, minPlumeLength, cr_averageperiod_sec, CH4_frac):
     # (1) Matches Bridger passes to controlled releases in Stanford Quadratherm time series
     # (2) calculates plume length for each pass and determines if plume is established,
     # (3) classifies each pass as TP, FN, or NE,

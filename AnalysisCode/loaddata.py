@@ -98,19 +98,19 @@ def loaddata():
     # load Bridger quadratherm data
     print("Loading Bridger Quadratherm data...")
     DataPath = os.path.join(cwd, 'BridgerTestData') 
-    quadrathermDF_Bridger = loadQuadrathermData_Bridger(DataPath, cr_averageperiod_sec = 65)
+    meterDF_Bridger = loadMeterData_Bridger(DataPath, cr_averageperiod_sec = 65)
     
     # load Carbon Mapper quadratherm data
     print("Loading Carbon Mapper Quadratherm data...")
     DataPath = os.path.join(cwd, 'CarbonMapperTestData')  
-    quadrathermDF_CarbonMapper = loadQuadrathermData_CarbonMapper(DataPath, cr_averageperiod_sec = 90)
+    meterDF_CarbonMapper = loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec = 90)
         
     # load GHGSat quadratherm data
     print("Loading GHGSat Quadratherm data...")
     DataPath = os.path.join(cwd, 'GHGSatTestData')  
-    quadrathermDF_GHGSat = loadQuadrathermData_GHGSat(DataPath, cr_averageperiod_sec = 90)
+    meterDF_GHGSat = loadMeterData_GHGSat(DataPath, cr_averageperiod_sec = 90)
     
-    quadrathermDF_All = pd.concat([quadrathermDF_Bridger, quadrathermDF_CarbonMapper, quadrathermDF_GHGSat])
+    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
     
     DataPath = os.path.join(cwd, 'BridgerTestData')  
     # load Bridger anemometer data
@@ -118,7 +118,7 @@ def loaddata():
     sonic_path = os.path.join(DataPath, 'Sonic\\')
     sonicDF = combineAnemometer(sonic_path)
     
-    return operatorDF, quadrathermDF_All, sonicDF
+    return operatorDF, meterDF_All, sonicDF
     
 def loadBridgerData(filepath):
     """Load bridger data from report and format datetimes."""
@@ -242,7 +242,7 @@ def loadGHGSatData(filepath):
 
     return df
 
-def loadQuadrathermData_Bridger(DataPath, cr_averageperiod_sec):
+def loadMeterData_Bridger(DataPath, cr_averageperiod_sec):
 
     ## BRIDGER QUADRATHERM + CORIOLIS DATA ## 
     
@@ -360,7 +360,7 @@ def loadQuadrathermData_Bridger(DataPath, cr_averageperiod_sec):
     return quadrathermDF
 
 
-def loadQuadrathermData_CarbonMapper(DataPath, cr_averageperiod_sec):
+def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec):
  
     ## CARBON MAPPER QUADRATHERM + CORIOLIS DATA ## 
 
@@ -442,7 +442,7 @@ def loadQuadrathermData_CarbonMapper(DataPath, cr_averageperiod_sec):
     
     return quadrathermDF    
 
-def loadQuadrathermData_GHGSat(DataPath, cr_averageperiod_sec):
+def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
 
     ## GHGSat QUADRATHERM + CORIOLIS DATA ##     
 
