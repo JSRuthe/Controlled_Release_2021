@@ -12,7 +12,7 @@ def main():
     operatorDF, meterDF_All, sonicDF = loaddata()
     # (2) match bridger data with release data
     
-    Stanford_matched = performMatching(bridgerDF, quadrathermDF, sonicDF,
+    matchedDF = performMatching(operatorDF, meterDF_All, sonicDF,
                                                 minPlumeLength=150, cr_averageperiod_sec=cr_averageperiod_sec, CH4_frac=0.962)
 
 
@@ -20,7 +20,7 @@ def main():
     cwd = os.getcwd()
 
     csvPath = os.path.join(cwd, 'MidlandTestAnalysisResults', 'StanfordMatchedPasses.csv')
-    Stanford_matched.to_csv(csvPath)
+    matchedDF.to_csv(csvPath)
 
 
 

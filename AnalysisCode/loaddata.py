@@ -169,6 +169,11 @@ def loadBridgerData(filepath):
     df["EquipmentUnitID"] = dfraw["Emission Location Id"]
     
     df.rename(columns={'Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
+   
+    # Bridger reported additional rows for emissions from the Rawhide trailer. Select only rows where emission Location
+    # ID = 33931 (the release point) and ignore rows where emission point is the leaky trailer
+    df = df.loc[df['EquipmentUnitID'] == 33931] 
+    
     
     return df
 

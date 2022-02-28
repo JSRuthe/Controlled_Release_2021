@@ -2,7 +2,7 @@ import datetime
 import math
 import anemometerMethods
 from UnitConversion import convertUnits
-from matchMethods import  calculatePassSpecificData
+#from matchMethods import  calculatePassSpecificData
 import numpy as np
 import pandas as pd
 from scipy import integrate
@@ -10,7 +10,7 @@ import pytz
 import os.path
 
 
-def performMatching(bridgerDF, quadrathermDF, sonicDF, minPlumeLength, cr_averageperiod_sec, CH4_frac):
+def performMatching(operatorDF, meterDF_All, sonicDF, minPlumeLength, cr_averageperiod_sec, CH4_frac):
     # (1) Matches Bridger passes to controlled releases in Stanford Quadratherm time series
     # (2) calculates plume length for each pass and determines if plume is established,
     # (3) classifies each pass as TP, FN, or NE,
@@ -18,80 +18,49 @@ def performMatching(bridgerDF, quadrathermDF, sonicDF, minPlumeLength, cr_averag
 
     cwd = os.getcwd()    
     DataPath = os.path.join(cwd, 'EhrenbergTestData') 
-    
-    # Bridger reported additional rows for emissions from the Rawhide trailer. Select only rows where emission Location
-    # ID = 33931 (the release point) and ignore rows where emission point is the leaky trailer
-    bridgerDF = bridgerDF.loc[bridgerDF['Emission Location Id'] == 33931] 
+
     
     print("Matching bridger passes to release events...")
-    matchedDF_Stanford = matchPassToQuadratherm(bridgerDF, quadrathermDF)  # match each pass to release event
+    matchedDF = matchPassToQuadratherm(operatorDF, meterDF_All)  # match each pass to release event
 
     print("Checking plume lengths...")
-    matchedDF_Stanford = checkPlumes_Stanford(DataPath, matchedDF_Stanford, sonicDF, mThreshold=minPlumeLength)  # determine plume lengths
+    matchedDF = checkPlumes(DataPath, matchedDF, sonicDF, mThreshold=minPlumeLength)  # determine plume lengths
 
     print("Classifying detections...")
-    matchedDF_Stanford = classifyDetections_Stanford(matchedDF_Stanford)  # assign TP, FN, and NE classifications
+    matchedDF = classifyDetections(matchedDF)  # assign TP, FN, and NE classifications
 
     print("Setting flight feature wind stats...")
-    matchedDF_Stanford = anemometerMethods_Stanford.appendFlightFeatureMetStats_Stanford(matchedDF_Stanford, sonicDF) #, dt=cr_averageperiod_sec)
+    matchedDF = anemometerMethods.appendFlightFeatureMetStats(matchedDF, sonicDF) #, dt=cr_averageperiod_sec)
 
     print("Setting nominal altitude...")
-    matchedDF_Stanford = setNominalAltitude(matchedDF_Stanford)
+    matchedDF = setNominalAltitude(matchedDF)
 
     print("Applying unit conversions...")
-    matchedDF_Stanford = convertUnits(matchedDF_Stanford, CH4_frac)
+    matchedDF = convertUnits(matchedDF, CH4_frac)
 
-    del matchedDF_Stanford['cr_coriolis_gps_mean']  
-    del matchedDF_Stanford['cr_coriolis_gps_std']
-    del matchedDF_Stanford['Match Time'] 
+    del matchedDF['cr_coriolis_gps_mean']  
+    del matchedDF['cr_coriolis_gps_std']
+    del matchedDF['Match Time'] 
     
     print("Setting errors in flow estimates...")
-    matchedDF_Stanford = setFlowError(matchedDF_Stanford)
+    matchedDF = setFlowError(matchedDF)
 
-    return matchedDF_Stanford
+    return matchedDF
 
 
-def matchPassToQuadratherm(bridgerDF, quadrathermDF):
+def matchPassToQuadratherm(operatorDF, meterDF_All):
 
-    bridgerDF['Match Time'] = bridgerDF['Detection Time (UTC)']
-    bridgerDF.loc[bridgerDF["Match Time"].isnull(),'Match Time'] = bridgerDF["Flight Feature Time (UTC)"]    
-
-    bridgerDF['Match Time'] = pd.to_datetime(bridgerDF['Match Time'])  
+    # TEMPORARY: If this 
+    #operatorDF['Match Time'] = operatorDF['Detection Time (UTC)']
+    #operatorDF.loc[operatorDF["Match Time"].isnull(),'Match Time'] = operatorDF["Flight Feature Time (UTC)"]    
+    # operatorDF['Match Time'] = pd.to_datetime(operatorDF['Match Time'])  
     
-    matchedDF_Stanford = pd.DataFrame()  # makae empty df to store results
-    matchedDF_Stanford = bridgerDF.merge(quadrathermDF, left_on = ['Match Time'], right_index = True)
+    matchedDF = pd.DataFrame()  # makae empty df to store results
+    matchedDF = operatorDF.merge(meterDF_All, left_on = ['Timestamp'], right_index = True)
 
-    return matchedDF_Stanford
+    return matchedDF
 
-def classifyDetections_Stanford(matchedDF_Stanford):
-    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
-    :param matchedDF =  dataframe with passes matched to release events
-    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
-
-    for idx, row in matchedDF_Stanford.iterrows():
-        if not row['PlumeEstablished']:
-            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
-            matchedDF_Stanford.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
-            matchedDF_Stanford.loc[idx, 'Detection'] = -1
-        # False negatives occur if Bridger does not record a detection 
-        # AND Stanford is releasing
-        elif pd.isna(row['Detection Id']) and row['cr_scfh_mean'] > 0:
-            matchedDF_Stanford.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
-            matchedDF_Stanford.loc[idx, 'Detection'] = 0
-        # False positives occur if Bridger does record a detection 
-        # AND Stanford is not releasing
-        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
-        #2/21/2022 note, there are no FP results in data set
-        elif pd.notna(row['Detection Id']) and row['cr_scfh_mean'] == 0:
-            matchedDF_Stanford.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
-            matchedDF_Stanford.loc[idx, 'Detection'] = 0
-        else:
-            matchedDF_Stanford.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
-            matchedDF_Stanford.loc[idx, 'Detection'] = 1
-    return matchedDF_Stanford
-
-
-def checkPlumes_Stanford(DataPath, matchedDF_Stanford, sonicDF, mThreshold):
+def checkPlumes(DataPath, matchedDF, sonicDF, mThreshold):
     """Calculates a plume length and compares to threshold for established plume
     :param matchedDF = dataframe of aircraft passes matched with events
     :param metDF = dataframe from anemometer
@@ -106,30 +75,58 @@ def checkPlumes_Stanford(DataPath, matchedDF_Stanford, sonicDF, mThreshold):
     Quad_new_setpoint['datetime_UTC'] = Quad_new_setpoint.apply(
             lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     
-    matchedDF_Stanford['cr_start'] = np.nan
-    matchedDF_Stanford['cr_end'] = np.nan
-    matchedDF_Stanford['cr_idx'] = np.nan
-    matchedDF_Stanford['PlumeLength_m'] = np.nan
+    matchedDF['cr_start'] = np.nan
+    matchedDF['cr_end'] = np.nan
+    matchedDF['cr_idx'] = np.nan
+    matchedDF['PlumeLength_m'] = np.nan
 
-    for i in range(matchedDF_Stanford.shape[0]):
-        matchedDF_Stanford['cr_start'][i] = min(Quad_new_setpoint['datetime_UTC'], key = lambda datetime :
-                                                  ((matchedDF_Stanford['Match Time'][i] - datetime).total_seconds() < 0,
-                                                   (matchedDF_Stanford['Match Time'][i] - datetime).total_seconds()))
-        idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF_Stanford['cr_start'][i]].index[0]    
-        matchedDF_Stanford['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
+    for i in range(matchedDF.shape[0]):
+        matchedDF['cr_start'][i] = min(Quad_new_setpoint['datetime_UTC'], key = lambda datetime :
+                                                  ((matchedDF['Match Time'][i] - datetime).total_seconds() < 0,
+                                                   (matchedDF['Match Time'][i] - datetime).total_seconds()))
+        idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF['cr_start'][i]].index[0]    
+        matchedDF['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
         
     idx = 2001
     for i in range(Quad_new_setpoint.shape[0]):    
-        matchedDF_Stanford['cr_idx'][matchedDF_Stanford['cr_start'] == Quad_new_setpoint['datetime_UTC'][i]] = idx
+        matchedDF['cr_idx'][matchedDF['cr_start'] == Quad_new_setpoint['datetime_UTC'][i]] = idx
         idx = idx + 1
     
     # calculate plume lengths
-    matchedDF_Stanford['PlumeLength_m'] = matchedDF_Stanford.apply(
+    matchedDF['PlumeLength_m'] = matchedDF.apply(
         lambda x: calcPlumeLength(x['cr_start'], x['Match Time'], sonicDF), axis=1)
     # check if plume is established
-    matchedDF_Stanford['PlumeEstablished'] = matchedDF_Stanford.apply(lambda x: establishedPlume(x['PlumeLength_m'], mThreshold), axis=1)
+    matchedDF['PlumeEstablished'] = matchedDF.apply(lambda x: establishedPlume(x['PlumeLength_m'], mThreshold), axis=1)
     
-    return matchedDF_Stanford
+    return matchedDF
+
+
+def classifyDetections(matchedDF):
+    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
+    :param matchedDF =  dataframe with passes matched to release events
+    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
+
+    for idx, row in matchedDF.iterrows():
+        if not row['PlumeEstablished']:
+            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
+            matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
+            matchedDF.loc[idx, 'Detection'] = -1
+        # False negatives occur if Bridger does not record a detection 
+        # AND Stanford is releasing
+        elif pd.isna(row['Detection Id']) and row['cr_scfh_mean'] > 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        # False positives occur if Bridger does record a detection 
+        # AND Stanford is not releasing
+        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
+        #2/21/2022 note, there are no FP results in data set
+        elif pd.notna(row['Detection Id']) and row['cr_scfh_mean'] == 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        else:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
+            matchedDF.loc[idx, 'Detection'] = 1
+    return matchedDF
 
 
 def calcPlumeLength(t1, t2, sonicDF):
