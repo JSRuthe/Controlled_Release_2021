@@ -36,7 +36,7 @@ def loaddata():
     bridgerSonic_path = os.path.join(DataPath, 'XOM0011 Stanford CR - Anemometer.xlsx')
     bridgerSonicDF = loadBridgerData(bridgerSonic_path)
     bridgerSonicDF['WindType'] = 'Sonic'
-    bridgerSonicDF['Operator'] = 'Bridger'
+    bridgerSonicDF['OperatorSet'] = 'Bridger'
     bridgerSonicDF = bridgerSonicDF[bridgerSonicDF['EquipmentUnitID'] == 33931]
 
     # append Bridger data into single DF
