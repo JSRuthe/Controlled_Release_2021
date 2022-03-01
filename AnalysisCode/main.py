@@ -12,8 +12,7 @@ def main():
     operatorDF, meterDF_All, sonicDF = loaddata()
     # (2) match bridger data with release data
     
-    matchedDF = performMatching(operatorDF, meterDF_All, sonicDF,
-                                                minPlumeLength=150, cr_averageperiod_sec=cr_averageperiod_sec, CH4_frac=0.962)
+    matchedDF = performMatching(operatorDF, meterDF_All, sonicDF)
 
 
     # write matched results to csv

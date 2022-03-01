@@ -10,21 +10,38 @@ import pytz
 import os.path
 
 
-def performMatching(operatorDF, meterDF_All, sonicDF, minPlumeLength, cr_averageperiod_sec, CH4_frac):
+def performMatching(operatorDF, meterDF_All, sonicDF):
     # (1) Matches Bridger passes to controlled releases in Stanford Quadratherm time series
     # (2) calculates plume length for each pass and determines if plume is established,
     # (3) classifies each pass as TP, FN, or NE,
     # (4) 
 
-    cwd = os.getcwd()    
-    DataPath = os.path.join(cwd, 'EhrenbergTestData') 
 
+    cwd = os.getcwd()  
     
     print("Matching bridger passes to release events...")
-    matchedDF = matchPassToQuadratherm(operatorDF, meterDF_All)  # match each pass to release event
+    
+    matchedDF = matchPassToQuadratherm(operatorDF, meterDF_All)  # match each pass to release event 
+    
+    DataPath = os.path.join(cwd, 'BridgerTestData') 
+
+ 
 
     print("Checking plume lengths...")
-    matchedDF = checkPlumes(DataPath, matchedDF, sonicDF, mThreshold=minPlumeLength)  # determine plume lengths
+    matchedDF_Bridger = matchedDF[matchedDF['OperatorSet'] == 'Bridger']
+    matchedDF_Bridger = checkPlumes(DataPath, matchedDF_Bridger, sonicDF, 
+                                                                                tstamp_file = 'transition_stamps_v2.csv', 
+                                                                                minPlumeLength = 64,
+                                                                                cr_averageperiod_sec = 64,
+                                                                                CH4_frac = 0.9627)
+                                                
+   #                                                         minPlumeLength_GHGSat = 90,
+   #                                                         cr_averageperiod_sec_GHGSat = 90,
+   #                                                         CH4_frac_GHGSat = 0.9522,
+   #                                             
+   #                                                         minPlumeLength_CM = 90,
+   #                                                         cr_averageperiod_sec_CM = 90,
+   #                                                         CH4_frac_Bridger_CM = 0.859152)  # determine plume lengths
 
     print("Classifying detections...")
     matchedDF = classifyDetections(matchedDF)  # assign TP, FN, and NE classifications
@@ -56,11 +73,18 @@ def matchPassToQuadratherm(operatorDF, meterDF_All):
     # operatorDF['Match Time'] = pd.to_datetime(operatorDF['Match Time'])  
     
     matchedDF = pd.DataFrame()  # makae empty df to store results
+    operatorDF['Timestamp'] = pd.to_datetime(operatorDF['Timestamp'])
     matchedDF = operatorDF.merge(meterDF_All, left_on = ['Timestamp'], right_index = True)
 
     return matchedDF
 
-def checkPlumes(DataPath, matchedDF, sonicDF, mThreshold):
+def checkPlumes(DataPath, matchedDF, sonicDF,       
+                                                                    tstamp_file,                                                     
+                                                                    minPlumeLength,
+                                                                    cr_averageperiod_sec,
+                                                                    CH4_frac):
+    
+    
     """Calculates a plume length and compares to threshold for established plume
     :param matchedDF = dataframe of aircraft passes matched with events
     :param metDF = dataframe from anemometer
@@ -69,7 +93,12 @@ def checkPlumes(DataPath, matchedDF, sonicDF, mThreshold):
 
     # Calculate time since last pass    
     # Quad_new_setpoint = a list of timestamps where Stanford adjusted the gas flow to a new level
-    ts_path = os.path.join(DataPath, 'transition_stamps_v2.csv')
+    
+    # GHGSat:           Oct  21: # No time series available for morning of Oct  21, Assume that plume was stabilized two minutes prior to setpoints
+    # Carbon Mapper:    July 31: # No time series available for morning of July 31, Assume that plume was stabilized two minutes prior to setpoints
+    
+    
+    ts_path = os.path.join(DataPath, tstamp_file)
     Quad_new_setpoint = pd.read_csv(ts_path, skiprows=0, usecols=[0],names=['datetime_UTC'], parse_dates=True)
     Quad_new_setpoint['datetime_UTC'] = pd.to_datetime(Quad_new_setpoint['datetime_UTC'])
     Quad_new_setpoint['datetime_UTC'] = Quad_new_setpoint.apply(
@@ -79,11 +108,12 @@ def checkPlumes(DataPath, matchedDF, sonicDF, mThreshold):
     matchedDF['cr_end'] = np.nan
     matchedDF['cr_idx'] = np.nan
     matchedDF['PlumeLength_m'] = np.nan
+    matchedDF['PlumeEstablished'] = np.nan
 
     for i in range(matchedDF.shape[0]):
         matchedDF['cr_start'][i] = min(Quad_new_setpoint['datetime_UTC'], key = lambda datetime :
-                                                  ((matchedDF['Match Time'][i] - datetime).total_seconds() < 0,
-                                                   (matchedDF['Match Time'][i] - datetime).total_seconds()))
+                                                  ((matchedDF['Timestamp'][i] - datetime).total_seconds() < 0,
+                                                   (matchedDF['Timestamp'][i] - datetime).total_seconds()))
         idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF['cr_start'][i]].index[0]    
         matchedDF['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
         
@@ -94,9 +124,9 @@ def checkPlumes(DataPath, matchedDF, sonicDF, mThreshold):
     
     # calculate plume lengths
     matchedDF['PlumeLength_m'] = matchedDF.apply(
-        lambda x: calcPlumeLength(x['cr_start'], x['Match Time'], sonicDF), axis=1)
+        lambda x: calcPlumeLength(x['cr_start'], x['Timestamp'], sonicDF), axis=1)
     # check if plume is established
-    matchedDF['PlumeEstablished'] = matchedDF.apply(lambda x: establishedPlume(x['PlumeLength_m'], mThreshold), axis=1)
+    matchedDF['PlumeEstablished'] = matchedDF.apply(lambda x: establishedPlume(x['PlumeLength_m'], minPlumeLength), axis=1)
     
     return matchedDF
 
