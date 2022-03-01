@@ -284,8 +284,14 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec):
     Quad_data_1['datetime_UTC'] = pd.to_datetime(Quad_data_1['datetime_UTC'])
     Quad_data_1.set_index('datetime_UTC', inplace = True)
     Quad_data_1['instantaneous_scfh'] = np.nan
+    Quad_data_1['PipeSize_inch'] = np.nan
+    Quad_data_1['MeterCode'] = np.nan
     Quad_data_1['instantaneous_scfh'][(Quad_data_1.index < '2021.11.03 17:33:18')] = Quad_data_1['channel_1'][(Quad_data_1.index < '2021.11.03 17:33:18')]
+    Quad_data_1['PipeSize_inch'][(Quad_data_1.index < '2021.11.03 17:33:18')] = 2
+    Quad_data_1['MeterCode'][(Quad_data_1.index < '2021.11.03 17:33:18')] = 218645
     Quad_data_1['instantaneous_scfh'][(Quad_data_1.index > '2021.11.03 17:38:37')] = Quad_data_1['channel_2'][(Quad_data_1.index > '2021.11.03 17:38:37')]
+    Quad_data_1['PipeSize_inch'][(Quad_data_1.index > '2021.11.03 17:38:37')] = 4
+    Quad_data_1['MeterCode'][(Quad_data_1.index > '2021.11.03 17:38:37')] = 308188
     del Quad_data_1['channel_1'] 
     del Quad_data_1['channel_2']
     del Quad_data_1['channel_3']
@@ -295,7 +301,11 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec):
     Quad_data_2['datetime_UTC'] = pd.to_datetime(Quad_data_2['datetime_UTC'])
     Quad_data_2.set_index('datetime_UTC', inplace = True)
     Quad_data_2['instantaneous_scfh'] = np.nan
+    Quad_data_2['PipeSize_inch'] = np.nan
+    Quad_data_2['MeterCode'] = np.nan
     Quad_data_2['instantaneous_scfh'][(Quad_data_2.index < '2021.11.03 21:32:11')] = Quad_data_2['channel_2'][(Quad_data_2.index < '2021.11.03 21:32:11')]
+    Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.11.03 21:32:11')] = 4
+    Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.11.03 21:32:11')] = 308188
     del Quad_data_2['channel_1'] 
     del Quad_data_2['channel_2']
     del Quad_data_2['channel_3']
@@ -305,10 +315,18 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec):
     Quad_data_3['datetime_UTC'] = pd.to_datetime(Quad_data_3['datetime_UTC'])
     Quad_data_3.set_index('datetime_UTC', inplace = True)
     Quad_data_3['instantaneous_scfh'] = np.nan
+    Quad_data_3['PipeSize_inch'] = np.nan
+    Quad_data_3['MeterCode'] = np.nan
     Quad_data_3['instantaneous_Coriolis_gps'] = np.nan
     Quad_data_3['instantaneous_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')] = Quad_data_3['channel_2'][(Quad_data_3.index < '2021.11.04 19:27:38')]
+    Quad_data_3['PipeSize_inch'][(Quad_data_3.index < '2021.11.04 19:27:38')] = 4
+    Quad_data_3['MeterCode'][(Quad_data_3.index < '2021.11.04 19:27:38')] = 308188          
     Quad_data_3['instantaneous_Coriolis_gps'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = Quad_data_3['channel_4'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')]
+    Quad_data_3['PipeSize_inch'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = 0.5
+    Quad_data_3['MeterCode'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = 21175085   
     Quad_data_3['instantaneous_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')] = Quad_data_3['channel_2'][(Quad_data_3.index > '2021.11.04 20:24:45')]
+    Quad_data_3['PipeSize_inch'][(Quad_data_3.index > '2021.11.04 20:24:45')] = 4
+    Quad_data_3['MeterCode'][(Quad_data_3.index > '2021.11.04 20:24:45')] = 308188    
     del Quad_data_3['channel_1'] 
     del Quad_data_3['channel_2']
     del Quad_data_3['channel_3']
@@ -318,6 +336,8 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec):
     hand_data_21114 = pd.read_csv(hand_data_21114_path, skiprows=0, usecols=[0,1],names=['datetime_UTC','instantaneous_Coriolis_gps'], parse_dates=True)
     hand_data_21114['datetime_UTC'] = pd.to_datetime(hand_data_21114['datetime_UTC'])
     hand_data_21114.set_index('datetime_UTC', inplace = True)
+    hand_data_21114['PipeSize_inch'] = 0.5
+    hand_data_21114['MeterCode'] = 21175085
 
     # Concatenate all time series data
     Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3])
@@ -402,6 +422,13 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_1.set_index('datetime_local', inplace = True)
+    Quad_data_1['PipeSize_inch'] = np.nan
+    Quad_data_1['MeterCode'] = np.nan
+    Quad_data_1['PipeSize_inch'][(Quad_data_1.index < '2021.07.30 17:22:54')] = 2
+    Quad_data_1['MeterCode'][(Quad_data_1.index < '2021.07.30 17:22:54')] = 162928
+    Quad_data_1['PipeSize_inch'][(Quad_data_1.index >= '2021.07.30 17:22:54')] = 4
+    Quad_data_1['MeterCode'][(Quad_data_1.index >= '2021.07.30 17:22:54')] = 218645
+
 
     
     OCR_2_path = os.path.join(DataPath, '2183_releasedat.csv')
@@ -411,6 +438,13 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_2.set_index('datetime_local', inplace = True)
+    Quad_data_2['PipeSize_inch'] = np.nan
+    Quad_data_2['MeterCode'] = np.nan
+    Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.08.03 17:35:25')] = 4
+    Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.08.03 17:35:25')] = 218645
+    Quad_data_2['PipeSize_inch'][(Quad_data_2.index >= '2021.08.03 17:35:25')] = 2
+    Quad_data_2['MeterCode'][(Quad_data_2.index >= '2021.08.03 17:35:25')] = 162928    
+
 
     
     # video footage is hard to read on July 31. Use hand recorded data
@@ -423,6 +457,8 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec):
         x['datetime_local'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
 
     hand_data_21731['datetime_local'] = hand_data_21731['datetime_local'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    hand_data_21731['PipeSize_inch'] = 4
+    hand_data_21731['MeterCode'] = 218645
     hand_data_21731.set_index('datetime_local', inplace = True)
 
     # Concatenate all time series data
@@ -483,6 +519,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
     Quad_data_1['datetime_local'] = Quad_data_1.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_1['PipeSize_inch'] = 4
+    Quad_data_1['MeterCode'] = 218645
     Quad_data_1.set_index('datetime_local', inplace = True)
     
     OCR_2_path = os.path.join(DataPath, '211019_1_release_dat.csv')
@@ -492,6 +530,13 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_2.set_index('datetime_local', inplace = True)
+    Quad_data_2['PipeSize_inch'] = np.nan
+    Quad_data_2['MeterCode'] = np.nan
+    Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.10.19 18:33:10')] = 8
+    Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.10.19 18:33:10')] = 218645
+    Quad_data_2['PipeSize_inch'][(Quad_data_2.index >= '2021.10.19 18:33:10')] = 2
+    Quad_data_2['MeterCode'][(Quad_data_2.index >= '2021.10.19 18:33:10')] = 218645    
+
 
     hand_3_path = os.path.join(DataPath, '211019_2_release_dat.csv')
     Quad_data_3 = pd.read_csv(hand_3_path, skiprows=1, usecols=[0,1],names=['datetime_local','instantaneous_scfh'], parse_dates=True)
@@ -499,6 +544,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
     Quad_data_3['datetime_local'] = Quad_data_3.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_3['PipeSize_inch'] = 2
+    Quad_data_3['MeterCode'] = 218645
     Quad_data_3.set_index('datetime_local', inplace = True)
 
     OCR_4_path = os.path.join(DataPath, '211020_1_release_dat.csv')
@@ -508,6 +555,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
     Quad_data_4['datetime_local'] = Quad_data_4.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_4['PipeSize_inch'] = 0.5
+    Quad_data_4['MeterCode'] = 21175085
     Quad_data_4.set_index('datetime_local', inplace = True)
    
     OCR_5_path = os.path.join(DataPath, '211020_2_release_dat.csv')
@@ -516,6 +565,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
     Quad_data_5['datetime_local'] = Quad_data_5.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_5['PipeSize_inch'] = 2
+    Quad_data_5['MeterCode'] = 218645
     Quad_data_5.set_index('datetime_local', inplace = True)
    
     OCR_6_path = os.path.join(DataPath, '211021_release_dat.csv')
@@ -524,6 +575,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
     Quad_data_6['datetime_local'] = Quad_data_6.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_6['PipeSize_inch'] = 8
+    Quad_data_6['MeterCode'] = 218645
     Quad_data_6.set_index('datetime_local', inplace = True)
 
     nano_7_path = os.path.join(DataPath, 'nano_211021_1.csv')
@@ -533,6 +586,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_7.set_index('datetime_UTC', inplace = True)
+    Quad_data_7['PipeSize_inch'] = 8
+    Quad_data_7['MeterCode'] = 218645
     Quad_data_7['instantaneous_scfh'] = Quad_data_7['channel_1']
     del Quad_data_7['channel_1'] 
     del Quad_data_7['channel_2']
@@ -546,6 +601,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_8.set_index('datetime_UTC', inplace = True)
+    Quad_data_8['PipeSize_inch'] = 8
+    Quad_data_8['MeterCode'] = 218645
     Quad_data_8['instantaneous_scfh'] = Quad_data_8['channel_1']
     del Quad_data_8['channel_1'] 
     del Quad_data_8['channel_2']
@@ -559,6 +616,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_9.set_index('datetime_UTC', inplace = True)
+    Quad_data_9['PipeSize_inch'] = 8
+    Quad_data_9['MeterCode'] = 218645
     Quad_data_9['instantaneous_scfh'] = Quad_data_9['channel_1']
     del Quad_data_9['channel_1'] 
     del Quad_data_9['channel_2']
@@ -572,6 +631,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_10.set_index('datetime_UTC', inplace = True)
+    Quad_data_10['PipeSize_inch'] = 0.5
+    Quad_data_10['MeterCode'] = 21175085
     Quad_data_10['instantaneous_Coriolis_gps'] = Quad_data_10['channel_4']
     del Quad_data_10['channel_1'] 
     del Quad_data_10['channel_2']
@@ -585,6 +646,8 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_11.set_index('datetime_UTC', inplace = True)
+    Quad_data_11['PipeSize_inch'] = 4
+    Quad_data_11['MeterCode'] = 218645
     Quad_data_11['instantaneous_scfh'] = Quad_data_11['channel_2']
     del Quad_data_11['channel_1'] 
     del Quad_data_11['channel_2']
