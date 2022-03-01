@@ -10,7 +10,7 @@ import pytz
 import os.path
 
 
-def performMatching(operatorDF, meterDF_All, sonicDF):
+def performMatching(operatorDF, meterDF_All, sonicDF_All):
     # (1) Matches Bridger passes to controlled releases in Stanford Quadratherm time series
     # (2) calculates plume length for each pass and determines if plume is established,
     # (3) classifies each pass as TP, FN, or NE,
@@ -24,27 +24,44 @@ def performMatching(operatorDF, meterDF_All, sonicDF):
     matchedDF = matchPassToQuadratherm(operatorDF, meterDF_All)  # match each pass to release event 
     
     DataPath = os.path.join(cwd, 'BridgerTestData') 
-
- 
-
-    print("Checking plume lengths...")
+    print("Checking plume lengths Bridger...")
     matchedDF_Bridger = matchedDF[matchedDF['OperatorSet'] == 'Bridger']
-    matchedDF_Bridger = checkPlumes(DataPath, matchedDF_Bridger, sonicDF, 
+    matchedDF_Bridger = matchedDF_Bridger.reset_index()  
+    sonicDF_Bridger = sonicDF_All[sonicDF_All['OperatorSet'] == 'Bridger']
+    matchedDF_Bridger = checkPlumes(DataPath, matchedDF_Bridger, sonicDF_Bridger, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv', 
                                                                                 minPlumeLength = 64,
                                                                                 cr_averageperiod_sec = 64,
                                                                                 CH4_frac = 0.9627)
-                                                
-   #                                                         minPlumeLength_GHGSat = 90,
-   #                                                         cr_averageperiod_sec_GHGSat = 90,
-   #                                                         CH4_frac_GHGSat = 0.9522,
-   #                                             
-   #                                                         minPlumeLength_CM = 90,
-   #                                                         cr_averageperiod_sec_CM = 90,
-   #                                                         CH4_frac_Bridger_CM = 0.859152)  # determine plume lengths
+    print("Classifying detections Bridger...")
+    matchedDF_Bridger = classifyDetections(matchedDF_Bridger)  # assign TP, FN, and NE classifications
 
-    print("Classifying detections...")
-    matchedDF = classifyDetections(matchedDF)  # assign TP, FN, and NE classifications
+    DataPath = os.path.join(cwd, 'GHGSatTestData') 
+    print("Checking plume lengths GHGSat...")
+    matchedDF_GHGSat = matchedDF[matchedDF['OperatorSet'] == 'GHGSat']
+    matchedDF_GHGSat = matchedDF_GHGSat.reset_index()  
+    sonicDF_GHGSat = sonicDF_All[sonicDF_All['OperatorSet'] == 'GHGSat']    
+    matchedDF_GHGSat = checkPlumes(DataPath, matchedDF_GHGSat, sonicDF_GHGSat, 
+                                                                                tstamp_file = 'transition_stamps_v2.csv',                                                 
+                                                                                minPlumeLength = 90,
+                                                                                cr_averageperiod_sec = 90,
+                                                                                CH4_frac = 0.9522)
+    print("Classifying detections GHGSat...")
+    matchedDF_GHGSat = classifyDetections(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
+                                                                            
+    DataPath = os.path.join(cwd, 'CarbonMapperTestData') 
+    print("Checking plume lengths CarbonMapper...")
+    matchedDF_CarbonMapper = matchedDF[matchedDF['OperatorSet'] == 'CarbonMapper']
+    matchedDF_CarbonMapper = matchedDF_CarbonMapper.reset_index()  
+    sonicDF_CarbonMapper = sonicDF_All[sonicDF_All['OperatorSet'] == 'CarbonMapper']    
+    matchedDF_CarbonMapper = checkPlumes(DataPath, matchedDF_CarbonMapper, sonicDF_CarbonMapper, 
+                                                                                tstamp_file = 'transition_stamps.csv',                                          
+                                                                                minPlumeLength = 90,
+                                                                                cr_averageperiod_sec = 90,
+                                                                                CH4_frac = 0.859152)
+
+    print("Classifying detections CarbonMapper...")
+    matchedDF_CarbonMapper = classifyDetections(matchedDF_CarbonMapper)  # assign TP, FN, and NE classifications
 
     print("Setting flight feature wind stats...")
     matchedDF = anemometerMethods.appendFlightFeatureMetStats(matchedDF, sonicDF) #, dt=cr_averageperiod_sec)
@@ -173,7 +190,8 @@ def calcPlumeLength(t1, t2, sonicDF):
         sonicDF = sonicDF[t1.astimezone(pytz.utc):t2.astimezone(
             pytz.utc)]  # subset to only data in the timeframe we're interested in
         # import pdb; pdb.set_trace()
-        integrated = sonicDF.apply(integrate.trapz)  # integrate all fields
+        sonicDF_temp = sonicDF.drop('OperatorSet', 1)
+        integrated = sonicDF_temp.apply(integrate.trapz)  # integrate all fields
         plumeLength = integrated['Speed_MPS'] #* mph_to_ms  # convert integrated windspeed (mph*s) to m
     return plumeLength
 
