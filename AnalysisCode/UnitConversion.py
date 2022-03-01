@@ -56,12 +56,11 @@ def gps2kgh(gps):
     """Convert mph to m/s"""
     return gps*(3600/1000)
 
-def applyComposition(df, CH4_frac):
+def applyComposition(KGH, CH4_frac):
     """Apply composition correction to Alicat readings."""
     
-    df['cr_scfh_CH4_mean'] = df['cr_scfh_mean'] * CH4_frac
-    df['cr_scfh_CH4_std'] = df['cr_scfh_std'] * CH4_frac
-    return df
+    KGH_CH4 = KGH * CH4_frac
+    return KGH_CH4
 
 
 
