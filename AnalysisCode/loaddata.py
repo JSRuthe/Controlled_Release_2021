@@ -238,7 +238,9 @@ def loadGHGSatData(filepath):
     df = pd.read_csv(filepath, parse_dates=[['DateOfSurvey', 'Timestamp (hyperspectral technologies only)']])
     
     df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
-    
+    cwd = os.getcwd()   
+    QC_filter = pd.read_csv(os.path.join(cwd, 'GHGSatTestData','QC_filter.csv'), header = None, names = ['QC_filter'])  
+        
     # GHGSat does not report a timestamp for all passes. Non-retrievals are identified
     # by rows without a timestamp.
     # Therfore, need to choose a different column to filter out blank rows in the 
@@ -246,6 +248,7 @@ def loadGHGSatData(filepath):
     # (Jeff - Need to verify this is a good approacah)
     
     df = df[df["PerformerExperimentID"].notnull()]
+    df['QC filter'] = QC_filter['QC filter']
 
     # TEMPORARY: Remove the following rows with failed retrievals:
         # 	PerformerExperimentID = 1496-1-302-827-1026-4
