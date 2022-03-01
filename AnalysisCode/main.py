@@ -9,10 +9,10 @@ def main():
 
     # Generate table of Stanford matched controlled releases
     # (1) Load data
-    operatorDF, meterDF_All, sonicDF = loaddata()
+    operatorDF, meterDF_All, sonicDF_All = loaddata()
     # (2) match bridger data with release data
     
-    matchedDF = performMatching(operatorDF, meterDF_All, sonicDF)
+    matchedDF = performMatching(operatorDF, meterDF_All, sonicDF_All)
 
 
     # write matched results to csv

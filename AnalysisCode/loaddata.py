@@ -112,13 +112,30 @@ def loaddata():
     
     meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
     
+    
     DataPath = os.path.join(cwd, 'BridgerTestData')  
     # load Bridger anemometer data
     print("Loading anemometer data...")
     sonic_path = os.path.join(DataPath, 'Sonic\\')
-    sonicDF = combineAnemometer(sonic_path)
+    sonicDF_Bridger = combineAnemometer_Bridger(sonic_path)
+    sonicDF_Bridger['OperatorSet'] = 'Bridger'
     
-    return operatorDF, meterDF_All, sonicDF
+    DataPath = os.path.join(cwd, 'CarbonMapperTestData')  
+    # load Carbon Mapper anemometer data
+    print("Loading anemometer data...")
+    sonic_path = os.path.join(DataPath, 'Sonic\\')
+    sonicDF_CarbonMapper = combineAnemometer_CarbonMapper(sonic_path)
+    sonicDF_CarbonMapper['OperatorSet'] = 'CarbonMapper'
+    
+    DataPath = os.path.join(cwd, 'GHGSatTestData')  
+    # load GHGSat anemometer data
+    print("Loading anemometer data...")
+    sonic_path = os.path.join(DataPath, 'Sonic\\')
+    sonicDF_GHGSat = combineAnemometer_GHGSat(sonic_path)
+    sonicDF_GHGSat['OperatorSet'] = 'GHGSat'
+    sonicDF_All = pd.concat([sonicDF_Bridger, sonicDF_CarbonMapper, sonicDF_GHGSat])
+    
+    return operatorDF, meterDF_All, sonicDF_All
     
 def loadBridgerData(filepath):
     """Load bridger data from report and format datetimes."""
@@ -625,7 +642,7 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec):
     return quadrathermDF    
 
 
-def combineAnemometer(sonic_path):
+def combineAnemometer_Bridger(sonic_path):
     
     # Process data for November 3
     # Location = Ehrenberg
@@ -691,6 +708,249 @@ def combineAnemometer(sonic_path):
 
     return sonicDF
 
+def combineAnemometer_CarbonMapper(sonic_path):
+    
+    # Process data for July 30
+    # Location = Midland
+    # Timezone = US/Central
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.7.30'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,6]
+    offset = 3
+    offset = int(round(offset))
+
+    sonic_date_range_1  = pd.date_range("2021.07.30 14:37:48", periods = 14422, freq = "s")
+    sonic_date_range_1 = sonic_date_range_1.to_frame(index = True)
+    sonic_date_range_1  = sonic_date_range_1.tz_localize(pytz.utc)
+
+    sonicDF_temp1 = processAnemometer(path_lookup, localtz, cols, offset) 
+    sonicDF_temp1 = sonicDF_temp1.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp1 = sonic_date_range_1.merge(sonicDF_temp1, how='outer', left_index=True, right_index=True)
+    sonicDF_temp1 = sonicDF_temp1.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp1 = sonicDF_temp1.bfill()
+    
+    # Process data for July 31
+    # Location = Midland
+    # Timezone = US/Central
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.7.31'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,7]
+    offset = 3
+    offset = int(round(offset))
+
+    sonic_date_range_2  = pd.date_range("2021.07.31 14:20:58", periods = 19695, freq = "s")
+    sonic_date_range_2 = sonic_date_range_2.to_frame(index = True)
+    sonic_date_range_2  = sonic_date_range_2.tz_localize(pytz.utc)
+    
+    sonicDF_temp2 = processAnemometer(path_lookup, localtz, cols, offset)     
+    sonicDF_temp2 = sonicDF_temp2.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp2 = sonic_date_range_2.merge(sonicDF_temp2, how='outer', left_index=True, right_index=True)
+    sonicDF_temp2 = sonicDF_temp2.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp2 = sonicDF_temp2.bfill()
+
+    # Process data for August 3
+    # Location = Midland
+    # Timezone = US/Central
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.8.3'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,7]
+    offset = 3
+    offset = int(round(offset))
+
+    sonic_date_range_3  = pd.date_range("2021.08.03 14:21:30", periods = 24448, freq = "s")
+    sonic_date_range_3 = sonic_date_range_3.to_frame(index = True)
+    sonic_date_range_3  = sonic_date_range_3.tz_localize(pytz.utc)
+    
+    sonicDF_temp3 = processAnemometer(path_lookup, localtz, cols, offset)     
+    sonicDF_temp3 = sonicDF_temp3.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp3 = sonic_date_range_3.merge(sonicDF_temp3, how='outer', left_index=True, right_index=True)
+    sonicDF_temp3 = sonicDF_temp3.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp3 = sonicDF_temp3.bfill()
+    
+    sonicDF = pd.concat([sonicDF_temp1, sonicDF_temp2, sonicDF_temp3])
+
+
+    return sonicDF
+
+def combineAnemometer_GHGSat(sonic_path):
+    
+    # Process data for October 18
+    # Location = Ehrenberg
+    # Timezone = MST
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.10.18'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,6]
+    AZ_day = 3
+    offset = 0.8438*AZ_day + 54.865
+    offset = int(round(offset))
+
+    sonic_date_range_1  = pd.date_range("2021.11.03 16:59:08", periods = 17115, freq = "s")
+    sonic_date_range_1 = sonic_date_range_1.to_frame(index = True)
+    sonic_date_range_1  = sonic_date_range_1.tz_localize(pytz.utc)
+
+    sonicDF_temp1 = processAnemometer(path_lookup, localtz, cols, offset) 
+    sonicDF_temp1 = sonicDF_temp1.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp1 = sonic_date_range_1.merge(sonicDF_temp1, how='outer', left_index=True, right_index=True)
+    sonicDF_temp1 = sonicDF_temp1.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp1 = sonicDF_temp1.bfill()
+    
+    # Process data for October 19
+    # Location = Ehrenberg
+    # Timezone = MST
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.10.19'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,6]
+    AZ_day = 4
+    offset = 0.8438*AZ_day + 54.865
+    offset = int(round(offset))
+
+    sonic_date_range_2  = pd.date_range("2021.11.04 15:57:57", periods = 20367, freq = "s")
+    sonic_date_range_2 = sonic_date_range_2.to_frame(index = True)
+    sonic_date_range_2  = sonic_date_range_2.tz_localize(pytz.utc)
+    
+    sonicDF_temp2 = processAnemometer(path_lookup, localtz, cols, offset)     
+    sonicDF_temp2 = sonicDF_temp2.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp2 = sonic_date_range_2.merge(sonicDF_temp2, how='outer', left_index=True, right_index=True)
+    sonicDF_temp2 = sonicDF_temp2.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp2 = sonicDF_temp2.bfill()
+
+    # Process data for October 20
+    # Location = Ehrenberg
+    # Timezone = MST
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.10.20'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,6]
+    AZ_day = 5
+    offset = 0.8438*AZ_day + 54.865
+    offset = int(round(offset))
+
+    sonic_date_range_3  = pd.date_range("2021.11.04 15:57:57", periods = 20367, freq = "s")
+    sonic_date_range_3 = sonic_date_range_3.to_frame(index = True)
+    sonic_date_range_3  = sonic_date_range_3.tz_localize(pytz.utc)
+    
+    sonicDF_temp3 = processAnemometer(path_lookup, localtz, cols, offset)     
+    sonicDF_temp3 = sonicDF_temp3.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp3 = sonic_date_range_3.merge(sonicDF_temp3, how='outer', left_index=True, right_index=True)
+    sonicDF_temp3 = sonicDF_temp3.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp3 = sonicDF_temp3.bfill()
+
+    # Process data for October 21
+    # Location = Ehrenberg
+    # Timezone = MST
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.10.21'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,6]
+    AZ_day = 6
+    offset = 0.8438*AZ_day + 54.865
+    offset = int(round(offset))
+
+    sonic_date_range_4  = pd.date_range("2021.11.04 15:57:57", periods = 20367, freq = "s")
+    sonic_date_range_4 = sonic_date_range_4.to_frame(index = True)
+    sonic_date_range_4  = sonic_date_range_4.tz_localize(pytz.utc)
+    
+    sonicDF_temp4 = processAnemometer(path_lookup, localtz, cols, offset)     
+    sonicDF_temp4 = sonicDF_temp4.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp4 = sonic_date_range_4.merge(sonicDF_temp4, how='outer', left_index=True, right_index=True)
+    sonicDF_temp4 = sonicDF_temp4.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp4 = sonicDF_temp4.bfill()
+
+    # Process data for October 22
+    # Location = Ehrenberg
+    # Timezone = MST
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.10.22'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [1,2,6]
+    AZ_day = 7
+    offset = 0.8438*AZ_day + 54.865
+    offset = int(round(offset))
+
+    sonic_date_range_5  = pd.date_range("2021.11.04 15:57:57", periods = 20367, freq = "s")
+    sonic_date_range_5 = sonic_date_range_5.to_frame(index = True)
+    sonic_date_range_5  = sonic_date_range_5.tz_localize(pytz.utc)
+    
+    sonicDF_temp5 = processAnemometer(path_lookup, localtz, cols, offset)     
+    sonicDF_temp5 = sonicDF_temp5.set_index('time')
+    
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp5 = sonic_date_range_5.merge(sonicDF_temp5, how='outer', left_index=True, right_index=True)
+    sonicDF_temp5 = sonicDF_temp5.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp5 = sonicDF_temp5.bfill()
+    
+    sonicDF = pd.concat([sonicDF_temp1, sonicDF_temp2, sonicDF_temp3, sonicDF_temp4, sonicDF_temp5])
+
+
+
+    return sonicDF
 
 def processAnemometer(path_lookup, localtz, cols, offset):
 
