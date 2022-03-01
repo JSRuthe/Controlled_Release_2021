@@ -85,7 +85,8 @@ def loaddata():
     GHGSatR1DF = loadGHGSatData(GHGSat_path)
     GHGSatR1DF['WindType'] = 'NASA-GEOS'
     GHGSatR1DF['OperatorSet'] = 'GHGSat'
-    #CarbonMapperDF = bridgerHRRRDF[bridgerHRRRDF['Emission Location Id'] == 33931]
+    
+    GHGSatR1DF = GHGSatR1DF.drop(GHGSatR1DF[(GHGSatR1DF['EquipmentUnitID'] == 2)].index)
 
     # load GHGSat data processed with Sonic wind
     print("Loading GHGSat data...")
@@ -93,7 +94,8 @@ def loaddata():
     GHGSatR2DF = loadGHGSatData(GHGSat_path)
     GHGSatR2DF['WindType'] = 'Sonic'
     GHGSatR2DF['OperatorSet'] = 'GHGSat'
-    #CarbonMapperDF = bridgerHRRRDF[bridgerHRRRDF['Emission Location Id'] == 33931]  
+    
+    GHGSatR2DF = GHGSatR2DF.drop(GHGSatR2DF[(GHGSatR2DF['EquipmentUnitID'] == 2)].index)
     
     GHGSatDF = pd.concat([GHGSatR1DF, GHGSatR2DF], ignore_index=True)
     
@@ -829,7 +831,7 @@ def combineAnemometer_GHGSat(sonic_path):
     offset = 0.8438*AZ_day + 54.865
     offset = int(round(offset))
 
-    sonic_date_range_1  = pd.date_range("2021.20.28 17:04:49", periods = 9830, freq = "s")
+    sonic_date_range_1  = pd.date_range("2021.10.18 17:04:49", periods = 9830, freq = "s")
     sonic_date_range_1 = sonic_date_range_1.to_frame(index = True)
     sonic_date_range_1  = sonic_date_range_1.tz_localize(pytz.utc)
 
