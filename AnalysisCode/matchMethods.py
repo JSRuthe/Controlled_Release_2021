@@ -34,7 +34,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
                                                                                 cr_averageperiod_sec = 64,
                                                                                 CH4_frac = 0.9627)
     print("Classifying detections Bridger...")
-    matchedDF_Bridger = classifyDetections(matchedDF_Bridger)  # assign TP, FN, and NE classifications
+    matchedDF_Bridger = classifyDetections_Bridger(matchedDF_Bridger)  # assign TP, FN, and NE classifications
 
     DataPath = os.path.join(cwd, 'GHGSatTestData') 
     print("Checking plume lengths GHGSat...")
@@ -47,7 +47,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
                                                                                 cr_averageperiod_sec = 90,
                                                                                 CH4_frac = 0.9522)
     print("Classifying detections GHGSat...")
-    matchedDF_GHGSat = classifyDetections(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
+    matchedDF_GHGSat = classifyDetections_GHGSat(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
                                                                             
     DataPath = os.path.join(cwd, 'CarbonMapperTestData') 
     print("Checking plume lengths CarbonMapper...")
@@ -61,7 +61,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
                                                                                 CH4_frac = 0.859152)
 
     print("Classifying detections CarbonMapper...")
-    matchedDF_CarbonMapper = classifyDetections(matchedDF_CarbonMapper)  # assign TP, FN, and NE classifications
+    matchedDF_CarbonMapper = classifyDetections_CarbonMapper(matchedDF_CarbonMapper)  # assign TP, FN, and NE classifications
 
     print("Setting flight feature wind stats...")
     matchedDF = anemometerMethods.appendFlightFeatureMetStats(matchedDF, sonicDF) #, dt=cr_averageperiod_sec)
@@ -148,7 +148,7 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
     return matchedDF
 
 
-def classifyDetections(matchedDF):
+def classifyDetections_Bridger(matchedDF):
     """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
     :param matchedDF =  dataframe with passes matched to release events
     :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
@@ -160,21 +160,92 @@ def classifyDetections(matchedDF):
             matchedDF.loc[idx, 'Detection'] = -1
         # False negatives occur if Bridger does not record a detection 
         # AND Stanford is releasing
-        elif pd.isna(row['Detection Id']) and row['cr_scfh_mean'] > 0:
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
         # False positives occur if Bridger does record a detection 
         # AND Stanford is not releasing
         #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
         #2/21/2022 note, there are no FP results in data set
-        elif pd.notna(row['Detection Id']) and row['cr_scfh_mean'] == 0:
+        elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0            
         else:
             matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
             matchedDF.loc[idx, 'Detection'] = 1
+            
     return matchedDF
 
+def classifyDetections_CarbonMapper(matchedDF):
+    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
+    :param matchedDF =  dataframe with passes matched to release events
+    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
+
+    for idx, row in matchedDF.iterrows():
+        if not row['PlumeEstablished']:
+            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
+            matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
+            matchedDF.loc[idx, 'Detection'] = -1
+        # False negatives occur if Bridger does not record a detection 
+        # AND Stanford is releasing
+        elif row['QC filter'] == 2 and row['cr_allmeters_kgh'] > 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        # False positives occur if Bridger does record a detection 
+        # AND Stanford is not releasing
+        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
+        #2/21/2022 note, there are no FP results in data set
+        elif row['QC filter'] == 1 and row['cr_allmeters_kgh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif row['QC filter'] == 0 :
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = -1
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0 
+        else:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
+            matchedDF.loc[idx, 'Detection'] = 1
+            
+    return matchedDF
+
+def classifyDetections_GHGSat(matchedDF):
+    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
+    :param matchedDF =  dataframe with passes matched to release events
+    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
+
+    for idx, row in matchedDF.iterrows():
+        if not row['PlumeEstablished']:
+            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
+            matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
+            matchedDF.loc[idx, 'Detection'] = -1
+        # False negatives occur if Bridger does not record a detection 
+        # AND Stanford is releasing
+        elif row['QC filter'] == 2 and row['cr_allmeters_kgh'] > 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        # False positives occur if Bridger does record a detection 
+        # AND Stanford is not releasing
+        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
+        #2/21/2022 note, there are no FP results in data set
+        elif row['QC filter'] == 1 and row['cr_allmeters_kgh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif row['QC filter'] == 0 :
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = -1
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0 
+        else:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
+            matchedDF.loc[idx, 'Detection'] = 1
+            
+    return matchedDF
 
 def calcPlumeLength(t1, t2, sonicDF):
     """integrate wind speed from t1 to t2 to determine plume length in meters

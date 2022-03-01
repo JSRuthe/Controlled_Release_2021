@@ -239,7 +239,7 @@ def loadGHGSatData(filepath):
     
     df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
     cwd = os.getcwd()   
-    QC_filter = pd.read_csv(os.path.join(cwd, 'GHGSatTestData','QC_filter.csv'), header = None, names = ['QC_filter'])  
+    QC_filter = pd.read_csv(os.path.join(cwd, 'GHGSatTestData','QC_filter.csv'), header = None, names = ['QC filter'])  
         
     # GHGSat does not report a timestamp for all passes. Non-retrievals are identified
     # by rows without a timestamp.
