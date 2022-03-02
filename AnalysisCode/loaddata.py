@@ -7,7 +7,7 @@ import pathlib
 import pandas as pd
 import bisect
 import numpy as np
-from UnitConversion import convertUnits, SCFH2kgh, mph2ms, applyComposition, gps2kgh
+from UnitConversion import convertUnits, SCFH2kgh, mph2ms, applyComposition, gps2kgh, kgh2SCFH
 
 def loaddata():
     """Load all data from Midland testing"""
@@ -402,7 +402,10 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
     time_series = time_series.dt.tz_localize(pytz.utc)
     quadrathermDF.index = time_series
 
-    # Add a column for moving average    
+    # Add a column for moving average
+    quadrathermDF['cr_allmeters_scfh'] = np.nan
+    quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
+    quadrathermDF['cr_scfh_mean'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=cr_averageperiod_sec).mean()
     quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
     quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
     #quadrathermDF['cr_coriolis_gps_mean'] = quadrathermDF['instantaneous_Coriolis_gps'].rolling(window=cr_averageperiod_sec).mean()
@@ -418,11 +421,13 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
     shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
     
     for i in range(shutoff_points.shape[0]):
+        quadrathermDF['cr_allmeters_scfh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
         quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-                
+        quadrathermDF['cr_scfh_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
+               
     #del quadrathermDF['instantaneous_scfh']  
     #del quadrathermDF['instantaneous_Coriolis_gps']
     
@@ -430,6 +435,8 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
     quadrathermDF["TMP"] = quadrathermDF.index.values                   # index is a DateTimeIndex
     quadrathermDF = quadrathermDF[quadrathermDF.TMP.notnull()]          # remove all NaT values
     quadrathermDF.drop(["TMP"], axis=1, inplace=True)                   # delete TMP again
+    
+    quadrathermDF['TestLocation'] = 'AZ'
     
     return quadrathermDF
 
@@ -520,6 +527,9 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec, CH4_frac):
     quadrathermDF = quadrathermDF.bfill()    
 
     # Add a column for moving average    
+    quadrathermDF['cr_allmeters_scfh'] = np.nan
+    quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
+    quadrathermDF['cr_scfh_mean'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=cr_averageperiod_sec).mean()
     quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
     quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
 
@@ -534,10 +544,14 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec, CH4_frac):
     shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
     
     for i in range(shutoff_points.shape[0]):
+        quadrathermDF['cr_allmeters_scfh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
         quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0  
+        quadrathermDF['cr_scfh_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
+    
+    quadrathermDF['TestLocation'] = 'TX'
     
     return quadrathermDF    
 
@@ -775,7 +789,10 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
     quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index > '2021.10.20 19:47:52') & (quadrathermDF.index < '2021.10.21 19:52:09')] = np.NaN
     quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index > '2021.10.21 20:48:03')] = np.NaN
 
-    # Add a column for moving average    
+    # Add a column for moving average  
+    quadrathermDF['cr_allmeters_scfh'] = np.nan
+    quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
+    quadrathermDF['cr_scfh_mean'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=cr_averageperiod_sec).mean()
     quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
     quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
     
@@ -789,13 +806,17 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
     shutoff_points['start_UTC'] = shutoff_points['start_UTC'].dt.tz_localize(pytz.utc)
     shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
     
-    for i in range(shutoff_points.shape[0]):     
+    for i in range(shutoff_points.shape[0]):  
+        quadrathermDF['cr_allmeters_scfh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
         quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
           
-
+        
+    quadrathermDF['TestLocation'] = 'AZ'
+    
     return quadrathermDF    
 
 

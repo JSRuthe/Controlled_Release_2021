@@ -48,6 +48,20 @@ def SCFH2kgh(SCFH, T, P=101.325):
     kgh = SCFH*M/km*kv/v*Tratio*Pratio  # [ft3/h][g/mol]*[kg/g]*[L/ft3]*[mol/L]*[1]*[1]
     return kgh
 
+def kgh2SCFH(kgh, T, P=101.325):
+    """Convert kg/h to SCFH given "standard" conditions T and P
+    :param SCFH = flow rate in standard cubic feet per hour to convert
+    :param T = Standard temperature (C)
+    :param P = Standard Pressure (kPa) """
+    M = 16.04  # molecular weight of methane (g/mol)
+    v = 22.4   # 22.4 L (@ 0 C, 1 atm)/1 mol
+    kv = 28.3168  # L/ft^3
+    km = 1000  # g/kg
+    Tratio = 273.15/(T+273.15)
+    Pratio = P/101.325
+    SCFH = kgh * (1/(M/km*kv/v*Tratio*Pratio))
+    return SCFH
+
 def mph2ms(mph):
     """Convert mph to m/s"""
     return mph*0.44704

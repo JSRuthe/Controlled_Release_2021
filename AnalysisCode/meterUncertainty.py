@@ -48,20 +48,31 @@ import matplotlib.pyplot as plt
 # TestLocation = 2
 # NumberMonteCarloDraws = 1000
 
-def meterUncertainty(InputReleaseRate, MeterAgeOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='scfh'):
+def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='scfh'):
     # Rename parameters if in non-integer form
-    if MeterAgeOption == 2016:
+    if MeterOption == 162928:
         MeterAgeOption = 0
-    elif MeterAgeOption == 2018:
+    elif MeterOption == 218645:
         MeterAgeOption = 1
-    elif MeterAgeOption == 2021:
+    elif MeterOption == 308188:
         MeterAgeOption = 2
+    elif MeterOption == 21175085:
+        Coriolis_Mean_Accuracy = (0 if InputReleaseRate == 0 else 316.92 * InputReleaseRate ** -0.969)
+        #Coriolis_Mean_Accuracy = 6.8711 * InputReleaseRate ** -0.969
+        #Coriolis_Mean_Accuracy = Coriolis_Mean_Accuracy*0.016043/0.83656 # Convert to kgh
+        #Coriolis_Mean_Accuracy = Coriolis_Mean_Accuracy * 0.955 # Convert to kgh CH4
+        Coriolis_Mean_Accuracy_Norm = Coriolis_Mean_Accuracy / 100
+        Coriolis_Mean_Accuracy = (InputReleaseRate*(0.016043* 0.955)/0.83656) * (1 + Coriolis_Mean_Accuracy_Norm)
+        ObservationStats =np.array([Coriolis_Mean_Accuracy,InputReleaseRate,InputReleaseRate])
+        ObservationStatsNormed =np.array([Coriolis_Mean_Accuracy_Norm,0,0])
+        ObservationRealizationHolder = np.nan
+        return ObservationStats, ObservationStatsNormed, ObservationRealizationHolder
 
-    if PipeDiamOption == '2-inch':
+    if PipeDiamOption == 2:
         PipeDiamOption = 0
-    elif PipeDiamOption == '4-inch':
+    elif PipeDiamOption == 4:
         PipeDiamOption = 1
-    if PipeDiamOption == '8-inch':
+    if PipeDiamOption == 8:
         PipeDiamOption = 2
 
     if TestLocation == 'TX':

@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import integrate
 import pytz
 import os.path
-
+from meterUncertainty import meterUncertainty
 
 def performMatching(operatorDF, meterDF_All, sonicDF_All):
     # (1) Matches Bridger passes to controlled releases in Stanford Quadratherm time series
@@ -36,6 +36,8 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     print("Classifying detections Bridger...")
     matchedDF_Bridger = classifyDetections_Bridger(matchedDF_Bridger)  # assign TP, FN, and NE classifications
 
+    matchedDF_Bridger = assessUncertainty(matchedDF_Bridger)
+
     DataPath = os.path.join(cwd, 'GHGSatTestData') 
     print("Checking plume lengths GHGSat...")
     matchedDF_GHGSat = matchedDF[matchedDF['OperatorSet'] == 'GHGSat']
@@ -48,7 +50,9 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
                                                                                 CH4_frac = 0.9522)
     print("Classifying detections GHGSat...")
     matchedDF_GHGSat = classifyDetections_GHGSat(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
-                                                                            
+            
+    matchedDF_GHGSat = assessUncertainty(matchedDF_GHGSat)
+                                                                
     DataPath = os.path.join(cwd, 'CarbonMapperTestData') 
     print("Checking plume lengths CarbonMapper...")
     matchedDF_CarbonMapper = matchedDF[matchedDF['OperatorSet'] == 'CarbonMapper']
@@ -63,23 +67,21 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     print("Classifying detections CarbonMapper...")
     matchedDF_CarbonMapper = classifyDetections_CarbonMapper(matchedDF_CarbonMapper)  # assign TP, FN, and NE classifications
 
-    print("Setting flight feature wind stats...")
-    matchedDF = anemometerMethods.appendFlightFeatureMetStats(matchedDF, sonicDF) #, dt=cr_averageperiod_sec)
+    matchedDF_CarbonMapper = assessUncertainty(matchedDF_CarbonMapper)
 
-    print("Setting nominal altitude...")
-    matchedDF = setNominalAltitude(matchedDF)
+    # Set flow error
 
-    print("Applying unit conversions...")
-    matchedDF = convertUnits(matchedDF, CH4_frac)
 
-    del matchedDF['cr_coriolis_gps_mean']  
-    del matchedDF['cr_coriolis_gps_std']
-    del matchedDF['Match Time'] 
-    
-    print("Setting errors in flow estimates...")
-    matchedDF = setFlowError(matchedDF)
+    #print("Setting flight feature wind stats...")
+    #matchedDF = anemometerMethods.appendFlightFeatureMetStats(matchedDF, sonicDF) #, dt=cr_averageperiod_sec)
 
-    return matchedDF
+    #print("Setting nominal altitude...")
+    #matchedDF = setNominalAltitude(matchedDF)
+
+    #print("Setting errors in flow estimates...")
+    #matchedDF = setFlowError(matchedDF)
+
+    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper
 
 
 def matchPassToQuadratherm(operatorDF, meterDF_All):
@@ -292,4 +294,21 @@ def setFlowError(df):
     df['FlowError_percent'] = df.apply(
         lambda x: pd.NA if pd.isna(x['FlowError_kgh']) else x['FlowError_kgh'] / x['cr_kgh_CH4_mean'] * 100, axis=1)
 
+    return df
+
+def assessUncertainty(df):
+    # (InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='kgh'):
+    df['Error_mean'] = np.nan
+    df['Error_2.5'] = np.nan
+    df['Error_95'] = np.nan
+    
+    for idx, row in df.iterrows():
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  NumberMonteCarloDraws = 1000, 
+                                                                                                  hist=0, 
+                                                                                                  units='kgh')
+        df.loc[idx, 'Error_mean'] = (ObservationStats[0] - row['cr_kgh_CH4_mean'])/row['cr_kgh_CH4_mean']
+        df.loc[idx, 'Error_2.5'] = (ObservationStats[1] - row['cr_kgh_CH4_mean'])/row['cr_kgh_CH4_mean']
+        df.loc[idx, 'Error_95'] = (ObservationStats[2] - row['cr_kgh_CH4_mean'])/row['cr_kgh_CH4_mean']
+    
     return df
