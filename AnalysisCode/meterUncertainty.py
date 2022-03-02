@@ -40,6 +40,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from UnitConversion import SCFH2kgh, mph2ms, gps2kgh, kgh2SCFH
 
 # % !!!HARD CODE THESE HERE BUT THESE WILL BE FUNCTION ARGUMENTS IN PRACTICE !!!
 # InputReleaseRate = 10000
@@ -48,7 +49,7 @@ import matplotlib.pyplot as plt
 # TestLocation = 2
 # NumberMonteCarloDraws = 1000
 
-def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='scfh'):
+def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='kgh'):
     # Rename parameters if in non-integer form
     if MeterOption == 162928:
         MeterAgeOption = 0
@@ -71,42 +72,43 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     elif TestLocation == 'AZ':
         TestLocation = 1
 
-    # % % Section on meter noise
-
-    # % Table of fullscale flow lookup[scfh]
-    # % Pipe diameters are 2, 4, and 8 inch schedule 40 pipe
-    FullScaleFlowMeter1 = [27960, 106080, 416400]
-    FullScaleFlowMeter2 = [27960, 106080, 416400]
-    FullScaleFlowMeter3 = [22142, 84005, 329747]
-    FullScaleFlowTable = np.array([FullScaleFlowMeter1, FullScaleFlowMeter2, FullScaleFlowMeter3])
-
-    # % Look up the full scale flow for the meter and pipe combination in question
-    FullScaleForObservation = FullScaleFlowTable[MeterAgeOption, PipeDiamOption]
-
-    # % Fraction of full scale flow
-    FractionOfFullScale = np.divide(InputReleaseRate, FullScaleForObservation)
-
-    # % Table of uncertainty parameters for meter noise from Sierra
-    # % See pp. 11 - 14 pf Sierra meter documentation: https://www.sierrainstruments.com/userfiles/file/datasheets/technical/640i-780i-datasheet.pdf?x=1184
-
-    # % Qtherm gas calibration("8" calibration option for methane) is + / - 3 % of full scale
-    # % Actual gas calibration("8A" calibration option for methane is + / - 0.75 %
-    # % of reading at above 50 % of full scale, and 0.75 % of reading + 0.5 % of
-    # % full scale at below 50 % of full scale
-
-    # % Not clear in documentation, but we assume this is a 95 % CI, or 1.96 sigma uncertainty
-    # % on a normally distributed error, so divide by 1.96 to get 1 sigma (SD)
-    ErrorTermOfReading = np.array([0.00, 0.0075, 0.0075]) / 1.96
-    ErrorTermOfFullScaleAbove50 = np.array([0.03, 0, 0]) / 1.96
-    ErrorTermOfFullScaleBelow50 = np.array([0.03, 0.005, 0.005]) / 1.96
-
-    if FractionOfFullScale > 0.5:
-        ErrorTermOfFullScale = ErrorTermOfFullScaleAbove50
-    else:
-        ErrorTermOfFullScale = ErrorTermOfFullScaleBelow50
-
-    NoiseTermSDTable = ErrorTermOfReading * InputReleaseRate + ErrorTermOfFullScale * FullScaleForObservation
-    NoiseTermSD = NoiseTermSDTable[MeterAgeOption]
+    if MeterAgeOption <= 2:
+        # % % Section on meter noise
+    
+        # % Table of fullscale flow lookup[scfh]
+        # % Pipe diameters are 2, 4, and 8 inch schedule 40 pipe
+        FullScaleFlowMeter1 = [27960, 106080, 416400]
+        FullScaleFlowMeter2 = [27960, 106080, 416400]
+        FullScaleFlowMeter3 = [22142, 84005, 329747]
+        FullScaleFlowTable = np.array([FullScaleFlowMeter1, FullScaleFlowMeter2, FullScaleFlowMeter3])
+    
+        # % Look up the full scale flow for the meter and pipe combination in question
+        FullScaleForObservation = FullScaleFlowTable[MeterAgeOption, PipeDiamOption]
+    
+        # % Fraction of full scale flow
+        FractionOfFullScale = np.divide(InputReleaseRate, FullScaleForObservation)
+    
+        # % Table of uncertainty parameters for meter noise from Sierra
+        # % See pp. 11 - 14 pf Sierra meter documentation: https://www.sierrainstruments.com/userfiles/file/datasheets/technical/640i-780i-datasheet.pdf?x=1184
+    
+        # % Qtherm gas calibration("8" calibration option for methane) is + / - 3 % of full scale
+        # % Actual gas calibration("8A" calibration option for methane is + / - 0.75 %
+        # % of reading at above 50 % of full scale, and 0.75 % of reading + 0.5 % of
+        # % full scale at below 50 % of full scale
+    
+        # % Not clear in documentation, but we assume this is a 95 % CI, or 1.96 sigma uncertainty
+        # % on a normally distributed error, so divide by 1.96 to get 1 sigma (SD)
+        ErrorTermOfReading = np.array([0.00, 0.0075, 0.0075]) / 1.96
+        ErrorTermOfFullScaleAbove50 = np.array([0.03, 0, 0]) / 1.96
+        ErrorTermOfFullScaleBelow50 = np.array([0.03, 0.005, 0.005]) / 1.96
+    
+        if FractionOfFullScale > 0.5:
+            ErrorTermOfFullScale = ErrorTermOfFullScaleAbove50
+        else:
+            ErrorTermOfFullScale = ErrorTermOfFullScaleBelow50
+    
+        NoiseTermSDTable = ErrorTermOfReading * InputReleaseRate + ErrorTermOfFullScale * FullScaleForObservation
+        NoiseTermSD = NoiseTermSDTable[MeterAgeOption]
 
     # % % Section on meter bias
     #
@@ -193,6 +195,8 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             RealizedNoiseValue = (0 if InputReleaseRate == 0 else 316.92 * InputReleaseRate ** -0.969)
             RealizedNoiseValue = (RealizedNoiseValue/100)*InputReleaseRate
             
+            RealizedGasMoleFraction = GasMoleFractionObservations[np.random.randint(GasMoleFractionObservations.size)] # % [mol %]
+            
             # % Adjust for bias first by applying bias, then by applying noise, then
             # % by multiplying by the mole fraction of gas.Assume all are
             # % independent factors (e.g., methane mole fraction does not affect
@@ -208,8 +212,8 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             
     # Convert units to kgh if specified
     if units=='kgh':
-        ObservationRealizationHolder = ObservationRealizationHolder*0.016043/0.83656 # https://www.aqua-calc.com/calculate/volume-to-weight/substance/methane-coma-and-blank-gas
-        # 0.83656 comes from GPSA. Section 1 general information. In Engineering Data Book, 13th Edition (Electronic) Volume I II. United States, 2011.
+        # Use Unit Conversion Script
+        ObservationRealizationHolder = SCFH2kgh(ObservationRealizationHolder, T=21.1)
 
     # Plot histogram if desired
     if hist:

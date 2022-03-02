@@ -70,6 +70,21 @@ def gps2kgh(gps):
     """Convert mph to m/s"""
     return gps*(3600/1000)
 
+def gps2scfh(gps, T, P=101.325):
+    """Convert gps to scfh"""
+    kgh = gps*(3600/1000)
+    
+    M = 16.04  # molecular weight of methane (g/mol)
+    v = 22.4   # 22.4 L (@ 0 C, 1 atm)/1 mol
+    kv = 28.3168  # L/ft^3
+    km = 1000  # g/kg
+    Tratio = 273.15/(T+273.15)
+    Pratio = P/101.325
+    SCFH = kgh * (1/(M/km*kv/v*Tratio*Pratio))
+    
+    return SCFH
+
+
 def applyComposition(KGH, CH4_frac):
     """Apply composition correction to Alicat readings."""
     

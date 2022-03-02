@@ -162,17 +162,17 @@ def classifyDetections_Bridger(matchedDF):
             matchedDF.loc[idx, 'Detection'] = -1
         # False negatives occur if Bridger does not record a detection 
         # AND Stanford is releasing
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] > 0:
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
         # False positives occur if Bridger does record a detection 
         # AND Stanford is not releasing
         #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
         #2/21/2022 note, there are no FP results in data set
-        elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+        elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0            
         else:
@@ -193,20 +193,20 @@ def classifyDetections_CarbonMapper(matchedDF):
             matchedDF.loc[idx, 'Detection'] = -1
         # False negatives occur if Bridger does not record a detection 
         # AND Stanford is releasing
-        elif row['QC filter'] == 2 and row['cr_allmeters_kgh'] > 0:
+        elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
         # False positives occur if Bridger does record a detection 
         # AND Stanford is not releasing
         #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
         #2/21/2022 note, there are no FP results in data set
-        elif row['QC filter'] == 1 and row['cr_allmeters_kgh'] <= 0:
+        elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
         elif row['QC filter'] == 0 :
             matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
             matchedDF.loc[idx, 'Detection'] = -1
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0 
         else:
@@ -227,20 +227,20 @@ def classifyDetections_GHGSat(matchedDF):
             matchedDF.loc[idx, 'Detection'] = -1
         # False negatives occur if Bridger does not record a detection 
         # AND Stanford is releasing
-        elif row['QC filter'] == 2 and row['cr_allmeters_kgh'] > 0:
+        elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
         # False positives occur if Bridger does record a detection 
         # AND Stanford is not releasing
         #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
         #2/21/2022 note, there are no FP results in data set
-        elif row['QC filter'] == 1 and row['cr_allmeters_kgh'] <= 0:
+        elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
         elif row['QC filter'] == 0 :
             matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
             matchedDF.loc[idx, 'Detection'] = -1
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_kgh'] <= 0:
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0 
         else:
@@ -298,17 +298,17 @@ def setFlowError(df):
 
 def assessUncertainty(df):
     # (InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='kgh'):
-    df['Error_mean'] = np.nan
-    df['Error_2.5'] = np.nan
-    df['Error_95'] = np.nan
+    df['cr_kgh_CH4_mean'] = np.nan
+    df['cr_kgh_CH4_lower'] = np.nan
+    df['cr_kgh_CH4_upper'] = np.nan
     
     for idx, row in df.iterrows():
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
                                                                                                   NumberMonteCarloDraws = 1000, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
-        df.loc[idx, 'Error_mean'] = (ObservationStats[0] - row['cr_kgh_CH4_mean'])/row['cr_kgh_CH4_mean']
-        df.loc[idx, 'Error_2.5'] = (ObservationStats[1] - row['cr_kgh_CH4_mean'])/row['cr_kgh_CH4_mean']
-        df.loc[idx, 'Error_95'] = (ObservationStats[2] - row['cr_kgh_CH4_mean'])/row['cr_kgh_CH4_mean']
+        df.loc[idx, 'cr_kgh_CH4_mean'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper'] = ObservationStats[2]
     
     return df
