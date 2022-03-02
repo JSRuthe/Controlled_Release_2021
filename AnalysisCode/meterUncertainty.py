@@ -57,16 +57,7 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     elif MeterOption == 308188:
         MeterAgeOption = 2
     elif MeterOption == 21175085:
-        Coriolis_Mean_Accuracy = (0 if InputReleaseRate == 0 else 316.92 * InputReleaseRate ** -0.969)
-        #Coriolis_Mean_Accuracy = 6.8711 * InputReleaseRate ** -0.969
-        #Coriolis_Mean_Accuracy = Coriolis_Mean_Accuracy*0.016043/0.83656 # Convert to kgh
-        #Coriolis_Mean_Accuracy = Coriolis_Mean_Accuracy * 0.955 # Convert to kgh CH4
-        Coriolis_Mean_Accuracy_Norm = Coriolis_Mean_Accuracy / 100
-        Coriolis_Mean_Accuracy = (InputReleaseRate*(0.016043* 0.955)/0.83656) * (1 + Coriolis_Mean_Accuracy_Norm)
-        ObservationStats =np.array([Coriolis_Mean_Accuracy,InputReleaseRate,InputReleaseRate])
-        ObservationStatsNormed =np.array([Coriolis_Mean_Accuracy_Norm,0,0])
-        ObservationRealizationHolder = np.nan
-        return ObservationStats, ObservationStatsNormed, ObservationRealizationHolder
+        MeterAgeOption = 3
 
     if PipeDiamOption == 2:
         PipeDiamOption = 0
@@ -179,23 +170,42 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
 
     # % Perform the monte carlo draws
     for ii in np.arange(1, NumberMonteCarloDraws):
-               # % Draw the relevant parameters
-        RealizedBiasValue = BiasObservations[np.random.randint(BiasObservations.size)] # % [fractional multipler]
-        RealizedNoiseValue = np.random.normal(0, NoiseTermSD) # % [scfh]
-        RealizedGasMoleFraction = GasMoleFractionObservations[np.random.randint(GasMoleFractionObservations.size)] # % [mol %]
-
-        # % Adjust for bias first by applying bias, then by applying noise, then
-        # % by multiplying by the mole fraction of gas.Assume all are
-        # % independent factors (e.g., methane mole fraction does not affect
-        # meter bias)
-        BiasAdjustedReleaseRate = InputReleaseRate * RealizedBiasValue
-        BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue
-        ObservationRealization = BiasAndNoiseAdjustedReleaseRate * RealizedGasMoleFraction
-
-        # % Retain the value in the loop into the holder array
-        # % Estimated SCFH of actual methane
-        ObservationRealizationHolder[ii] = ObservationRealization
-
+        if MeterAgeOption <= 2:
+            # % Draw the relevant parameters
+            RealizedBiasValue = BiasObservations[np.random.randint(BiasObservations.size)] # % [fractional multipler]
+            RealizedNoiseValue = np.random.normal(0, NoiseTermSD) # % [scfh]
+            RealizedGasMoleFraction = GasMoleFractionObservations[np.random.randint(GasMoleFractionObservations.size)] # % [mol %]
+    
+            # % Adjust for bias first by applying bias, then by applying noise, then
+            # % by multiplying by the mole fraction of gas.Assume all are
+            # % independent factors (e.g., methane mole fraction does not affect
+            # meter bias)
+            BiasAdjustedReleaseRate = InputReleaseRate * RealizedBiasValue
+            BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue
+            ObservationRealization = BiasAndNoiseAdjustedReleaseRate * RealizedGasMoleFraction
+    
+            # % Retain the value in the loop into the holder array
+            # % Estimated SCFH of actual methane
+            ObservationRealizationHolder[ii] = ObservationRealization
+        else:
+            # Coriolis uncertainty
+            RealizedBiasValue = 1
+            RealizedNoiseValue = (0 if InputReleaseRate == 0 else 316.92 * InputReleaseRate ** -0.969)
+            RealizedNoiseValue = (RealizedNoiseValue/100)*InputReleaseRate
+            
+            # % Adjust for bias first by applying bias, then by applying noise, then
+            # % by multiplying by the mole fraction of gas.Assume all are
+            # % independent factors (e.g., methane mole fraction does not affect
+            # meter bias)
+            BiasAdjustedReleaseRate = InputReleaseRate * RealizedBiasValue
+            BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue
+            ObservationRealization = BiasAndNoiseAdjustedReleaseRate * RealizedGasMoleFraction
+    
+            # % Retain the value in the loop into the holder array
+            # % Estimated SCFH of actual methane
+            ObservationRealizationHolder[ii] = ObservationRealization
+            
+            
     # Convert units to kgh if specified
     if units=='kgh':
         ObservationRealizationHolder = ObservationRealizationHolder*0.016043/0.83656 # https://www.aqua-calc.com/calculate/volume-to-weight/substance/methane-coma-and-blank-gas
