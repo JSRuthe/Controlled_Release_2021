@@ -826,7 +826,7 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
     idx_18  = pd.date_range("2021.10.18 16:55:46", periods = 9199, freq = "s")
     idx_18 = idx_18.tz_localize(pytz.utc)
     idx_18 = idx_18.to_frame(index = True)
-    idx_19  = pd.date_range("2021.10.19 17:45:23", periods = 10117, freq = "s")
+    idx_19  = pd.date_range("2021.10.19 17:40:00", periods = 10439, freq = "s")
     idx_19 = idx_19.tz_localize(pytz.utc)
     idx_19 = idx_19.to_frame(index = True)
     idx_20  = pd.date_range("2021.10.20 17:43:28", periods = 11648, freq = "s")
