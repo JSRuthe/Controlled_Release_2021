@@ -18,7 +18,8 @@ def loaddata():
     # load Bridger data processed with HRRR wind
     print("Loading Bridger HRRR data (Stanford)...")
     bridgerHRRR_path = os.path.join(DataPath, 'XOM0011 Stanford CR - HRRR.xlsx')
-    bridgerHRRRDF = loadBridgerData(bridgerHRRR_path)
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    bridgerHRRRDF = loadBridgerData(bridgerHRRR_path, timestamp_path)
     bridgerHRRRDF['WindType'] = 'HRRR'
     bridgerHRRRDF['OperatorSet'] = 'Bridger'
     bridgerHRRRDF = bridgerHRRRDF[bridgerHRRRDF['EquipmentUnitID'] == 33931]
@@ -26,7 +27,8 @@ def loaddata():
     # load Bridger data processed with NAM12 wind
     print("Loading Bridger NAM12 data (Stanford)...")
     bridgerNAM12_path = os.path.join(DataPath, 'XOM0011 Stanford CR - NAM12.xlsx')
-    bridgerNAM12DF = loadBridgerData(bridgerNAM12_path)
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    bridgerNAM12DF = loadBridgerData(bridgerNAM12_path, timestamp_path)
     bridgerNAM12DF['WindType'] = 'NAM12'
     bridgerNAM12DF['OperatorSet'] = 'Bridger'
     bridgerNAM12DF = bridgerNAM12DF[bridgerNAM12DF['EquipmentUnitID'] == 33931]
@@ -34,7 +36,8 @@ def loaddata():
     # load Bridger data processed with sonic wind
     print("Loading Bridger Sonic data (Stanford)...")
     bridgerSonic_path = os.path.join(DataPath, 'XOM0011 Stanford CR - Anemometer.xlsx')
-    bridgerSonicDF = loadBridgerData(bridgerSonic_path)
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    bridgerSonicDF = loadBridgerData(bridgerSonic_path, timestamp_path)
     bridgerSonicDF['WindType'] = 'Sonic'
     bridgerSonicDF['OperatorSet'] = 'Bridger'
     bridgerSonicDF = bridgerSonicDF[bridgerSonicDF['EquipmentUnitID'] == 33931]
@@ -55,7 +58,8 @@ def loaddata():
     # load Carbon Mapper \data processed with NASA-GEOS wind
     print("Loading Carbon Mapper data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission.csv')
-    CarbonMapperR1DF = loadCarbonMapperData(CarbonMapper_path)
+    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv')    
+    CarbonMapperR1DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR1DF['WindType'] = 'NASA-GEOS'
     CarbonMapperR1DF['OperatorSet'] = 'CarbonMapper'
     #CarbonMapperDF = bridgerHRRRDF[bridgerHRRRDF['Emission Location Id'] == 33931]
@@ -63,7 +67,8 @@ def loaddata():
     # load Carbon Mapper data processed with Sonic wind
     print("Loading Carbon Mapper data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission_PostPhase1.csv')
-    CarbonMapperR2DF = loadCarbonMapperData(CarbonMapper_path)
+    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv') 
+    CarbonMapperR2DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR2DF['WindType'] = 'Sonic'
     CarbonMapperR2DF['OperatorSet'] = 'CarbonMapper'
     #CarbonMapperDF = bridgerHRRRDF[bridgerHRRRDF['Emission Location Id'] == 33931]  
@@ -91,6 +96,7 @@ def loaddata():
     # load GHGSat data processed with Sonic wind
     print("Loading GHGSat data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report_Stage2.csv')
+
     GHGSatR2DF = loadGHGSatData(GHGSat_path)
     GHGSatR2DF['WindType'] = 'Sonic'
     GHGSatR2DF['OperatorSet'] = 'GHGSat'
@@ -145,7 +151,7 @@ def loaddata():
     
     return operatorDF, meterDF_All, sonicDF_All
     
-def loadBridgerData(filepath):
+def loadBridgerData(filepath, timestamp_path):
     """Load bridger data from report and format datetimes."""
     dfraw = pd.read_excel(filepath, sheet_name='emitter_group_scan', skiprows=4, engine='openpyxl')
     # convert datetime data to a datetime object; format: 04-Oct-2021 18:34:31
@@ -194,15 +200,26 @@ def loadBridgerData(filepath):
     df["EquipmentUnitID"] = dfraw["Emission Location Id"]
     
     df.rename(columns={'Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
-   
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+    
     # Bridger reported additional rows for emissions from the Rawhide trailer. Select only rows where emission Location
     # ID = 33931 (the release point) and ignore rows where emission point is the leaky trailer
     df = df.loc[df['EquipmentUnitID'] == 33931] 
     
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
+        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
+    
+    tol = pd.Timedelta('1 minute')
+    df = pd.merge_asof(left=df.sort_values('Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Timestamp',direction='nearest',tolerance=tol)
+    df['Timestamp_merge_UTC'] = df['Stanford_timestamp']       
+    df.loc[df["Timestamp_merge_UTC"].isnull(),'Timestamp_merge_UTC'] = df["Timestamp"]
     
     return df
 
-def loadCarbonMapperData(filepath):
+def loadCarbonMapperData(filepath, timestamp_path):
     """Load Carbon Mapper data from report and format datetimes."""
     
     #df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
@@ -229,6 +246,19 @@ def loadCarbonMapperData(filepath):
 
 
     df['Timestamp'] = df['Timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
+        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps['Stanford_timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
+    
+    tol = pd.Timedelta('1 minute')
+    df = pd.merge_asof(left=df.sort_values('Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Timestamp',direction='nearest',tolerance=tol)
+    df['Timestamp_merge_UTC'] = df['Stanford_timestamp']       
+    df.loc[df["Timestamp_merge_UTC"].isnull(),'Timestamp_merge_UTC'] = df["Timestamp"]
+    
     
     return df
 

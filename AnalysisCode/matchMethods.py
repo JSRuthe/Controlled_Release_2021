@@ -93,7 +93,7 @@ def matchPassToQuadratherm(operatorDF, meterDF_All):
     
     matchedDF = pd.DataFrame()  # makae empty df to store results
     operatorDF['Timestamp'] = pd.to_datetime(operatorDF['Timestamp'])
-    matchedDF = operatorDF.merge(meterDF_All, left_on = ['Timestamp'], right_index = True)
+    matchedDF = operatorDF.merge(meterDF_All, left_on = ['Timestamp_merge_UTC'], right_index = True)
 
     return matchedDF
 
