@@ -87,7 +87,8 @@ def loaddata():
     # load GHGSat data processed with NASA-GEOS wind
     print("Loading GHGSat data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report.csv')
-    GHGSatR1DF = loadGHGSatData(GHGSat_path)
+    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
+    GHGSatR1DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR1DF['WindType'] = 'NASA-GEOS'
     GHGSatR1DF['OperatorSet'] = 'GHGSat'
     
@@ -96,8 +97,8 @@ def loaddata():
     # load GHGSat data processed with Sonic wind
     print("Loading GHGSat data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report_Stage2.csv')
-
-    GHGSatR2DF = loadGHGSatData(GHGSat_path)
+    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
+    GHGSatR2DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR2DF['WindType'] = 'Sonic'
     GHGSatR2DF['OperatorSet'] = 'GHGSat'
     
@@ -262,7 +263,7 @@ def loadCarbonMapperData(filepath, timestamp_path):
     
     return df
 
-def loadGHGSatData(filepath):
+def loadGHGSatData(filepath, timestamp_path):
     """Load GHGSat data from report and format datetimes."""
     #df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
     df = pd.read_csv(filepath, parse_dates=[['DateOfSurvey', 'Timestamp (hyperspectral technologies only)']])
@@ -302,6 +303,18 @@ def loadGHGSatData(filepath):
     df['Timestamp'] = df.apply(
         lambda x: pd.NA if pd.isna(x['Timestamp']) else
         x['Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
+        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
+    
+    tol = pd.Timedelta('1 minute')
+    df = pd.merge_asof(left=df.sort_values('Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Timestamp',direction='nearest',tolerance=tol)
+    df['Timestamp_merge_UTC'] = df['Stanford_timestamp']       
+    df.loc[df["Timestamp_merge_UTC"].isnull(),'Timestamp_merge_UTC'] = df["Timestamp"]
+    
 
     return df
 
@@ -676,7 +689,7 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
     #Quad_data_4["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_4["cr_allmeters_kgh"], CH4_frac)     
     Quad_data_4['cr_allmeters_scfh'] = gps2scfh(Quad_data_4['cr_Coriolis_gps'], T=21.1)
     
-    OCR_5_path = os.path.join(DataPath, '211020_2_release_dat.csv')
+    OCR_5_path = os.path.join(DataPath, '211020_2_release_dat_ocrcorrections.csv')
     Quad_data_5 = pd.read_csv(OCR_5_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
     Quad_data_5['datetime_local'] = pd.to_datetime(Quad_data_5['datetime_local'])
     Quad_data_5['datetime_local'] = Quad_data_5.apply(
