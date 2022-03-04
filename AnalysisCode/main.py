@@ -25,6 +25,9 @@ matchedDF_GHGSat.to_csv(csvPath)
 csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper.csv')
 matchedDF_CarbonMapper.to_csv(csvPath)
 
+csvPath = os.path.join(cwd, 'meterDF_All.csv')
+meterDF_All.to_csv(csvPath)
+
     # write matched results to csv
 #    cwd = os.getcwd()
 

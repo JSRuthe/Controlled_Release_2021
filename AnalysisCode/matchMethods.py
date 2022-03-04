@@ -30,7 +30,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_Bridger = sonicDF_All[sonicDF_All['OperatorSet'] == 'Bridger']
     matchedDF_Bridger = checkPlumes(DataPath, matchedDF_Bridger, sonicDF_Bridger, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv', 
-                                                                                minPlumeLength = 64,
+                                                                                minPlumeLength = 150,
                                                                                 cr_averageperiod_sec = 64,
                                                                                 CH4_frac = 0.9627)
     print("Classifying detections Bridger...")
@@ -45,7 +45,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_GHGSat = sonicDF_All[sonicDF_All['OperatorSet'] == 'GHGSat']    
     matchedDF_GHGSat = checkPlumes(DataPath, matchedDF_GHGSat, sonicDF_GHGSat, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv',                                                 
-                                                                                minPlumeLength = 90,
+                                                                                minPlumeLength = 150,
                                                                                 cr_averageperiod_sec = 90,
                                                                                 CH4_frac = 0.9522)
     print("Classifying detections GHGSat...")
@@ -60,7 +60,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_CarbonMapper = sonicDF_All[sonicDF_All['OperatorSet'] == 'CarbonMapper']    
     matchedDF_CarbonMapper = checkPlumes(DataPath, matchedDF_CarbonMapper, sonicDF_CarbonMapper, 
                                                                                 tstamp_file = 'transition_stamps.csv',                                          
-                                                                                minPlumeLength = 90,
+                                                                                minPlumeLength = 150,
                                                                                 cr_averageperiod_sec = 90,
                                                                                 CH4_frac = 0.859152)
 
@@ -147,8 +147,15 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
     # check if plume is established
     matchedDF['PlumeEstablished'] = matchedDF.apply(lambda x: establishedPlume(x['PlumeLength_m'], minPlumeLength), axis=1)
     
+    matchedDF['PlumeSteady'] = matchedDF.apply(lambda x: steadyPlume(x['cr_scfh_mean60'], x['cr_allmeters_scfh']), axis=1)
+    
     return matchedDF
 
+def DivZeroCheck(x,y):
+    try:
+        return x/y
+    except ZeroDivisionError:
+        return 0
 
 def classifyDetections_Bridger(matchedDF):
     """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
@@ -174,7 +181,10 @@ def classifyDetections_Bridger(matchedDF):
             matchedDF.loc[idx, 'Detection'] = 0
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
-            matchedDF.loc[idx, 'Detection'] = 0            
+            matchedDF.loc[idx, 'Detection'] = 0     
+        elif not row['PlumeSteady']:
+            matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
+            matchedDF.loc[idx, 'Detection'] = 0  
         else:
             matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
             matchedDF.loc[idx, 'Detection'] = 1
@@ -209,6 +219,9 @@ def classifyDetections_CarbonMapper(matchedDF):
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0 
+        elif not row['PlumeSteady']:
+            matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
+            matchedDF.loc[idx, 'Detection'] = 0  
         else:
             matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
             matchedDF.loc[idx, 'Detection'] = 1
@@ -243,6 +256,9 @@ def classifyDetections_GHGSat(matchedDF):
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0 
+        elif not row['PlumeSteady']:
+            matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
+            matchedDF.loc[idx, 'Detection'] = 0  
         else:
             matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
             matchedDF.loc[idx, 'Detection'] = 1
@@ -277,6 +293,14 @@ def establishedPlume(plumeLength_m, mThreshold):
         return True
     else:
         return False
+
+def steadyPlume(meanPlume, instantPlume):
+    #x = abs(1 - DivZeroCheck(meanPlume,instantPlume))
+    #return x
+    if abs(1 - DivZeroCheck(meanPlume,instantPlume)) > 0.1:
+        return False
+    else:
+        return True
 
 def setNominalAltitude(df):
     """set nominal altitude to 500' agl or 675' agl. """
