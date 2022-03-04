@@ -298,17 +298,41 @@ def setFlowError(df):
 
 def assessUncertainty(df):
     # (InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='kgh'):
-    df['cr_kgh_CH4_mean'] = np.nan
-    df['cr_kgh_CH4_lower'] = np.nan
-    df['cr_kgh_CH4_upper'] = np.nan
+    df['cr_kgh_CH4_mean30'] = np.nan
+    df['cr_kgh_CH4_lower30'] = np.nan
+    df['cr_kgh_CH4_upper30'] = np.nan
+    df['cr_kgh_CH4_mean60'] = np.nan
+    df['cr_kgh_CH4_lower60'] = np.nan
+    df['cr_kgh_CH4_upper60'] = np.nan
+    df['cr_kgh_CH4_mean90'] = np.nan
+    df['cr_kgh_CH4_lower90'] = np.nan
+    df['cr_kgh_CH4_upper90'] = np.nan    
     
     for idx, row in df.iterrows():
-        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
-                                                                                                  NumberMonteCarloDraws = 1000, 
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean30'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  NumberMonteCarloDraws = 10000, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
-        df.loc[idx, 'cr_kgh_CH4_mean'] = ObservationStats[0]
-        df.loc[idx, 'cr_kgh_CH4_lower'] = ObservationStats[1]
-        df.loc[idx, 'cr_kgh_CH4_upper'] = ObservationStats[2]
+        df.loc[idx, 'cr_kgh_CH4_mean30'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower30'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper30'] = ObservationStats[2]
+
+    for idx, row in df.iterrows():
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean60'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  NumberMonteCarloDraws = 10000, 
+                                                                                                  hist=0, 
+                                                                                                  units='kgh')
+        df.loc[idx, 'cr_kgh_CH4_mean60'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower60'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper60'] = ObservationStats[2]
+
+    for idx, row in df.iterrows():
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean90'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  NumberMonteCarloDraws = 10000, 
+                                                                                                  hist=0, 
+                                                                                                  units='kgh')
+        df.loc[idx, 'cr_kgh_CH4_mean90'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower90'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper90'] = ObservationStats[2]
     
     return df
