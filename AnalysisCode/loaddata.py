@@ -247,7 +247,7 @@ def loadBridgerData(filepath, timestamp_path):
     
     tol = pd.Timedelta('1 minute')
     df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
-    df['Stanford_timestamp'] = df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
+    df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
     return df
 
@@ -284,12 +284,13 @@ def loadCarbonMapperData(filepath, timestamp_path):
     StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
     StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
-        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps['Stanford_timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
     #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
     
     tol = pd.Timedelta('1 minute')
     df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
-    df['Stanford_timestamp'] = df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
+    df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
     
     return df
@@ -343,7 +344,7 @@ def loadGHGSatData(filepath, timestamp_path):
     
     tol = pd.Timedelta('1 minute')
     df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
-    df['Stanford_timestamp'] = df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
+    df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
 
     return df

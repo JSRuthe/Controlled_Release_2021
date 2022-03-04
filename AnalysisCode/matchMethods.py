@@ -30,9 +30,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_Bridger = sonicDF_All[sonicDF_All['OperatorSet'] == 'Bridger']
     matchedDF_Bridger = checkPlumes(DataPath, matchedDF_Bridger, sonicDF_Bridger, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv', 
-                                                                                minPlumeLength = 150,
-                                                                                cr_averageperiod_sec = 64,
-                                                                                CH4_frac = 0.9627)
+                                                                                minPlumeLength = 150)
     print("Classifying detections Bridger...")
     matchedDF_Bridger = classifyDetections_Bridger(matchedDF_Bridger)  # assign TP, FN, and NE classifications
 
@@ -45,9 +43,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_GHGSat = sonicDF_All[sonicDF_All['OperatorSet'] == 'GHGSat']    
     matchedDF_GHGSat = checkPlumes(DataPath, matchedDF_GHGSat, sonicDF_GHGSat, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv',                                                 
-                                                                                minPlumeLength = 150,
-                                                                                cr_averageperiod_sec = 90,
-                                                                                CH4_frac = 0.9522)
+                                                                                minPlumeLength = 150)
     print("Classifying detections GHGSat...")
     matchedDF_GHGSat = classifyDetections_GHGSat(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
             
@@ -60,9 +56,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_CarbonMapper = sonicDF_All[sonicDF_All['OperatorSet'] == 'CarbonMapper']    
     matchedDF_CarbonMapper = checkPlumes(DataPath, matchedDF_CarbonMapper, sonicDF_CarbonMapper, 
                                                                                 tstamp_file = 'transition_stamps.csv',                                          
-                                                                                minPlumeLength = 150,
-                                                                                cr_averageperiod_sec = 90,
-                                                                                CH4_frac = 0.859152)
+                                                                                minPlumeLength = 150)
 
     print("Classifying detections CarbonMapper...")
     matchedDF_CarbonMapper = classifyDetections_CarbonMapper(matchedDF_CarbonMapper)  # assign TP, FN, and NE classifications
@@ -99,9 +93,7 @@ def matchPassToQuadratherm(operatorDF, meterDF_All):
 
 def checkPlumes(DataPath, matchedDF, sonicDF,       
                                                                     tstamp_file,                                                     
-                                                                    minPlumeLength,
-                                                                    cr_averageperiod_sec,
-                                                                    CH4_frac):
+                                                                    minPlumeLength):
     
     
     """Calculates a plume length and compares to threshold for established plume
