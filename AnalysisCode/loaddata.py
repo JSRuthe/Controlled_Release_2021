@@ -13,34 +13,45 @@ def loaddata():
     """Load all data from Midland testing"""
     
     cwd = os.getcwd()    
+    
+    # load Bridger data 
     DataPath = os.path.join(cwd, 'BridgerTestData')    
 
-    # load Bridger data processed with HRRR wind
-    print("Loading Bridger HRRR data (Stanford)...")
+    print("Loading Bridger Stage 1 (HRRR) data ...")
     bridgerHRRR_path = os.path.join(DataPath, 'XOM0011 Stanford CR - HRRR.xlsx')
     timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
     bridgerHRRRDF = loadBridgerData(bridgerHRRR_path, timestamp_path)
     bridgerHRRRDF['WindType'] = 'HRRR'
     bridgerHRRRDF['OperatorSet'] = 'Bridger'
     bridgerHRRRDF = bridgerHRRRDF[bridgerHRRRDF['EquipmentUnitID'] == 33931]
+    bridgerHRRRDF['UnblindingStage'] = 1
 
-    # load Bridger data processed with NAM12 wind
-    print("Loading Bridger NAM12 data (Stanford)...")
+    print("Loading Bridger Stage 1 (NAM12) data ...")
     bridgerNAM12_path = os.path.join(DataPath, 'XOM0011 Stanford CR - NAM12.xlsx')
     timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
     bridgerNAM12DF = loadBridgerData(bridgerNAM12_path, timestamp_path)
     bridgerNAM12DF['WindType'] = 'NAM12'
     bridgerNAM12DF['OperatorSet'] = 'Bridger'
     bridgerNAM12DF = bridgerNAM12DF[bridgerNAM12DF['EquipmentUnitID'] == 33931]
+    bridgerNAM12DF['UnblindingStage'] = 1
 
-    # load Bridger data processed with sonic wind
-    print("Loading Bridger Sonic data (Stanford)...")
+    print("Loading Bridger Stage 2 data ...")
     bridgerSonic_path = os.path.join(DataPath, 'XOM0011 Stanford CR - Anemometer.xlsx')
     timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
     bridgerSonicDF = loadBridgerData(bridgerSonic_path, timestamp_path)
     bridgerSonicDF['WindType'] = 'Sonic'
     bridgerSonicDF['OperatorSet'] = 'Bridger'
     bridgerSonicDF = bridgerSonicDF[bridgerSonicDF['EquipmentUnitID'] == 33931]
+    bridgerSonicDF['UnblindingStage'] = 2
+
+    print("Loading Bridger Stage 3 data ...")
+    bridgerSonic_path = os.path.join(DataPath, 'XOM0011 Stanford CR - Stage 3.xlsx')
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    bridgerR3DF = loadBridgerData(bridgerSonic_path, timestamp_path)
+    bridgerR3DF['WindType'] = 'Sonic'
+    bridgerR3DF['OperatorSet'] = 'Bridger'
+    bridgerR3DF = bridgerR3DF[bridgerR3DF['EquipmentUnitID'] == 33931]
+    bridgerR3DF['UnblindingStage'] = 3
 
     # append Bridger data into single DF
     bridgerDF = pd.concat([bridgerHRRRDF, bridgerNAM12DF, bridgerSonicDF], ignore_index=True)
@@ -52,28 +63,34 @@ def loaddata():
     #bridgerDF = bridgerDF.drop(bridgerDF.index[[0,1,116,117]])
     bridgerDF = bridgerDF.reset_index()    
 
-
+    # load Carbon Mapper data
     DataPath = os.path.join(cwd, 'CarbonMapperTestData')    
 
-    # load Carbon Mapper \data processed with NASA-GEOS wind
-    print("Loading Carbon Mapper data...")
+    print("Loading Carbon Mapper Stage 1 data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission.csv')
     timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv')    
     CarbonMapperR1DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR1DF['WindType'] = 'NASA-GEOS'
     CarbonMapperR1DF['OperatorSet'] = 'CarbonMapper'
-    #CarbonMapperDF = bridgerHRRRDF[bridgerHRRRDF['Emission Location Id'] == 33931]
-
-    # load Carbon Mapper data processed with Sonic wind
-    print("Loading Carbon Mapper data...")
+    CarbonMapperR1DF['UnblindingStage'] = 1 
+    
+    print("Loading Carbon Mapper Stage 2 data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission_PostPhase1.csv')
     timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv') 
     CarbonMapperR2DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR2DF['WindType'] = 'Sonic'
-    CarbonMapperR2DF['OperatorSet'] = 'CarbonMapper'
-    #CarbonMapperDF = bridgerHRRRDF[bridgerHRRRDF['Emission Location Id'] == 33931]  
+    CarbonMapperR2DF['OperatorSet'] = 'CarbonMapper' 
+    CarbonMapperR2DF['UnblindingStage'] = 2 
 
-    CarbonMapperDF = pd.concat([CarbonMapperR1DF, CarbonMapperR2DF], ignore_index=True)
+    print("Loading Carbon Mapper Stage 3 data...")
+    CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission_Phase3.csv')
+    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv') 
+    CarbonMapperR3DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
+    CarbonMapperR3DF['WindType'] = 'Sonic'
+    CarbonMapperR3DF['OperatorSet'] = 'CarbonMapper' 
+    CarbonMapperR3DF['UnblindingStage'] = 3 
+    
+    CarbonMapperDF = pd.concat([CarbonMapperR1DF, CarbonMapperR2DF, CarbonMapperR3DF], ignore_index=True)
 
     # Delete rows where Carbon Mapper passed over before Stanford was prepared to release
     date_cutoff = pd.to_datetime('2021.07.30 15:32:00')
@@ -84,27 +101,39 @@ def loaddata():
    
     DataPath = os.path.join(cwd, 'GHGSatTestData')    
 
-    # load GHGSat data processed with NASA-GEOS wind
-    print("Loading GHGSat data...")
+    # load GHGSat data 
+    print("Loading GHGSat Stage 1 data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report.csv')
     timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
     GHGSatR1DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR1DF['WindType'] = 'NASA-GEOS'
     GHGSatR1DF['OperatorSet'] = 'GHGSat'
+    GHGSatR1DF['UnblindingStage'] = 1
     
     GHGSatR1DF = GHGSatR1DF.drop(GHGSatR1DF[(GHGSatR1DF['EquipmentUnitID'] == 2)].index)
 
-    # load GHGSat data processed with Sonic wind
-    print("Loading GHGSat data...")
+    print("Loading GHGSat Stage 2 data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report_Stage2.csv')
     timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
     GHGSatR2DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR2DF['WindType'] = 'Sonic'
     GHGSatR2DF['OperatorSet'] = 'GHGSat'
+    GHGSatR2DF['UnblindingStage'] = 2
     
     GHGSatR2DF = GHGSatR2DF.drop(GHGSatR2DF[(GHGSatR2DF['EquipmentUnitID'] == 2)].index)
+
+    print("Loading GHGSat Stage 3 data...")
+    GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report_Stage3.csv')
+    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
+    GHGSatR3DF = loadGHGSatData(GHGSat_path, timestamp_path)
+    GHGSatR3DF['WindType'] = 'Sonic'
+    GHGSatR3DF['OperatorSet'] = 'GHGSat'
+    GHGSatR3DF['UnblindingStage'] = 3
+    GHGSatR3DF = GHGSatR3DF.loc[:, ~GHGSatR3DF.columns.str.contains('^Unnamed')]
     
-    GHGSatDF = pd.concat([GHGSatR1DF, GHGSatR2DF], ignore_index=True)
+    GHGSatR3DF = GHGSatR3DF.drop(GHGSatR3DF[(GHGSatR3DF['EquipmentUnitID'] == 2)].index)
+    
+    GHGSatDF = pd.concat([GHGSatR1DF, GHGSatR2DF, GHGSatR3DF], ignore_index=True)
     
     operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF], ignore_index=True)    
     
@@ -234,6 +263,8 @@ def loadCarbonMapperData(filepath, timestamp_path):
     # Therfore, filter out blank rows in the spreadsheet by removing rows with 
     # null QC_filter
     # (Jeff - Need to verify)
+    
+    # QC filter = 1 was manually added to Carbon Mapper for rounds 2 and 3
     
     df['Operator_Timestamp'].fillna(value=np.nan, inplace=True)
     df = df[df["QC filter"].notnull()]
