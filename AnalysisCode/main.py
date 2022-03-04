@@ -2,7 +2,7 @@
 
 from loaddata import loaddata
 from matchMethods import performMatching
-
+import pandas as pd
 import os
 
 cwd = os.getcwd()
@@ -57,6 +57,13 @@ matchedDF_CarbonMapper_toTeam = matchedDF_CarbonMapper.reindex(cols)
 csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_unblindedToCM.csv')
 matchedDF_CarbonMapper_toTeam.to_csv(csvPath)
 
+date_start = pd.to_datetime('2021.07.30 00:00:00')
+date_start = date_start.tz_localize('UTC')
+date_end = pd.to_datetime('2021.08.04 00:00:00')
+date_end = date_end.tz_localize('UTC')
+meterDF_CarbonMapper_toTeam = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+csvPath = os.path.join(cwd, 'meterDF_CarbonMapper_unblindedToCM.csv')
+meterDF_CarbonMapper_toTeam.to_csv(csvPath)
 
     # write matched results to csv
 #    cwd = os.getcwd()
