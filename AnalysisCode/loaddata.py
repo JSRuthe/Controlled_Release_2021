@@ -48,7 +48,7 @@ def loaddata():
     # Delete rows where Bridger passed over before Stanford was prepared to release
     date_cutoff = pd.to_datetime('2021.11.03 17:38:06')
     date_cutoff = date_cutoff.tz_localize('UTC')
-    bridgerDF = bridgerDF.drop(bridgerDF[(bridgerDF['Timestamp'] < date_cutoff)].index)
+    bridgerDF = bridgerDF.drop(bridgerDF[(bridgerDF['Operator_Timestamp'] < date_cutoff)].index)
     #bridgerDF = bridgerDF.drop(bridgerDF.index[[0,1,116,117]])
     bridgerDF = bridgerDF.reset_index()    
 
@@ -78,7 +78,7 @@ def loaddata():
     # Delete rows where Carbon Mapper passed over before Stanford was prepared to release
     date_cutoff = pd.to_datetime('2021.07.30 15:32:00')
     date_cutoff = date_cutoff.tz_localize('UTC')
-    CarbonMapperDF = CarbonMapperDF.drop(CarbonMapperDF[(CarbonMapperDF['Timestamp'] < date_cutoff)].index)
+    CarbonMapperDF = CarbonMapperDF.drop(CarbonMapperDF[(CarbonMapperDF['Operator_Timestamp'] < date_cutoff)].index)
     #bridgerDF = bridgerDF.drop(bridgerDF.index[[0,1,116,117]])
     CarbonMapperDF = CarbonMapperDF.reset_index()    
    
@@ -113,17 +113,20 @@ def loaddata():
     # load Bridger quadratherm data
     print("Loading Bridger Quadratherm data...")
     DataPath = os.path.join(cwd, 'BridgerTestData') 
-    meterDF_Bridger = loadMeterData_Bridger(DataPath, cr_averageperiod_sec = 65, CH4_frac = 0.9627)
+    #meterDF_Bridger = loadMeterData_Bridger(DataPath, cr_averageperiod_sec = 65, CH4_frac = 0.9627)
+    meterDF_Bridger = loadMeterData_Bridger(DataPath)
     
     # load Carbon Mapper quadratherm data
     print("Loading Carbon Mapper Quadratherm data...")
     DataPath = os.path.join(cwd, 'CarbonMapperTestData')  
-    meterDF_CarbonMapper = loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec = 90, CH4_frac = 0.859152)
-        
+    #meterDF_CarbonMapper = loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec = 90, CH4_frac = 0.859152)
+    meterDF_CarbonMapper = loadMeterData_CarbonMapper(DataPath)
+    
     # load GHGSat quadratherm data
     print("Loading GHGSat Quadratherm data...")
     DataPath = os.path.join(cwd, 'GHGSatTestData')  
-    meterDF_GHGSat = loadMeterData_GHGSat(DataPath, cr_averageperiod_sec = 90, CH4_frac = 0.9522)
+    #meterDF_GHGSat = loadMeterData_GHGSat(DataPath, cr_averageperiod_sec = 90, CH4_frac = 0.9522)
+    meterDF_GHGSat = loadMeterData_GHGSat(DataPath)
     
     meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
     
@@ -200,8 +203,8 @@ def loadBridgerData(filepath, timestamp_path):
     df["WindSpeed"] = mph2ms(dfraw["Detection Wind Speed (mph)"])
     df["EquipmentUnitID"] = dfraw["Emission Location Id"]
     
-    df.rename(columns={'Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
-    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
+    df.rename(columns={'Timestamp (hyperspectral technologies only)':'Operator_Timestamp'}, inplace=True)
+    df['Operator_Timestamp'] = pd.to_datetime(df['Operator_Timestamp'])
     
     # Bridger reported additional rows for emissions from the Rawhide trailer. Select only rows where emission Location
     # ID = 33931 (the release point) and ignore rows where emission point is the leaky trailer
@@ -214,9 +217,8 @@ def loadBridgerData(filepath, timestamp_path):
     #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
     
     tol = pd.Timedelta('1 minute')
-    df = pd.merge_asof(left=df.sort_values('Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Timestamp',direction='nearest',tolerance=tol)
-    df['Timestamp_merge_UTC'] = df['Stanford_timestamp']       
-    df.loc[df["Timestamp_merge_UTC"].isnull(),'Timestamp_merge_UTC'] = df["Timestamp"]
+    df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
+    df['Stanford_timestamp'] = df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
     return df
 
@@ -226,39 +228,37 @@ def loadCarbonMapperData(filepath, timestamp_path):
     #df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
     df = pd.read_csv(filepath, parse_dates=[['DateOfSurvey', 'Timestamp (hyperspectral technologies only)']])
 
-    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
+    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Operator_Timestamp'}, inplace=True)
 
     # Carbon Mapper reports a QC_filter for all passes, including non-retrievals
     # Therfore, filter out blank rows in the spreadsheet by removing rows with 
     # null QC_filter
     # (Jeff - Need to verify)
     
-    df['Timestamp'].fillna(value=np.nan, inplace=True)
+    df['Operator_Timestamp'].fillna(value=np.nan, inplace=True)
     df = df[df["QC filter"].notnull()]
     
     
-    df['Timestamp'] = df.apply(
-        lambda x: pd.NA if pd.isna(x['Timestamp']) else
-        datetime.datetime.strptime(x['Timestamp'], '%m/%d/%Y %H:%M:%S'), axis=1)
+    df['Operator_Timestamp'] = df.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        datetime.datetime.strptime(x['Operator_Timestamp'], '%m/%d/%Y %H:%M:%S'), axis=1)
 
-    df['Timestamp'] = df.apply(
-        lambda x: pd.NA if pd.isna(x['Timestamp']) else
-        x['Timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
+    df['Operator_Timestamp'] = df.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
 
 
-    df['Timestamp'] = df['Timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    df['Operator_Timestamp'] = df['Operator_Timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
     
     StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
     StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
-        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
-    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps['Stanford_timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
     
     tol = pd.Timedelta('1 minute')
-    df = pd.merge_asof(left=df.sort_values('Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Timestamp',direction='nearest',tolerance=tol)
-    df['Timestamp_merge_UTC'] = df['Stanford_timestamp']       
-    df.loc[df["Timestamp_merge_UTC"].isnull(),'Timestamp_merge_UTC'] = df["Timestamp"]
+    df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
+    df['Stanford_timestamp'] = df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
     
     return df
@@ -268,7 +268,7 @@ def loadGHGSatData(filepath, timestamp_path):
     #df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
     df = pd.read_csv(filepath, parse_dates=[['DateOfSurvey', 'Timestamp (hyperspectral technologies only)']])
     
-    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Timestamp'}, inplace=True)
+    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Operator_Timestamp'}, inplace=True)
     cwd = os.getcwd()   
     QC_filter = pd.read_csv(os.path.join(cwd, 'GHGSatTestData','QC_filter.csv'), header = None, names = ['QC filter'])  
         
@@ -296,13 +296,13 @@ def loadGHGSatData(filepath, timestamp_path):
     df = df.drop(df[(df['PerformerExperimentID'] == '1496-4-129-863-1062-144')].index)
     df = df.drop(df[(df['PerformerExperimentID'] == '1496-4-141-613-812-154')].index)
 
-    df['Timestamp'] = df.apply(
-        lambda x: pd.NA if pd.isna(x['Timestamp']) else
-        datetime.datetime.strptime(x['Timestamp'], '%Y-%m-%d %H:%M:%S'), axis=1)    
+    df['Operator_Timestamp'] = df.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        datetime.datetime.strptime(x['Operator_Timestamp'], '%Y-%m-%d %H:%M:%S'), axis=1)    
   
-    df['Timestamp'] = df.apply(
-        lambda x: pd.NA if pd.isna(x['Timestamp']) else
-        x['Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    df['Operator_Timestamp'] = df.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
 
     StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
@@ -311,14 +311,13 @@ def loadGHGSatData(filepath, timestamp_path):
     #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
     
     tol = pd.Timedelta('1 minute')
-    df = pd.merge_asof(left=df.sort_values('Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Timestamp',direction='nearest',tolerance=tol)
-    df['Timestamp_merge_UTC'] = df['Stanford_timestamp']       
-    df.loc[df["Timestamp_merge_UTC"].isnull(),'Timestamp_merge_UTC'] = df["Timestamp"]
+    df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
+    df['Stanford_timestamp'] = df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
 
     return df
 
-def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
+def loadMeterData_Bridger(DataPath):
 
     ## BRIDGER QUADRATHERM + CORIOLIS DATA ## 
     
@@ -457,13 +456,15 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
     # Add a column for moving average
     #quadrathermDF['cr_allmeters_scfh'] = np.nan
     #quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
-    quadrathermDF['cr_scfh_mean'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=cr_averageperiod_sec).mean()
+    quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
+    quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
+    quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     #quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
     #quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
     #quadrathermDF['cr_coriolis_gps_mean'] = quadrathermDF['instantaneous_Coriolis_gps'].rolling(window=cr_averageperiod_sec).mean()
     #quadrathermDF['cr_coriolis_gps_std'] = quadrathermDF['instantaneous_Coriolis_gps'].rolling(window=cr_averageperiod_sec).std()
-    quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
-    quadrathermDF['cr_avg_end'] = quadrathermDF.index
+    #quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
+    #quadrathermDF['cr_avg_end'] = quadrathermDF.index
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -477,7 +478,9 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
         #quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean30'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean60'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean90'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
                
     #del quadrathermDF['instantaneous_scfh']  
@@ -493,7 +496,7 @@ def loadMeterData_Bridger(DataPath, cr_averageperiod_sec, CH4_frac):
     return quadrathermDF
 
 
-def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec, CH4_frac):
+def loadMeterData_CarbonMapper(DataPath):
  
     ## CARBON MAPPER QUADRATHERM + CORIOLIS DATA ## 
 
@@ -585,12 +588,14 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec, CH4_frac):
     # Add a column for moving average    
     #quadrathermDF['cr_allmeters_scfh'] = np.nan
     #quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
-    quadrathermDF['cr_scfh_mean'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=cr_averageperiod_sec).mean()
+    quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
+    quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
+    quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     #quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
     #quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
 
-    quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
-    quadrathermDF['cr_avg_end'] = quadrathermDF.index
+    #quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
+    #quadrathermDF['cr_avg_end'] = quadrathermDF.index
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -604,14 +609,16 @@ def loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec, CH4_frac):
         #quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
+        quadrathermDF['cr_scfh_mean30'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean60'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean90'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+       #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
     
     quadrathermDF['TestLocation'] = 'TX'
     
     return quadrathermDF    
 
-def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
+def loadMeterData_GHGSat(DataPath):
 
     ## GHGSat QUADRATHERM + CORIOLIS DATA ##     
 
@@ -869,12 +876,14 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
     # Add a column for moving average  
     #quadrathermDF['cr_allmeters_scfh'] = np.nan
     #quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
-    quadrathermDF['cr_scfh_mean'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=cr_averageperiod_sec).mean()
+    quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
+    quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
+    quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     #quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
     #quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
     
-    quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
-    quadrathermDF['cr_avg_end'] = quadrathermDF.index
+    #quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
+    #quadrathermDF['cr_avg_end'] = quadrathermDF.index
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -888,7 +897,9 @@ def loadMeterData_GHGSat(DataPath, cr_averageperiod_sec, CH4_frac):
         #quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean30'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean60'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
+        quadrathermDF['cr_scfh_mean90'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
         #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
           
         

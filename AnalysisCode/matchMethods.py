@@ -92,8 +92,8 @@ def matchPassToQuadratherm(operatorDF, meterDF_All):
     # operatorDF['Match Time'] = pd.to_datetime(operatorDF['Match Time'])  
     
     matchedDF = pd.DataFrame()  # makae empty df to store results
-    operatorDF['Timestamp'] = pd.to_datetime(operatorDF['Timestamp'])
-    matchedDF = operatorDF.merge(meterDF_All, left_on = ['Timestamp_merge_UTC'], right_index = True)
+    #operatorDF['Timestamp'] = pd.to_datetime(operatorDF['Timestamp'])
+    matchedDF = operatorDF.merge(meterDF_All, left_on = ['Stanford_timestamp'], right_index = True)
 
     return matchedDF
 
@@ -131,8 +131,8 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
 
     for i in range(matchedDF.shape[0]):
         matchedDF['cr_start'][i] = min(Quad_new_setpoint['datetime_UTC'], key = lambda datetime :
-                                                  ((matchedDF['Timestamp'][i] - datetime).total_seconds() < 0,
-                                                   (matchedDF['Timestamp'][i] - datetime).total_seconds()))
+                                                  ((matchedDF['Stanford_timestamp'][i] - datetime).total_seconds() < 0,
+                                                   (matchedDF['Stanford_timestamp'][i] - datetime).total_seconds()))
         idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF['cr_start'][i]].index[0]    
         matchedDF['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
         
@@ -143,7 +143,7 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
     
     # calculate plume lengths
     matchedDF['PlumeLength_m'] = matchedDF.apply(
-        lambda x: calcPlumeLength(x['cr_start'], x['Timestamp'], sonicDF), axis=1)
+        lambda x: calcPlumeLength(x['cr_start'], x['Stanford_timestamp'], sonicDF), axis=1)
     # check if plume is established
     matchedDF['PlumeEstablished'] = matchedDF.apply(lambda x: establishedPlume(x['PlumeLength_m'], minPlumeLength), axis=1)
     
