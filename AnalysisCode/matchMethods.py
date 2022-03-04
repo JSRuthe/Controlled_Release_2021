@@ -324,8 +324,20 @@ def assessUncertainty(df):
     df['cr_kgh_CH4_lower90'] = np.nan
     df['cr_kgh_CH4_upper90'] = np.nan    
     
+    mean30, std30, mean60, std60, mean90, std90 = assessVariability(df)
+    
     for idx, row in df.iterrows():
+        # If row was hand written add an additional uncertainty term
+        if row['Flag_field_recorded'] == True:
+            field_recorded_mean = mean30
+            field_recorded_std = std30
+        else:
+            field_recorded_mean = 1
+            field_recorded_std = 0            
+        
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean30'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  field_recorded_mean,
+                                                                                                  field_recorded_std,
                                                                                                   NumberMonteCarloDraws = 500, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
@@ -334,7 +346,17 @@ def assessUncertainty(df):
         df.loc[idx, 'cr_kgh_CH4_upper30'] = ObservationStats[2]
 
     for idx, row in df.iterrows():
+        # If row was hand written add an additional uncertainty term
+        if row['Flag_field_recorded'] == True:
+            field_recorded_mean = mean60
+            field_recorded_std = std60
+        else:
+            field_recorded_mean = 1
+            field_recorded_std = 0     
+        
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean60'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  field_recorded_mean,
+                                                                                                  field_recorded_std,
                                                                                                   NumberMonteCarloDraws = 500, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
@@ -343,7 +365,17 @@ def assessUncertainty(df):
         df.loc[idx, 'cr_kgh_CH4_upper60'] = ObservationStats[2]
 
     for idx, row in df.iterrows():
+        # If row was hand written add an additional uncertainty term
+        if row['Flag_field_recorded'] == True:
+            field_recorded_mean = mean90
+            field_recorded_std = std90
+        else:
+            field_recorded_mean = 1
+            field_recorded_std = 0     
+        
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean90'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  field_recorded_mean,
+                                                                                                  field_recorded_std,
                                                                                                   NumberMonteCarloDraws = 500, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
@@ -352,3 +384,25 @@ def assessUncertainty(df):
         df.loc[idx, 'cr_kgh_CH4_upper90'] = ObservationStats[2]
     
     return df
+
+def assessVariability(df):
+        # THis function calculates variability between the rolling average release rate and the instantaneous release rate and returns the mean and the standard deviation
+        
+        df = df[(df['PlumeEstablished'] == True) & (df['PlumeSteady'] == True) & (df['cr_allmeters_scfh'] >0)]
+        
+        frac30 = df['cr_scfh_mean30']/df['cr_allmeters_scfh']
+        mean30 = frac30.mean()
+        std30 = frac30.std()
+        
+        frac60 = df['cr_scfh_mean60']/df['cr_allmeters_scfh']
+        mean60 = frac60.mean()
+        std60 = frac60.std()
+        
+        frac90 = df['cr_scfh_mean90']/df['cr_allmeters_scfh']
+        mean90 = frac90.mean()
+        std90 = frac90.std() 
+        
+        return mean30, std30, mean60, std60, mean90, std90
+    
+        
+        

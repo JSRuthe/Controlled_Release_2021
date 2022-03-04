@@ -41,6 +41,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from UnitConversion import SCFH2kgh, mph2ms, gps2kgh, kgh2SCFH
+import random as rnd
 
 # % !!!HARD CODE THESE HERE BUT THESE WILL BE FUNCTION ARGUMENTS IN PRACTICE !!!
 # InputReleaseRate = 10000
@@ -49,7 +50,7 @@ from UnitConversion import SCFH2kgh, mph2ms, gps2kgh, kgh2SCFH
 # TestLocation = 2
 # NumberMonteCarloDraws = 1000
 
-def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='kgh'):
+def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation,field_recorded_mean,field_recorded_std,NumberMonteCarloDraws, hist=0, units='kgh'):
     # Rename parameters if in non-integer form
     if MeterOption == 162928:
         MeterAgeOption = 0
@@ -177,13 +178,17 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             RealizedBiasValue = BiasObservations[np.random.randint(BiasObservations.size)] # % [fractional multipler]
             RealizedNoiseValue = np.random.normal(0, NoiseTermSD) # % [scfh]
             RealizedGasMoleFraction = GasMoleFractionObservations[np.random.randint(GasMoleFractionObservations.size)] # % [mol %]
-    
+            
+            # If data was handwritten for the day we add an additional source of uncertainty
+            rnd_norm = rnd.normalvariate(mu = field_recorded_mean, sigma = field_recorded_std)
+            field_recorded_noise = InputReleaseRate * (1 - rnd_norm)
+            
             # % Adjust for bias first by applying bias, then by applying noise, then
             # % by multiplying by the mole fraction of gas.Assume all are
             # % independent factors (e.g., methane mole fraction does not affect
             # meter bias)
             BiasAdjustedReleaseRate = InputReleaseRate * RealizedBiasValue
-            BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue
+            BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue + field_recorded_noise
             ObservationRealization = BiasAndNoiseAdjustedReleaseRate * RealizedGasMoleFraction
     
             # % Retain the value in the loop into the holder array
@@ -197,12 +202,16 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             
             RealizedGasMoleFraction = GasMoleFractionObservations[np.random.randint(GasMoleFractionObservations.size)] # % [mol %]
             
+            # If data was handwritten for the day we add an additional source of uncertainty
+            rnd_norm = rnd.normalvariate(mu = field_recorded_mean, sigma = field_recorded_std)
+            field_recorded_noise = InputReleaseRate * (1 - rnd_norm)
+            
             # % Adjust for bias first by applying bias, then by applying noise, then
             # % by multiplying by the mole fraction of gas.Assume all are
             # % independent factors (e.g., methane mole fraction does not affect
             # meter bias)
             BiasAdjustedReleaseRate = InputReleaseRate * RealizedBiasValue
-            BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue
+            BiasAndNoiseAdjustedReleaseRate =  BiasAdjustedReleaseRate + RealizedNoiseValue + field_recorded_noise
             ObservationRealization = BiasAndNoiseAdjustedReleaseRate * RealizedGasMoleFraction
     
             # % Retain the value in the loop into the holder array
