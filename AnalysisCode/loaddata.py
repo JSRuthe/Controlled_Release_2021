@@ -364,6 +364,7 @@ def loadMeterData_Bridger(DataPath):
     Quad_data_1['PipeSize_inch'] = np.nan
     Quad_data_1['MeterCode'] = np.nan
     Quad_data_1['cr_allmeters_scfh'] = np.nan
+    Quad_data_1['Flag_field_recorded'] = False
     #Quad_data_1["cr_allmeters_kgh"] = np.nan
     #Quad_data_1["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_1['cr_quad_scfh'][(Quad_data_1.index < '2021.11.03 17:33:18')] = Quad_data_1['channel_1'][(Quad_data_1.index < '2021.11.03 17:33:18')]
@@ -389,6 +390,7 @@ def loadMeterData_Bridger(DataPath):
     Quad_data_2['PipeSize_inch'] = np.nan
     Quad_data_2['MeterCode'] = np.nan
     Quad_data_2['cr_allmeters_scfh'] = np.nan
+    Quad_data_2['Flag_field_recorded'] = False
     #Quad_data_2["cr_allmeters_kgh"] = np.nan
     #Quad_data_2["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_2['cr_quad_scfh'][(Quad_data_2.index < '2021.11.03 21:32:11')] = Quad_data_2['channel_2'][(Quad_data_2.index < '2021.11.03 21:32:11')]
@@ -412,6 +414,7 @@ def loadMeterData_Bridger(DataPath):
     Quad_data_3['MeterCode'] = np.nan
     Quad_data_3['cr_allmeters_scfh'] = np.nan
     Quad_data_3['cr_Coriolis_gps'] = np.nan
+    Quad_data_3['Flag_field_recorded'] = False
     #Quad_data_3['cr_allmeters_kgh'] = np.nan
     #Quad_data_3['cr_allmeters_kgh_CH4'] = np.nan
     Quad_data_3['cr_quad_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')] = Quad_data_3['channel_2'][(Quad_data_3.index < '2021.11.04 19:27:38')]
@@ -452,6 +455,8 @@ def loadMeterData_Bridger(DataPath):
     hand_data_21114['cr_allmeters_scfh'] = gps2scfh(hand_data_21114['cr_Coriolis_gps'], T=21.1)
     hand_data_21114['PipeSize_inch'] = 0.5
     hand_data_21114['MeterCode'] = 21175085
+    hand_data_21114['Flag_field_recorded'] = True
+    
 
     # Concatenate all time series data
     Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3])
@@ -545,6 +550,7 @@ def loadMeterData_CarbonMapper(DataPath):
     Quad_data_1['cr_allmeters_scfh'] = np.nan
     Quad_data_1['PipeSize_inch'] = np.nan
     Quad_data_1['MeterCode'] = np.nan
+    Quad_data_1['Flag_field_recorded'] = False
     Quad_data_1['PipeSize_inch'][(Quad_data_1.index < '2021.07.30 17:22:54')] = 2
     Quad_data_1['MeterCode'][(Quad_data_1.index < '2021.07.30 17:22:54')] = 162928
     Quad_data_1['PipeSize_inch'][(Quad_data_1.index >= '2021.07.30 17:22:54')] = 4
@@ -566,6 +572,7 @@ def loadMeterData_CarbonMapper(DataPath):
     Quad_data_2["cr_allmeters_scfh"] = np.nan
     Quad_data_2['PipeSize_inch'] = np.nan
     Quad_data_2['MeterCode'] = np.nan
+    Quad_data_2['Flag_field_recorded'] = False
     Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.08.03 17:35:25')] = 4
     Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.08.03 17:35:25')] = 218645
     Quad_data_2['PipeSize_inch'][(Quad_data_2.index >= '2021.08.03 17:35:25')] = 2
@@ -594,6 +601,7 @@ def loadMeterData_CarbonMapper(DataPath):
     #hand_data_21731["cr_allmeters_kgh"] = SCFH2kgh(hand_data_21731['cr_quad_scfh'], T=21.1)
     #hand_data_21731["cr_allmeters_kgh_CH4"] = applyComposition(hand_data_21731["cr_allmeters_kgh"], CH4_frac)
     hand_data_21731['cr_allmeters_scfh'] = hand_data_21731['cr_quad_scfh']
+    hand_data_21731['Flag_field_recorded'] = True
 
     # Concatenate all time series data
     Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, hand_data_21731])
@@ -666,6 +674,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_1['cr_allmeters_scfh'] = np.nan
     Quad_data_1['PipeSize_inch'] = 4
     Quad_data_1['MeterCode'] = 218645
+    Quad_data_1['Flag_field_recorded'] = False
     Quad_data_1.set_index('datetime_local', inplace = True)
     Quad_data_1['cr_quad_scfh'] = pd.to_numeric(Quad_data_1['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_1["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_1['cr_quad_scfh'], T=21.1)
@@ -684,6 +693,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_2['cr_allmeters_scfh'] = np.nan
     Quad_data_2['PipeSize_inch'] = np.nan
     Quad_data_2['MeterCode'] = np.nan
+    Quad_data_2['Flag_field_recorded'] = False
     Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.10.19 18:33:10')] = 8
     Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.10.19 18:33:10')] = 218645
     Quad_data_2['PipeSize_inch'][(Quad_data_2.index >= '2021.10.19 18:33:10')] = 2
@@ -709,6 +719,7 @@ def loadMeterData_GHGSat(DataPath):
     #Quad_data_3["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_3['cr_quad_scfh'], T=21.1)
     #Quad_data_3["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_3["cr_allmeters_kgh"], CH4_frac)  
     Quad_data_3['cr_allmeters_scfh'] = Quad_data_3['cr_quad_scfh']
+    Quad_data_3['Flag_field_recorded'] = True
 
     OCR_4_path = os.path.join(DataPath, '211020_1_release_dat.csv')
     # Units in g/s
@@ -722,6 +733,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_4['cr_allmeters_scfh'] = np.nan    
     Quad_data_4['PipeSize_inch'] = 0.5
     Quad_data_4['MeterCode'] = 21175085
+    Quad_data_4['Flag_field_recorded'] = False
     Quad_data_4.set_index('datetime_local', inplace = True)
     Quad_data_4['cr_Coriolis_gps'] = pd.to_numeric(Quad_data_4['cr_Coriolis_gps'],errors = 'coerce')
     #Quad_data_4["cr_allmeters_kgh"] = gps2kgh(Quad_data_4['cr_Coriolis_gps'])
@@ -739,6 +751,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_5['cr_allmeters_scfh'] = np.nan 
     Quad_data_5['PipeSize_inch'] = 2
     Quad_data_5['MeterCode'] = 218645
+    Quad_data_5['Flag_field_recorded'] = False
     Quad_data_5.set_index('datetime_local', inplace = True)
     Quad_data_5['cr_quad_scfh'] = pd.to_numeric(Quad_data_5['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_5["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_5['cr_quad_scfh'], T=21.1)
@@ -756,6 +769,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_6['cr_allmeters_scfh'] = np.nan 
     Quad_data_6['PipeSize_inch'] = 8
     Quad_data_6['MeterCode'] = 218645
+    Quad_data_6['Flag_field_recorded'] = False
     Quad_data_6.set_index('datetime_local', inplace = True)
     Quad_data_6['cr_quad_scfh'] = pd.to_numeric(Quad_data_6['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_6["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_6['cr_quad_scfh'], T=21.1)
@@ -774,6 +788,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_7['cr_allmeters_scfh'] = np.nan
     Quad_data_7['PipeSize_inch'] = 8
     Quad_data_7['MeterCode'] = 218645
+    Quad_data_7['Flag_field_recorded'] = False
     Quad_data_7['cr_quad_scfh'] = Quad_data_7['channel_1']
     Quad_data_7['cr_quad_scfh'] = pd.to_numeric(Quad_data_7['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_7["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_7['cr_quad_scfh'], T=21.1)
@@ -796,6 +811,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_8['cr_allmeters_scfh'] = np.nan
     Quad_data_8['PipeSize_inch'] = 8
     Quad_data_8['MeterCode'] = 218645
+    Quad_data_8['Flag_field_recorded'] = False
     Quad_data_8['cr_quad_scfh'] = Quad_data_8['channel_1']
     Quad_data_8['cr_quad_scfh'] = pd.to_numeric(Quad_data_8['cr_quad_scfh'],errors = 'coerce')
    #Quad_data_8["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_8['cr_quad_scfh'], T=21.1)
@@ -818,6 +834,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_9['cr_allmeters_scfh'] = np.nan
     Quad_data_9['PipeSize_inch'] = 8
     Quad_data_9['MeterCode'] = 218645
+    Quad_data_9['Flag_field_recorded'] = False
     Quad_data_9['cr_quad_scfh'] = Quad_data_9['channel_1']
     Quad_data_9['cr_quad_scfh'] = pd.to_numeric(Quad_data_9['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_9["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_9['cr_quad_scfh'], T=21.1)
@@ -840,6 +857,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_10['cr_allmeters_scfh'] = np.nan
     Quad_data_10['PipeSize_inch'] = 0.5
     Quad_data_10['MeterCode'] = 21175085
+    Quad_data_10['Flag_field_recorded'] = False
     Quad_data_10['cr_Coriolis_gps'] = Quad_data_10['channel_4']
     Quad_data_10['cr_Coriolis_gps'] = pd.to_numeric(Quad_data_10['cr_Coriolis_gps'],errors = 'coerce')
     #Quad_data_10["cr_allmeters_kgh"] = gps2kgh(Quad_data_10['cr_Coriolis_gps'])
@@ -862,6 +880,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_11['cr_allmeters_scfh'] = np.nan
     Quad_data_11['PipeSize_inch'] = 4
     Quad_data_11['MeterCode'] = 218645
+    Quad_data_11['Flag_field_recorded'] = False
     Quad_data_11['cr_quad_scfh'] = Quad_data_11['channel_2']
     Quad_data_11['cr_quad_scfh'] = pd.to_numeric(Quad_data_11['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_11["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_11['cr_quad_scfh'], T=21.1)
