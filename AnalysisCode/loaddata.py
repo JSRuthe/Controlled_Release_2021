@@ -10,7 +10,7 @@ import numpy as np
 from UnitConversion import convertUnits, SCFH2kgh, mph2ms, applyComposition, gps2kgh, kgh2SCFH, gps2scfh
 
 def loaddata():
-    """Load all data from Midland testing"""
+    """Load all data from testing"""
     
     cwd = os.getcwd()    
     
@@ -63,6 +63,7 @@ def loaddata():
     #bridgerDF = bridgerDF.drop(bridgerDF.index[[0,1,116,117]])
     bridgerDF = bridgerDF.reset_index()    
 
+
     # load Carbon Mapper data
     DataPath = os.path.join(cwd, 'CarbonMapperTestData')    
 
@@ -70,7 +71,7 @@ def loaddata():
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission.csv')
     timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv')    
     CarbonMapperR1DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
-    CarbonMapperR1DF['WindType'] = 'NASA-GEOS'
+    CarbonMapperR1DF['WindType'] = 'HRRR'
     CarbonMapperR1DF['OperatorSet'] = 'CarbonMapper'
     CarbonMapperR1DF['UnblindingStage'] = 1 
     
@@ -98,18 +99,18 @@ def loaddata():
     CarbonMapperDF = CarbonMapperDF.drop(CarbonMapperDF[(CarbonMapperDF['Operator_Timestamp'] < date_cutoff)].index)
     #bridgerDF = bridgerDF.drop(bridgerDF.index[[0,1,116,117]])
     CarbonMapperDF = CarbonMapperDF.reset_index()    
-   
-    DataPath = os.path.join(cwd, 'GHGSatTestData')    
+
 
     # load GHGSat data 
+    DataPath = os.path.join(cwd, 'GHGSatTestData')   
+    
     print("Loading GHGSat Stage 1 data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report.csv')
     timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
     GHGSatR1DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR1DF['WindType'] = 'NASA-GEOS'
     GHGSatR1DF['OperatorSet'] = 'GHGSat'
-    GHGSatR1DF['UnblindingStage'] = 1
-    
+    GHGSatR1DF['UnblindingStage'] = 1    
     GHGSatR1DF = GHGSatR1DF.drop(GHGSatR1DF[(GHGSatR1DF['EquipmentUnitID'] == 2)].index)
 
     print("Loading GHGSat Stage 2 data...")
@@ -118,8 +119,7 @@ def loaddata():
     GHGSatR2DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR2DF['WindType'] = 'Sonic'
     GHGSatR2DF['OperatorSet'] = 'GHGSat'
-    GHGSatR2DF['UnblindingStage'] = 2
-    
+    GHGSatR2DF['UnblindingStage'] = 2    
     GHGSatR2DF = GHGSatR2DF.drop(GHGSatR2DF[(GHGSatR2DF['EquipmentUnitID'] == 2)].index)
 
     print("Loading GHGSat Stage 3 data...")
@@ -129,32 +129,28 @@ def loaddata():
     GHGSatR3DF['WindType'] = 'Sonic'
     GHGSatR3DF['OperatorSet'] = 'GHGSat'
     GHGSatR3DF['UnblindingStage'] = 3
-    GHGSatR3DF = GHGSatR3DF.loc[:, ~GHGSatR3DF.columns.str.contains('^Unnamed')]
-    
+    GHGSatR3DF = GHGSatR3DF.loc[:, ~GHGSatR3DF.columns.str.contains('^Unnamed')]    
     GHGSatR3DF = GHGSatR3DF.drop(GHGSatR3DF[(GHGSatR3DF['EquipmentUnitID'] == 2)].index)
     
     GHGSatDF = pd.concat([GHGSatR1DF, GHGSatR2DF, GHGSatR3DF], ignore_index=True)
+
     
     operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF], ignore_index=True)    
     
-    
-    
+  
     # load Bridger quadratherm data
     print("Loading Bridger Quadratherm data...")
     DataPath = os.path.join(cwd, 'BridgerTestData') 
-    #meterDF_Bridger = loadMeterData_Bridger(DataPath, cr_averageperiod_sec = 65, CH4_frac = 0.9627)
     meterDF_Bridger = loadMeterData_Bridger(DataPath)
     
     # load Carbon Mapper quadratherm data
     print("Loading Carbon Mapper Quadratherm data...")
     DataPath = os.path.join(cwd, 'CarbonMapperTestData')  
-    #meterDF_CarbonMapper = loadMeterData_CarbonMapper(DataPath, cr_averageperiod_sec = 90, CH4_frac = 0.859152)
     meterDF_CarbonMapper = loadMeterData_CarbonMapper(DataPath)
     
     # load GHGSat quadratherm data
     print("Loading GHGSat Quadratherm data...")
     DataPath = os.path.join(cwd, 'GHGSatTestData')  
-    #meterDF_GHGSat = loadMeterData_GHGSat(DataPath, cr_averageperiod_sec = 90, CH4_frac = 0.9522)
     meterDF_GHGSat = loadMeterData_GHGSat(DataPath)
     
     meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
