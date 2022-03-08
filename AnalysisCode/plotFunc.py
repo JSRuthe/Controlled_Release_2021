@@ -54,7 +54,8 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
                                 values = 'PerformerExperimentID',
                                 aggfunc = len)    
 
-    #plt.figure(figsize = [8,5])
+    
+    # Plotting Carbon Mapper parity
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
     
@@ -75,6 +76,53 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
     plt.savefig('CarbonMapper_parity.png', dpi = 300)
   
     plt.close()     
+
+    # Plot Bridger parity
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    
+    for i, ax in enumerate(axs.flat):
+         #fig,ax1 = plt.subplot(1,1,(stages + 1))
+         
+         if i == 0:
+             plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 1) & 
+                                           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                           (matchedDF_Bridger['WindType'] == 'HRRR')]
+         elif i ==1:
+             plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 1) & 
+                                           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                           (matchedDF_Bridger['WindType'] == 'NAM12')]
+         else:
+             plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == i) & (matchedDF_Bridger['tc_Classification'] == 'TP')]
+         
+         parity_plot(ax, plot_data, 'Bridger')
+         
+         
+         
+    plt.savefig('Bridger_parity.png', dpi = 300)
+  
+    plt.close()     
+
+    # Plotting GHGSat parity
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
+    
+    for i, ax in enumerate(axs.flat):
+         #fig,ax1 = plt.subplot(1,1,(stages + 1))
+         if i == 3: 
+             break
+         plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (i + 1)) & (matchedDF_GHGSat['tc_Classification'] == 'TP')]
+         
+         parity_plot(ax, plot_data, 'GHGSat', force_intercept_origin=0, plot_interval = ['confidence'], plot_lim = [0,7000],)
+         
+         
+         
+    plt.savefig('GHGSat_parity.png', dpi = 300)
+  
+    plt.close()     
+
+
          
     return
      
@@ -422,8 +470,8 @@ OUTPUT
   ax.set_ylim(plot_lim)
 
   # parity line
-  x_lim = np.array([0,3000])
-  y_lim = np.array([0,3000])
+  x_lim = np.array([0,7000])
+  y_lim = np.array([0,7000])
   ax.plot(x_lim,y_lim,color='black',linewidth=1, label = 'Parity line')
   
   x = plot_data['cr_kgh_CH4_mean90'].values
@@ -473,10 +521,10 @@ OUTPUT
 
   # ax.legend(loc=legend_loc, bbox_to_anchor=(1.6, 0.62),fontsize=12)   # legend box on the right
   ax.legend(loc=legend_loc,fontsize=7)   # legend box within the plot
-  ax.set_yticks(np.arange(0,plot_lim[1]+500,500))
-  ax.set_yticklabels(np.arange(0,plot_lim[1]+500,500).astype('int'),fontsize=8)
-  ax.set_xticks(np.arange(0,plot_lim[1]+500,500))
-  ax.set_xticklabels(np.arange(0,plot_lim[1]+500,500).astype('int'),fontsize=8)
+  ax.set_yticks(np.arange(0,plot_lim[1]+1000,1000))
+  ax.set_yticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=8)
+  ax.set_xticks(np.arange(0,plot_lim[1]+1000,1000))
+  ax.set_xticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=8)
  
   
 

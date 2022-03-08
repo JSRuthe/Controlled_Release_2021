@@ -338,7 +338,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean30'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500, 
+                                                                                                  NumberMonteCarloDraws = 10000, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean30'] = ObservationStats[0]
@@ -357,7 +357,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean60'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500, 
+                                                                                                  NumberMonteCarloDraws = 10000, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean60'] = ObservationStats[0]
@@ -376,7 +376,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean90'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500, 
+                                                                                                  NumberMonteCarloDraws = 10000, 
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean90'] = ObservationStats[0]

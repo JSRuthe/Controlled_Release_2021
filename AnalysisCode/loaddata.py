@@ -54,7 +54,7 @@ def loaddata():
     bridgerR3DF['UnblindingStage'] = 3
 
     # append Bridger data into single DF
-    bridgerDF = pd.concat([bridgerHRRRDF, bridgerNAM12DF, bridgerSonicDF], ignore_index=True)
+    bridgerDF = pd.concat([bridgerHRRRDF, bridgerNAM12DF, bridgerSonicDF, bridgerR3DF], ignore_index=True)
   
     # Delete rows where Bridger passed over before Stanford was prepared to release
     date_cutoff = pd.to_datetime('2021.11.03 17:38:06')
@@ -765,7 +765,7 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_6['cr_allmeters_scfh'] = np.nan 
     Quad_data_6['PipeSize_inch'] = 8
     Quad_data_6['MeterCode'] = 218645
-    Quad_data_6['Flag_field_recorded'] = False
+    Quad_data_6['Flag_field_recorded'] = True
     Quad_data_6.set_index('datetime_local', inplace = True)
     Quad_data_6['cr_quad_scfh'] = pd.to_numeric(Quad_data_6['cr_quad_scfh'],errors = 'coerce')
     #Quad_data_6["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_6['cr_quad_scfh'], T=21.1)
