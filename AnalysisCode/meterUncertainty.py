@@ -232,27 +232,50 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     if InputReleaseRate == 0:
         ObservationStats = np.zeros(3)
     else:
-        ObservationStats =np.array([np.mean(ObservationRealizationHolder),
-        np.percentile(ObservationRealizationHolder, 2.5),
-        # np.percentile(ObservationRealizationHolder, 5),
-        # np.percentile(ObservationRealizationHolder, 25),
-        # np.percentile(ObservationRealizationHolder, 50),
-        # np.percentile(ObservationRealizationHolder, 75),
-        # np.percentile(ObservationRealizationHolder, 95),
-        np.percentile(ObservationRealizationHolder, 97.5)]) #,
-        # np.std(ObservationRealizationHolder)])
+        if TestLocation:        
+            ObservationStats =np.array([np.mean(ObservationRealizationHolder),
+            np.percentile(ObservationRealizationHolder, 2.5),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(ObservationRealizationHolder, 97.5)]) #,
+            # np.std(ObservationRealizationHolder)])            
+
+        else:
+            ObservationStats =np.array([np.mean(ObservationRealizationHolder),
+            np.percentile(ObservationRealizationHolder, 16),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(ObservationRealizationHolder, 84)]) #,
+            # np.std(ObservationRealizationHolder)])
 
     if InputReleaseRate == 0:
         ObservationStatsNormed = np.zeros(3)
     else:
-        ObservationStatsNormed =np.array([np.mean(ObservationRealizationHolder),
-        np.percentile(ObservationRealizationHolder, 2.5),
-        # np.percentile(ObservationRealizationHolder, 5),
-        # np.percentile(ObservationRealizationHolder, 25),
-        # np.percentile(ObservationRealizationHolder, 50),
-        # np.percentile(ObservationRealizationHolder, 75),
-        # np.percentile(ObservationRealizationHolder, 95),
-        np.percentile(ObservationRealizationHolder, 97.5)])/ np.mean(ObservationRealizationHolder) #,
-        # np.std(ObservationRealizationHolder)]) / np.mean(ObservationRealizationHolder)
-
+        if TestLocation == "TX":
+            ObservationStatsNormed =np.array([np.mean(ObservationRealizationHolder),
+            np.percentile(ObservationRealizationHolder, 16),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(ObservationRealizationHolder, 84)])/ np.mean(ObservationRealizationHolder) #,
+            # np.std(ObservationRealizationHolder)]) / np.mean(ObservationRealizationHolder)
+        else:
+            ObservationStatsNormed =np.array([np.mean(ObservationRealizationHolder),
+            np.percentile(ObservationRealizationHolder, 2.5),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(ObservationRealizationHolder, 97.5)])/ np.mean(ObservationRealizationHolder) #,
+            # np.std(ObservationRealizationHolder)]) / np.mean(ObservationRealizationHolder)
+            
     return ObservationStats, ObservationStatsNormed, ObservationRealizationHolder

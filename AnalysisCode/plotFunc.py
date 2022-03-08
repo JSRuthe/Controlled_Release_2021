@@ -73,7 +73,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
          
          
          
-    plt.savefig('CarbonMapper_parity.png', dpi = 300)
+    plt.savefig('CarbonMapper_parity_1sigma.png', dpi = 300)
   
     plt.close()     
 

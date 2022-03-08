@@ -18,11 +18,11 @@ cwd = os.getcwd()
 #csvPath = os.path.join(cwd, 'matchedDF_Bridger.csv')
 #matchedDF_Bridger.to_csv(csvPath)
 
-csvPath = os.path.join(cwd, 'matchedDF_GHGSat.csv')
+csvPath = os.path.join(cwd, 'matchedDF_GHGSat_update.csv')
 matchedDF_GHGSat.to_csv(csvPath)
 
-#csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper.csv')
-#matchedDF_CarbonMapper.to_csv(csvPath)
+csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_update.csv')
+matchedDF_CarbonMapper.to_csv(csvPath)
 
 #csvPath = os.path.join(cwd, 'meterDF_All.csv')
 #meterDF_All.to_csv(csvPath)
