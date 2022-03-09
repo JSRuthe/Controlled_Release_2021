@@ -73,7 +73,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
          
          
          
-    plt.savefig('CarbonMapper_parity_1sigma.png', dpi = 300)
+    plt.savefig('CarbonMapper_parity_warningfix.png', dpi = 300)
   
     plt.close()     
 
@@ -100,7 +100,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
          
          
          
-    plt.savefig('Bridger_parity.png', dpi = 300)
+    plt.savefig('Bridger_parity_warningfix.png', dpi = 300)
   
     plt.close()     
 
@@ -118,7 +118,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
          
          
          
-    plt.savefig('GHGSat_parity.png', dpi = 300)
+    plt.savefig('GHGSat_parity_warningfix.png', dpi = 300)
   
     plt.close()     
 

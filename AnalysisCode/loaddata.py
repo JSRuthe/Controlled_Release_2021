@@ -345,6 +345,7 @@ def loadGHGSatData(filepath, timestamp_path):
 
     return df
 
+
 def loadMeterData_Bridger(DataPath):
 
     ## BRIDGER QUADRATHERM + CORIOLIS DATA ## 
@@ -361,17 +362,13 @@ def loadMeterData_Bridger(DataPath):
     Quad_data_1['MeterCode'] = np.nan
     Quad_data_1['cr_allmeters_scfh'] = np.nan
     Quad_data_1['Flag_field_recorded'] = False
-    #Quad_data_1["cr_allmeters_kgh"] = np.nan
-    #Quad_data_1["cr_allmeters_kgh_CH4"] = np.nan
-    Quad_data_1['cr_quad_scfh'][(Quad_data_1.index < '2021.11.03 17:33:18')] = Quad_data_1['channel_1'][(Quad_data_1.index < '2021.11.03 17:33:18')]
-    Quad_data_1['PipeSize_inch'][(Quad_data_1.index < '2021.11.03 17:33:18')] = 2
-    Quad_data_1['MeterCode'][(Quad_data_1.index < '2021.11.03 17:33:18')] = 218645
-    Quad_data_1['cr_quad_scfh'][(Quad_data_1.index > '2021.11.03 17:38:37')] = Quad_data_1['channel_2'][(Quad_data_1.index > '2021.11.03 17:38:37')]
-    Quad_data_1['PipeSize_inch'][(Quad_data_1.index > '2021.11.03 17:38:37')] = 4
-    Quad_data_1['MeterCode'][(Quad_data_1.index > '2021.11.03 17:38:37')] = 308188
+    Quad_data_1.loc[Quad_data_1.index < '2021.11.03 17:33:18', 'cr_quad_scfh'] = Quad_data_1['channel_1'][(Quad_data_1.index < '2021.11.03 17:33:18')]
+    Quad_data_1.loc[Quad_data_1.index < '2021.11.03 17:33:18', 'PipeSize_inch'] = 2
+    Quad_data_1.loc[Quad_data_1.index < '2021.11.03 17:33:18', 'MeterCode'] = 218645
+    Quad_data_1.loc[Quad_data_1.index > '2021.11.03 17:38:37', 'cr_quad_scfh'] = Quad_data_1['channel_2'][(Quad_data_1.index > '2021.11.03 17:38:37')]
+    Quad_data_1.loc[Quad_data_1.index > '2021.11.03 17:38:37', 'PipeSize_inch'] = 4
+    Quad_data_1.loc[Quad_data_1.index > '2021.11.03 17:38:37', 'MeterCode'] = 308188
     Quad_data_1['cr_quad_scfh'] = pd.to_numeric(Quad_data_1['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_1["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_1['cr_quad_scfh'], T=21.1)
-    #Quad_data_1["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_1["cr_allmeters_kgh"], CH4_frac)
     Quad_data_1["cr_allmeters_scfh"] = Quad_data_1['cr_quad_scfh']
     del Quad_data_1['channel_1'] 
     del Quad_data_1['channel_2']
@@ -387,14 +384,10 @@ def loadMeterData_Bridger(DataPath):
     Quad_data_2['MeterCode'] = np.nan
     Quad_data_2['cr_allmeters_scfh'] = np.nan
     Quad_data_2['Flag_field_recorded'] = False
-    #Quad_data_2["cr_allmeters_kgh"] = np.nan
-    #Quad_data_2["cr_allmeters_kgh_CH4"] = np.nan
-    Quad_data_2['cr_quad_scfh'][(Quad_data_2.index < '2021.11.03 21:32:11')] = Quad_data_2['channel_2'][(Quad_data_2.index < '2021.11.03 21:32:11')]
-    Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.11.03 21:32:11')] = 4
-    Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.11.03 21:32:11')] = 308188
+    Quad_data_2.loc[Quad_data_2.index < '2021.11.03 21:32:11', 'cr_quad_scfh'] = Quad_data_2['channel_2'][(Quad_data_2.index < '2021.11.03 21:32:11')]
+    Quad_data_2.loc[Quad_data_2.index < '2021.11.03 21:32:11', 'PipeSize_inch'] = 4
+    Quad_data_2.loc[Quad_data_2.index < '2021.11.03 21:32:11', 'MeterCode'] = 308188
     Quad_data_2['cr_quad_scfh'] = pd.to_numeric(Quad_data_2['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_2["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_2['cr_quad_scfh'], T=21.1)
-    #Quad_data_2["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_2["cr_allmeters_kgh"], CH4_frac)
     Quad_data_2["cr_allmeters_scfh"] = Quad_data_2['cr_quad_scfh']
     del Quad_data_2['channel_1'] 
     del Quad_data_2['channel_2']
@@ -411,31 +404,23 @@ def loadMeterData_Bridger(DataPath):
     Quad_data_3['cr_allmeters_scfh'] = np.nan
     Quad_data_3['cr_Coriolis_gps'] = np.nan
     Quad_data_3['Flag_field_recorded'] = False
-    #Quad_data_3['cr_allmeters_kgh'] = np.nan
-    #Quad_data_3['cr_allmeters_kgh_CH4'] = np.nan
-    Quad_data_3['cr_quad_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')] = Quad_data_3['channel_2'][(Quad_data_3.index < '2021.11.04 19:27:38')]
+    Quad_data_3.loc[Quad_data_3.index < '2021.11.04 19:27:38', 'cr_quad_scfh'] = Quad_data_3['channel_2'][(Quad_data_3.index < '2021.11.04 19:27:38')]
     Quad_data_3['cr_quad_scfh'] = pd.to_numeric(Quad_data_3['cr_quad_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')],errors = 'coerce')
-    #Quad_data_3['cr_allmeters_kgh'][(Quad_data_3.index < '2021.11.04 19:27:38')] = SCFH2kgh(Quad_data_3['cr_quad_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')], T=21.1)
-    #Quad_data_3['cr_allmeters_kgh_CH4'][(Quad_data_3.index < '2021.11.04 19:27:38')] = applyComposition(Quad_data_3["cr_allmeters_kgh"][(Quad_data_3.index < '2021.11.04 19:27:38')], CH4_frac)
-    Quad_data_3['cr_allmeters_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')] = Quad_data_3['cr_quad_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')]
-    Quad_data_3['PipeSize_inch'][(Quad_data_3.index < '2021.11.04 19:27:38')] = 4
-    Quad_data_3['MeterCode'][(Quad_data_3.index < '2021.11.04 19:27:38')] = 308188          
-    Quad_data_3['cr_Coriolis_gps'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = Quad_data_3['channel_4'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')]
+    Quad_data_3.loc[Quad_data_3.index < '2021.11.04 19:27:38', 'cr_allmeters_scfh'] = Quad_data_3['cr_quad_scfh'][(Quad_data_3.index < '2021.11.04 19:27:38')]  
+    Quad_data_3.loc[Quad_data_3.index < '2021.11.04 19:27:38', 'PipeSize_inch'] = 4
+    Quad_data_3.loc[Quad_data_3.index < '2021.11.04 19:27:38', 'MeterCode'] = 308188  
+    Quad_data_3.loc[(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37'), 'cr_Coriolis_gps'] = Quad_data_3['channel_4'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')]
     Quad_data_3['cr_Coriolis_gps'] = pd.to_numeric(Quad_data_3['cr_Coriolis_gps'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')],errors = 'coerce')
-    #Quad_data_3['cr_allmeters_kgh'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = gps2kgh(Quad_data_3['cr_Coriolis_gps'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')])
-    #Quad_data_3['cr_allmeters_kgh_CH4'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = applyComposition(Quad_data_3['cr_allmeters_kgh'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')], CH4_frac)
-    Quad_data_3['cr_allmeters_scfh'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = gps2scfh(Quad_data_3['cr_Coriolis_gps'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')], T=21.1)
-    Quad_data_3['PipeSize_inch'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = 0.5
-    Quad_data_3['MeterCode'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = 21175085   
-    Quad_data_3['PipeSize_inch'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = 0.5
-    Quad_data_3['MeterCode'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')] = 21175085   
-    Quad_data_3['cr_quad_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')] = Quad_data_3['channel_2'][(Quad_data_3.index > '2021.11.04 20:24:45')]
+    Quad_data_3.loc[(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37'), 'cr_allmeters_scfh'] = gps2scfh(Quad_data_3['cr_Coriolis_gps'][(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37')], T=21.1)
+    Quad_data_3.loc[(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37'), 'PipeSize_inch'] = 0.5
+    Quad_data_3.loc[(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37'), 'MeterCode'] = 21175085 
+    Quad_data_3.loc[(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37'), 'PipeSize_inch'] = 0.5
+    Quad_data_3.loc[(Quad_data_3.index > '2021.11.04 19:28:02') & (Quad_data_3.index < '2021.11.04 20:24:37'), 'MeterCode'] = 21175085
+    Quad_data_3.loc[Quad_data_3.index > '2021.11.04 20:24:45', 'cr_quad_scfh'] = Quad_data_3['channel_2'][(Quad_data_3.index > '2021.11.04 20:24:45')]
     Quad_data_3['cr_quad_scfh'] = pd.to_numeric(Quad_data_3['cr_quad_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')],errors = 'coerce')
-    #Quad_data_3['cr_allmeters_kgh'][(Quad_data_3.index > '2021.11.04 20:24:45')] = SCFH2kgh(Quad_data_3['cr_quad_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')], T=21.1)
-    #Quad_data_3['cr_allmeters_kgh_CH4'][(Quad_data_3.index > '2021.11.04 20:24:45')] = applyComposition(Quad_data_3["cr_allmeters_kgh"][(Quad_data_3.index > '2021.11.04 20:24:45')], CH4_frac)
-    Quad_data_3['cr_allmeters_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')] = Quad_data_3['cr_quad_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')]
-    Quad_data_3['PipeSize_inch'][(Quad_data_3.index > '2021.11.04 20:24:45')] = 4
-    Quad_data_3['MeterCode'][(Quad_data_3.index > '2021.11.04 20:24:45')] = 308188    
+    Quad_data_3.loc[Quad_data_3.index > '2021.11.04 20:24:45', 'cr_allmeters_scfh'] = Quad_data_3['cr_quad_scfh'][(Quad_data_3.index > '2021.11.04 20:24:45')]
+    Quad_data_3.loc[Quad_data_3.index > '2021.11.04 20:24:45', 'PipeSize_inch'] = 4
+    Quad_data_3.loc[Quad_data_3.index > '2021.11.04 20:24:45', 'MeterCode'] = 308188  
     del Quad_data_3['channel_1'] 
     del Quad_data_3['channel_2']
     del Quad_data_3['channel_3']
@@ -446,8 +431,6 @@ def loadMeterData_Bridger(DataPath):
     hand_data_21114['datetime_UTC'] = pd.to_datetime(hand_data_21114['datetime_UTC'])
     hand_data_21114.set_index('datetime_UTC', inplace = True)
     hand_data_21114['cr_Coriolis_gps'] = pd.to_numeric(hand_data_21114['cr_Coriolis_gps'],errors = 'coerce')
-    #hand_data_21114['cr_allmeters_kgh'] = gps2kgh(hand_data_21114['cr_Coriolis_gps'])
-    #hand_data_21114['cr_allmeters_kgh_CH4'] = applyComposition(hand_data_21114['cr_allmeters_kgh'], CH4_frac) 
     hand_data_21114['cr_allmeters_scfh'] = gps2scfh(hand_data_21114['cr_Coriolis_gps'], T=21.1)
     hand_data_21114['PipeSize_inch'] = 0.5
     hand_data_21114['MeterCode'] = 21175085
@@ -478,26 +461,18 @@ def loadMeterData_Bridger(DataPath):
     quadrathermDF = quadrathermDF.bfill()
     
     # nan data where the Quadratherm isn't being used and where the nanodac isn't being used
-    quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index < '2021.11.04 19:28:02')] = np.NaN
-    quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index > '2021.11.04 20:24:37')] = np.NaN
-    quadrathermDF['cr_quad_scfh'][(quadrathermDF.index > '2021.11.04 19:28:02') & (quadrathermDF.index < '2021.11.04 20:24:37')] = np.NaN
+    quadrathermDF.loc[quadrathermDF.index < '2021.11.04 19:28:02', 'cr_Coriolis_gps'] = np.NaN
+    quadrathermDF.loc[quadrathermDF.index > '2021.11.04 20:24:37', 'cr_Coriolis_gps'] = np.NaN
+    quadrathermDF.loc[(quadrathermDF.index > '2021.11.04 19:28:02') & (quadrathermDF.index < '2021.11.04 20:24:37'), 'cr_quad_scfh'] = np.NaN
     
     # Localize the datetime index
     time_series = time_series.dt.tz_localize(pytz.utc)
     quadrathermDF.index = time_series
 
     # Add a column for moving average
-    #quadrathermDF['cr_allmeters_scfh'] = np.nan
-    #quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
-    #quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
-    #quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
-    #quadrathermDF['cr_coriolis_gps_mean'] = quadrathermDF['instantaneous_Coriolis_gps'].rolling(window=cr_averageperiod_sec).mean()
-    #quadrathermDF['cr_coriolis_gps_std'] = quadrathermDF['instantaneous_Coriolis_gps'].rolling(window=cr_averageperiod_sec).std()
-    #quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
-    #quadrathermDF['cr_avg_end'] = quadrathermDF.index
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -507,18 +482,11 @@ def loadMeterData_Bridger(DataPath):
     shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
     
     for i in range(shutoff_points.shape[0]):
-        quadrathermDF['cr_allmeters_scfh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
-        #quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean30'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean60'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean90'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
-               
-    #del quadrathermDF['instantaneous_scfh']  
-    #del quadrathermDF['instantaneous_Coriolis_gps']
-    
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_allmeters_scfh'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
+        
     # Delete all rows with NaT
     quadrathermDF["TMP"] = quadrathermDF.index.values                   # index is a DateTimeIndex
     quadrathermDF = quadrathermDF[quadrathermDF.TMP.notnull()]          # remove all NaT values
@@ -530,9 +498,7 @@ def loadMeterData_Bridger(DataPath):
 
 
 def loadMeterData_CarbonMapper(DataPath):
- 
     ## CARBON MAPPER QUADRATHERM + CORIOLIS DATA ## 
-
     # Load OCR Data
     OCR_1_path = os.path.join(DataPath, '21730_releasedat.csv')
     Quad_data_1 = pd.read_csv(OCR_1_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
@@ -541,19 +507,15 @@ def loadMeterData_CarbonMapper(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_1.set_index('datetime_local', inplace = True)
-    #Quad_data_1["cr_allmeters_kgh"] = np.nan
-    #Quad_data_1["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_1['cr_allmeters_scfh'] = np.nan
     Quad_data_1['PipeSize_inch'] = np.nan
     Quad_data_1['MeterCode'] = np.nan
     Quad_data_1['Flag_field_recorded'] = False
-    Quad_data_1['PipeSize_inch'][(Quad_data_1.index < '2021.07.30 17:22:54')] = 2
-    Quad_data_1['MeterCode'][(Quad_data_1.index < '2021.07.30 17:22:54')] = 162928
-    Quad_data_1['PipeSize_inch'][(Quad_data_1.index >= '2021.07.30 17:22:54')] = 4
-    Quad_data_1['MeterCode'][(Quad_data_1.index >= '2021.07.30 17:22:54')] = 218645
+    Quad_data_1.loc[Quad_data_1.index < '2021.07.30 17:22:54', 'PipeSize_inch'] = 2
+    Quad_data_1.loc[Quad_data_1.index < '2021.07.30 17:22:54', 'MeterCode'] = 162928
+    Quad_data_1.loc[Quad_data_1.index >= '2021.07.30 17:22:54', 'PipeSize_inch'] = 4
+    Quad_data_1.loc[Quad_data_1.index >= '2021.07.30 17:22:54', 'MeterCode'] = 218645
     Quad_data_1['cr_quad_scfh'] = pd.to_numeric(Quad_data_1['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_1["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_1['cr_quad_scfh'], T=21.1)
-    #Quad_data_1["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_1["cr_allmeters_kgh"], CH4_frac)
     Quad_data_1['cr_allmeters_scfh'] = Quad_data_1['cr_quad_scfh']
     
     OCR_2_path = os.path.join(DataPath, '2183_releasedat.csv')
@@ -563,19 +525,15 @@ def loadMeterData_CarbonMapper(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_2.set_index('datetime_local', inplace = True)
-    #Quad_data_2["cr_allmeters_kgh"] = np.nan
-    #Quad_data_2["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_2["cr_allmeters_scfh"] = np.nan
     Quad_data_2['PipeSize_inch'] = np.nan
     Quad_data_2['MeterCode'] = np.nan
     Quad_data_2['Flag_field_recorded'] = False
-    Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.08.03 17:35:25')] = 4
-    Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.08.03 17:35:25')] = 218645
-    Quad_data_2['PipeSize_inch'][(Quad_data_2.index >= '2021.08.03 17:35:25')] = 2
-    Quad_data_2['MeterCode'][(Quad_data_2.index >= '2021.08.03 17:35:25')] = 162928  
+    Quad_data_2.loc[Quad_data_2.index < '2021.08.03 17:35:25', 'PipeSize_inch'] = 4
+    Quad_data_2.loc[Quad_data_2.index < '2021.08.03 17:35:25', 'MeterCode'] = 218645
+    Quad_data_2.loc[Quad_data_2.index >= '2021.08.03 17:35:25', 'PipeSize_inch'] = 2
+    Quad_data_2.loc[Quad_data_2.index >= '2021.08.03 17:35:25', 'MeterCode'] = 162928  
     Quad_data_2['cr_quad_scfh'] = pd.to_numeric(Quad_data_2['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_2["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_2['cr_quad_scfh'], T=21.1)
-    #Quad_data_2["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_2["cr_allmeters_kgh"], CH4_frac)
     Quad_data_2['cr_allmeters_scfh'] = Quad_data_2['cr_quad_scfh']
     
     # video footage is hard to read on July 31. Use hand recorded data
@@ -586,19 +544,15 @@ def loadMeterData_CarbonMapper(DataPath):
     hand_data_21731['datetime_local'] = hand_data_21731.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
-    #hand_data_21731["cr_allmeters_kgh"] = np.nan
-    #hand_data_21731["cr_allmeters_kgh_CH4"] = np.nan  
     hand_data_21731["cr_allmeters_scfh"] = np.nan 
     hand_data_21731['datetime_local'] = hand_data_21731['datetime_local'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
     hand_data_21731['PipeSize_inch'] = 4
     hand_data_21731['MeterCode'] = 218645
     hand_data_21731.set_index('datetime_local', inplace = True)
     hand_data_21731['cr_quad_scfh'] = pd.to_numeric(hand_data_21731['cr_quad_scfh'],errors = 'coerce')
-    #hand_data_21731["cr_allmeters_kgh"] = SCFH2kgh(hand_data_21731['cr_quad_scfh'], T=21.1)
-    #hand_data_21731["cr_allmeters_kgh_CH4"] = applyComposition(hand_data_21731["cr_allmeters_kgh"], CH4_frac)
     hand_data_21731['cr_allmeters_scfh'] = hand_data_21731['cr_quad_scfh']
     hand_data_21731['Flag_field_recorded'] = True
-
+    
     # Concatenate all time series data
     Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, hand_data_21731])
     
@@ -612,7 +566,7 @@ def loadMeterData_CarbonMapper(DataPath):
     Quad_date_range_3 = Quad_date_range_3.tz_localize(pytz.utc)
     Quad_date_range_3 = Quad_date_range_3.to_frame(index = True)
     Quad_date_range = pd.concat([Quad_date_range_1, Quad_date_range_2, Quad_date_range_3])        
-
+    
     # Perform outer join between date range and Quadratherm data
     quadrathermDF = Quad_date_range.join(Quad_data_all, how='outer')
     time_series = quadrathermDF[0]
@@ -620,18 +574,11 @@ def loadMeterData_CarbonMapper(DataPath):
     
     # Back-fill missing data
     quadrathermDF = quadrathermDF.bfill()    
-
+    
     # Add a column for moving average    
-    #quadrathermDF['cr_allmeters_scfh'] = np.nan
-    #quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
-    #quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
-    #quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
-
-    #quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
-    #quadrathermDF['cr_avg_end'] = quadrathermDF.index
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -639,25 +586,19 @@ def loadMeterData_CarbonMapper(DataPath):
     shutoff_points['end_UTC'] = pd.to_datetime(shutoff_points['end_UTC'])
     shutoff_points['start_UTC'] = shutoff_points['start_UTC'].dt.tz_localize(pytz.utc)
     shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
-    
+        
     for i in range(shutoff_points.shape[0]):
-        quadrathermDF['cr_allmeters_scfh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
-        #quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean30'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean60'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean90'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-       #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_allmeters_scfh'] = 0 
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
     
     quadrathermDF['TestLocation'] = 'TX'
     
-    return quadrathermDF    
+    return quadrathermDF
 
 def loadMeterData_GHGSat(DataPath):
-
-    ## GHGSat QUADRATHERM + CORIOLIS DATA ##     
-
+    ## GHGSat QUADRATHERM + CORIOLIS DATA ##
     # Load OCR data
     OCR_1_path = os.path.join(DataPath, '211018_release_dat.csv')
     Quad_data_1 = pd.read_csv(OCR_1_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
@@ -665,16 +606,12 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_1['datetime_local'] = Quad_data_1.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    #Quad_data_1["cr_allmeters_kgh"] = np.nan
-    #Quad_data_1["cr_allmeters_kgh_CH4"] = np.nan   
     Quad_data_1['cr_allmeters_scfh'] = np.nan
     Quad_data_1['PipeSize_inch'] = 4
     Quad_data_1['MeterCode'] = 218645
     Quad_data_1['Flag_field_recorded'] = False
     Quad_data_1.set_index('datetime_local', inplace = True)
     Quad_data_1['cr_quad_scfh'] = pd.to_numeric(Quad_data_1['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_1["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_1['cr_quad_scfh'], T=21.1)
-    #Quad_data_1["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_1["cr_allmeters_kgh"], CH4_frac)
     Quad_data_1['cr_allmeters_scfh'] = Quad_data_1['cr_quad_scfh']
     
     OCR_2_path = os.path.join(DataPath, '211019_1_release_dat.csv')
@@ -684,39 +621,31 @@ def loadMeterData_GHGSat(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_2.set_index('datetime_local', inplace = True)
-    #Quad_data_2["cr_allmeters_kgh"] = np.nan
-    #Quad_data_2["cr_allmeters_kgh_CH4"] = np.nan   
     Quad_data_2['cr_allmeters_scfh'] = np.nan
     Quad_data_2['PipeSize_inch'] = np.nan
     Quad_data_2['MeterCode'] = np.nan
     Quad_data_2['Flag_field_recorded'] = False
-    Quad_data_2['PipeSize_inch'][(Quad_data_2.index < '2021.10.19 18:33:10')] = 8
-    Quad_data_2['MeterCode'][(Quad_data_2.index < '2021.10.19 18:33:10')] = 218645
-    Quad_data_2['PipeSize_inch'][(Quad_data_2.index >= '2021.10.19 18:33:10')] = 2
-    Quad_data_2['MeterCode'][(Quad_data_2.index >= '2021.10.19 18:33:10')] = 218645    
+    Quad_data_2.loc[Quad_data_2.index < '2021.10.19 18:33:10', 'PipeSize_inch'] = 8
+    Quad_data_2.loc[Quad_data_2.index < '2021.10.19 18:33:10', 'MeterCode'] = 218645
+    Quad_data_2.loc[Quad_data_2.index >= '2021.10.19 18:33:10', 'PipeSize_inch'] = 2
+    Quad_data_2.loc[Quad_data_2.index >= '2021.10.19 18:33:10', 'MeterCode'] = 218645  
     Quad_data_2['cr_quad_scfh'] = pd.to_numeric(Quad_data_2['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_2["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_2['cr_quad_scfh'], T=21.1)
-    #Quad_data_2["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_2["cr_allmeters_kgh"], CH4_frac)
     Quad_data_2['cr_allmeters_scfh'] = Quad_data_2['cr_quad_scfh']
-
+    
     hand_3_path = os.path.join(DataPath, '211019_2_release_dat.csv')
     Quad_data_3 = pd.read_csv(hand_3_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
     Quad_data_3['datetime_local'] = pd.to_datetime(Quad_data_3['datetime_local'])
     Quad_data_3['datetime_local'] = Quad_data_3.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    #Quad_data_3["cr_allmeters_kgh"] = np.nan
-    #Quad_data_3["cr_allmeters_kgh_CH4"] = np.nan 
     Quad_data_3['cr_allmeters_scfh'] = np.nan
     Quad_data_3['PipeSize_inch'] = 2
     Quad_data_3['MeterCode'] = 218645
     Quad_data_3.set_index('datetime_local', inplace = True)
     Quad_data_3['cr_quad_scfh'] = pd.to_numeric(Quad_data_3['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_3["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_3['cr_quad_scfh'], T=21.1)
-    #Quad_data_3["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_3["cr_allmeters_kgh"], CH4_frac)  
     Quad_data_3['cr_allmeters_scfh'] = Quad_data_3['cr_quad_scfh']
     Quad_data_3['Flag_field_recorded'] = True
-
+    
     OCR_4_path = os.path.join(DataPath, '211020_1_release_dat.csv')
     # Units in g/s
     Quad_data_4 = pd.read_csv(OCR_4_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_Coriolis_gps'], parse_dates=True)  
@@ -724,16 +653,12 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_4['datetime_local'] = Quad_data_4.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    #Quad_data_4["cr_allmeters_kgh"] = np.nan
-    #Quad_data_4["cr_allmeters_kgh_CH4"] = np.nan 
     Quad_data_4['cr_allmeters_scfh'] = np.nan    
     Quad_data_4['PipeSize_inch'] = 0.5
     Quad_data_4['MeterCode'] = 21175085
     Quad_data_4['Flag_field_recorded'] = False
     Quad_data_4.set_index('datetime_local', inplace = True)
     Quad_data_4['cr_Coriolis_gps'] = pd.to_numeric(Quad_data_4['cr_Coriolis_gps'],errors = 'coerce')
-    #Quad_data_4["cr_allmeters_kgh"] = gps2kgh(Quad_data_4['cr_Coriolis_gps'])
-    #Quad_data_4["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_4["cr_allmeters_kgh"], CH4_frac)     
     Quad_data_4['cr_allmeters_scfh'] = gps2scfh(Quad_data_4['cr_Coriolis_gps'], T=21.1)
     
     OCR_5_path = os.path.join(DataPath, '211020_2_release_dat_ocrcorrections.csv')
@@ -742,16 +667,12 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_5['datetime_local'] = Quad_data_5.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    #Quad_data_5["cr_allmeters_kgh"] = np.nan
-    #Quad_data_5["cr_allmeters_kgh_CH4"] = np.nan 
     Quad_data_5['cr_allmeters_scfh'] = np.nan 
     Quad_data_5['PipeSize_inch'] = 2
     Quad_data_5['MeterCode'] = 218645
     Quad_data_5['Flag_field_recorded'] = False
     Quad_data_5.set_index('datetime_local', inplace = True)
     Quad_data_5['cr_quad_scfh'] = pd.to_numeric(Quad_data_5['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_5["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_5['cr_quad_scfh'], T=21.1)
-    #Quad_data_5["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_5["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_5['cr_allmeters_scfh'] = Quad_data_5['cr_quad_scfh']     
    
     OCR_6_path = os.path.join(DataPath, '211021_release_dat.csv')
@@ -760,18 +681,14 @@ def loadMeterData_GHGSat(DataPath):
     Quad_data_6['datetime_local'] = Quad_data_6.apply(
         lambda x: pd.NA if pd.isna(x['datetime_local']) else
         x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    #Quad_data_6["cr_allmeters_kgh"] = np.nan
-    #Quad_data_6["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_6['cr_allmeters_scfh'] = np.nan 
     Quad_data_6['PipeSize_inch'] = 8
     Quad_data_6['MeterCode'] = 218645
     Quad_data_6['Flag_field_recorded'] = True
     Quad_data_6.set_index('datetime_local', inplace = True)
     Quad_data_6['cr_quad_scfh'] = pd.to_numeric(Quad_data_6['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_6["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_6['cr_quad_scfh'], T=21.1)
-    #Quad_data_6["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_6["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_6['cr_allmeters_scfh'] = Quad_data_6['cr_quad_scfh']
-
+    
     nano_7_path = os.path.join(DataPath, 'nano_211021_1.csv')
     Quad_data_7 = pd.read_csv(nano_7_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
     Quad_data_7['datetime_UTC'] = pd.to_datetime(Quad_data_7['datetime_UTC'])
@@ -779,16 +696,12 @@ def loadMeterData_GHGSat(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_7.set_index('datetime_UTC', inplace = True)
-    #Quad_data_7["cr_allmeters_kgh"] = np.nan
-    #Quad_data_7["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_7['cr_allmeters_scfh'] = np.nan
     Quad_data_7['PipeSize_inch'] = 8
     Quad_data_7['MeterCode'] = 218645
     Quad_data_7['Flag_field_recorded'] = False
     Quad_data_7['cr_quad_scfh'] = Quad_data_7['channel_1']
     Quad_data_7['cr_quad_scfh'] = pd.to_numeric(Quad_data_7['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_7["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_7['cr_quad_scfh'], T=21.1)
-    #Quad_data_7["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_7["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_7['cr_allmeters_scfh'] = Quad_data_7['cr_quad_scfh']
     del Quad_data_7['channel_1'] 
     del Quad_data_7['channel_2']
@@ -802,16 +715,12 @@ def loadMeterData_GHGSat(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_8.set_index('datetime_UTC', inplace = True)
-    #Quad_data_8["cr_allmeters_kgh"] = np.nan
-    #Quad_data_8["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_8['cr_allmeters_scfh'] = np.nan
     Quad_data_8['PipeSize_inch'] = 8
     Quad_data_8['MeterCode'] = 218645
     Quad_data_8['Flag_field_recorded'] = False
     Quad_data_8['cr_quad_scfh'] = Quad_data_8['channel_1']
     Quad_data_8['cr_quad_scfh'] = pd.to_numeric(Quad_data_8['cr_quad_scfh'],errors = 'coerce')
-   #Quad_data_8["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_8['cr_quad_scfh'], T=21.1)
-   # Quad_data_8["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_8["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_8['cr_allmeters_scfh'] = Quad_data_8['cr_quad_scfh']
     del Quad_data_8['channel_1'] 
     del Quad_data_8['channel_2']
@@ -825,22 +734,18 @@ def loadMeterData_GHGSat(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_9.set_index('datetime_UTC', inplace = True)
-    #Quad_data_9["cr_allmeters_kgh"] = np.nan
-    #Quad_data_9["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_9['cr_allmeters_scfh'] = np.nan
     Quad_data_9['PipeSize_inch'] = 8
     Quad_data_9['MeterCode'] = 218645
     Quad_data_9['Flag_field_recorded'] = False
     Quad_data_9['cr_quad_scfh'] = Quad_data_9['channel_1']
     Quad_data_9['cr_quad_scfh'] = pd.to_numeric(Quad_data_9['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_9["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_9['cr_quad_scfh'], T=21.1)
-    #Quad_data_9["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_9["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_9['cr_allmeters_scfh'] = Quad_data_9['cr_quad_scfh']
     del Quad_data_9['channel_1'] 
     del Quad_data_9['channel_2']
     del Quad_data_9['channel_3']
     del Quad_data_9['channel_4']
-
+    
     nano_10_path = os.path.join(DataPath, 'nano_211021_4.csv')
     Quad_data_10 = pd.read_csv(nano_10_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
     Quad_data_10['datetime_UTC'] = pd.to_datetime(Quad_data_10['datetime_UTC'])
@@ -848,16 +753,12 @@ def loadMeterData_GHGSat(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_10.set_index('datetime_UTC', inplace = True)
-    #Quad_data_10["cr_allmeters_kgh"] = np.nan
-    #Quad_data_10["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_10['cr_allmeters_scfh'] = np.nan
     Quad_data_10['PipeSize_inch'] = 0.5
     Quad_data_10['MeterCode'] = 21175085
     Quad_data_10['Flag_field_recorded'] = False
     Quad_data_10['cr_Coriolis_gps'] = Quad_data_10['channel_4']
     Quad_data_10['cr_Coriolis_gps'] = pd.to_numeric(Quad_data_10['cr_Coriolis_gps'],errors = 'coerce')
-    #Quad_data_10["cr_allmeters_kgh"] = gps2kgh(Quad_data_10['cr_Coriolis_gps'])
-    #Quad_data_10["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_10["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_10['cr_allmeters_scfh'] = gps2scfh(Quad_data_10['cr_Coriolis_gps'], T=21.1)
     del Quad_data_10['channel_1'] 
     del Quad_data_10['channel_2']
@@ -871,25 +772,21 @@ def loadMeterData_GHGSat(DataPath):
         lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
         x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     Quad_data_11.set_index('datetime_UTC', inplace = True)
-    #Quad_data_11["cr_allmeters_kgh"] = np.nan
-    #Quad_data_11["cr_allmeters_kgh_CH4"] = np.nan
     Quad_data_11['cr_allmeters_scfh'] = np.nan
     Quad_data_11['PipeSize_inch'] = 4
     Quad_data_11['MeterCode'] = 218645
     Quad_data_11['Flag_field_recorded'] = False
     Quad_data_11['cr_quad_scfh'] = Quad_data_11['channel_2']
     Quad_data_11['cr_quad_scfh'] = pd.to_numeric(Quad_data_11['cr_quad_scfh'],errors = 'coerce')
-    #Quad_data_11["cr_allmeters_kgh"] = SCFH2kgh(Quad_data_11['cr_quad_scfh'], T=21.1)
-    #Quad_data_11["cr_allmeters_kgh_CH4"] = applyComposition(Quad_data_11["cr_allmeters_kgh"], CH4_frac) 
     Quad_data_11['cr_allmeters_scfh'] = Quad_data_11['cr_quad_scfh']
     del Quad_data_11['channel_1'] 
     del Quad_data_11['channel_2']
     del Quad_data_11['channel_3']
     del Quad_data_11['channel_4']
-
+    
     # Concatenate all time series data
     Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3, Quad_data_4, Quad_data_5, Quad_data_6, Quad_data_7, Quad_data_8, Quad_data_9, Quad_data_10, Quad_data_11])
-
+    
     idx_18  = pd.date_range("2021.10.18 16:55:46", periods = 9199, freq = "s")
     idx_18 = idx_18.tz_localize(pytz.utc)
     idx_18 = idx_18.to_frame(index = True)
@@ -906,7 +803,7 @@ def loadMeterData_GHGSat(DataPath):
     idx_22 = idx_22.tz_localize(pytz.utc)
     idx_22 = idx_22.to_frame(index = True)
     Quad_date_range = pd.concat([idx_18, idx_19, idx_20, idx_21, idx_22])
-
+    
     # Perform outer join between date range and Quadratherm data
     quadrathermDF = Quad_date_range.join(Quad_data_all, how='outer')
     time_series = quadrathermDF[0]
@@ -914,23 +811,16 @@ def loadMeterData_GHGSat(DataPath):
     
     # Back-fill missing data
     quadrathermDF = quadrathermDF.bfill()
-
+    
     # nan data where the Quadratherm isn't being used and where the nanodac isn't being used
-    quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index < '2021.10.20 17:43:38')] = np.NaN
-    quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index > '2021.10.20 19:47:52') & (quadrathermDF.index < '2021.10.21 19:52:09')] = np.NaN
-    quadrathermDF['cr_Coriolis_gps'][(quadrathermDF.index > '2021.10.21 20:48:03')] = np.NaN
-
+    quadrathermDF.loc[quadrathermDF.index < '2021.10.20 17:43:38', 'cr_Coriolis_gps'] = np.NaN
+    quadrathermDF.loc[(quadrathermDF.index > '2021.10.20 19:47:52') & (quadrathermDF.index < '2021.10.21 19:52:09'), 'cr_Coriolis_gps'] = np.NaN
+    quadrathermDF.loc[quadrathermDF.index > '2021.10.21 20:48:03', 'cr_Coriolis_gps'] = np.NaN
+    
     # Add a column for moving average  
-    #quadrathermDF['cr_allmeters_scfh'] = np.nan
-    #quadrathermDF['cr_allmeters_scfh']  = kgh2SCFH(quadrathermDF['cr_allmeters_kgh'], T=21.1)
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
-    #quadrathermDF['cr_kgh_CH4_mean'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).mean()
-    #quadrathermDF['cr_kgh_CH4_std'] = quadrathermDF['cr_allmeters_kgh_CH4'].rolling(window=cr_averageperiod_sec).std()
-    
-    #quadrathermDF['cr_avg_start'] = quadrathermDF.index - datetime.timedelta(seconds = cr_averageperiod_sec)
-    #quadrathermDF['cr_avg_end'] = quadrathermDF.index
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -940,20 +830,15 @@ def loadMeterData_GHGSat(DataPath):
     shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
     
     for i in range(shutoff_points.shape[0]):  
-        quadrathermDF['cr_allmeters_scfh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
-        #quadrathermDF['cr_allmeters_kgh'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_allmeters_kgh_CH4'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_kgh_CH4_mean'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean30'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean60'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        quadrathermDF['cr_scfh_mean90'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0
-        #quadrathermDF['cr_kgh_CH4_std'][(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i])] = 0 
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_allmeters_scfh'] = 0 
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
           
         
     quadrathermDF['TestLocation'] = 'AZ'
-    
-    return quadrathermDF    
-
+        
+    return quadrathermDF  
 
 def combineAnemometer_Bridger(sonic_path):
     
@@ -1296,4 +1181,3 @@ def processAnemometer(path_lookup, localtz, cols, offset):
     
     
     return df
-    

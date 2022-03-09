@@ -15,8 +15,8 @@ matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper = performMatching(op
 cwd = os.getcwd()
 
 
-#csvPath = os.path.join(cwd, 'matchedDF_Bridger.csv')
-#matchedDF_Bridger.to_csv(csvPath)
+csvPath = os.path.join(cwd, 'matchedDF_Bridger_warning_fix.csv')
+matchedDF_Bridger.to_csv(csvPath)
 
 #csvPath = os.path.join(cwd, 'matchedDF_GHGSat_update.csv')
 #matchedDF_GHGSat.to_csv(csvPath)
