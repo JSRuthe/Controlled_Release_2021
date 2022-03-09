@@ -134,8 +134,26 @@ def loaddata():
     
     GHGSatDF = pd.concat([GHGSatR1DF, GHGSatR2DF, GHGSatR3DF], ignore_index=True)
 
+        
+    # Load additional satellite data
+    DataPath = os.path.join(cwd, 'SatelliteTestData')   
     
-    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF], ignore_index=True)    
+    print("Loading Satellite Stage 1 data...")
+    Sat_path = os.path.join(DataPath, 'All_satellites_stage1_20220308.csv')
+    
+    SatelliteR1DF = loadSatelliteData(Sat_path)
+    SatelliteR1DF['UnblindingStage'] = 1    
+    
+    print("Loading Satellite Stage 2 data...")
+    Sat_path = os.path.join(DataPath, 'All_satellites_stage2_20220308.csv')
+    
+    SatelliteR2DF = loadSatelliteData(Sat_path)
+    SatelliteR2DF['UnblindingStage'] = 2 
+
+    SatelliteDF = pd.concat([SatelliteR1DF, SatelliteR2DF], ignore_index=True)
+
+
+    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, SatelliteDF], ignore_index=True)    
     
   
     # load Bridger quadratherm data
@@ -153,7 +171,12 @@ def loaddata():
     DataPath = os.path.join(cwd, 'GHGSatTestData')  
     meterDF_GHGSat = loadMeterData_GHGSat(DataPath)
     
-    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
+    # load additional satellite quadratherm data
+    print("Loading additional satellite Quadratherm data...")
+    DataPath = os.path.join(cwd, 'SatelliteTestData')
+    meterDF_Satellites = loadMeterData_AdditionalSatellites(DataPath)
+    
+    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat, meterDF_Satellites])
     
     
     DataPath = os.path.join(cwd, 'BridgerTestData')  
@@ -342,6 +365,23 @@ def loadGHGSatData(filepath, timestamp_path):
     df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
     df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
     
+
+    return df
+
+def loadSatelliteData(filepath):
+    """Load additional satellite data from report and format datetimes."""
+
+    df = pd.read_csv(filepath, parse_dates=[['DateOfSurvey', 'Timestamp (hyperspectral technologies only)']])
+    
+    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Operator_Timestamp'}, inplace=True)
+
+    #df['Operator_Timestamp'] = df.apply(
+    #    lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+    #    datetime.datetime.strptime(x['Operator_Timestamp'], '%Y-%m-%d %H:%M:%S'), axis=1)    
+  
+    df['Operator_Timestamp'] = df.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
 
     return df
 
@@ -839,6 +879,178 @@ def loadMeterData_GHGSat(DataPath):
     quadrathermDF['TestLocation'] = 'AZ'
         
     return quadrathermDF  
+
+def loadMeterData_AdditionalSatellites(DataPath):
+
+    nano_1_path = os.path.join(DataPath, 'nano_211023.csv')
+    Quad_data_1 = pd.read_csv(nano_1_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_1['datetime_UTC'] = pd.to_datetime(Quad_data_1['datetime_UTC'])
+    Quad_data_1['datetime_UTC'] = Quad_data_1.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_1.set_index('datetime_UTC', inplace = True)
+    Quad_data_1['cr_allmeters_scfh'] = np.nan
+    Quad_data_1['PipeSize_inch'] = 8
+    Quad_data_1['MeterCode'] = 218645
+    Quad_data_1['Flag_field_recorded'] = False
+    Quad_data_1['cr_quad_scfh'] = Quad_data_1['channel_1']
+    Quad_data_1['cr_quad_scfh'] = pd.to_numeric(Quad_data_1['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_1['cr_allmeters_scfh'] = Quad_data_1['cr_quad_scfh']
+    del Quad_data_1['channel_1'] 
+    del Quad_data_1['channel_2']
+    del Quad_data_1['channel_3']
+    del Quad_data_1['channel_4']
+    
+    nano_2_path = os.path.join(DataPath, 'nano_211024.csv')
+    Quad_data_2 = pd.read_csv(nano_2_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_2['datetime_UTC'] = pd.to_datetime(Quad_data_2['datetime_UTC'])
+    Quad_data_2['datetime_UTC'] = Quad_data_2.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_2.set_index('datetime_UTC', inplace = True)
+    Quad_data_2['cr_allmeters_scfh'] = np.nan
+    Quad_data_2['PipeSize_inch'] = 8
+    Quad_data_2['MeterCode'] = 218645
+    Quad_data_2['Flag_field_recorded'] = False
+    Quad_data_2['cr_quad_scfh'] = Quad_data_2['channel_1']
+    Quad_data_2['cr_quad_scfh'] = pd.to_numeric(Quad_data_2['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_2['cr_allmeters_scfh'] = Quad_data_2['cr_quad_scfh']
+    del Quad_data_2['channel_1'] 
+    del Quad_data_2['channel_2']
+    del Quad_data_2['channel_3']
+    del Quad_data_2['channel_4']
+
+    nano_3_path = os.path.join(DataPath, 'nano_211027.csv')
+    Quad_data_3 = pd.read_csv(nano_3_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_3['datetime_UTC'] = pd.to_datetime(Quad_data_3['datetime_UTC'])
+    Quad_data_3['datetime_UTC'] = Quad_data_3.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_3.set_index('datetime_UTC', inplace = True)
+    Quad_data_3['cr_allmeters_scfh'] = np.nan
+    Quad_data_3['PipeSize_inch'] = 8
+    Quad_data_3['MeterCode'] = 218645
+    Quad_data_3['Flag_field_recorded'] = False
+    Quad_data_3['cr_quad_scfh'] = Quad_data_3['channel_1']
+    Quad_data_3['cr_quad_scfh'] = pd.to_numeric(Quad_data_3['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_3['cr_allmeters_scfh'] = Quad_data_3['cr_quad_scfh']
+    del Quad_data_3['channel_1'] 
+    del Quad_data_3['channel_2']
+    del Quad_data_3['channel_3']
+    del Quad_data_3['channel_4']
+
+    nano_4_path = os.path.join(DataPath, 'nano_211028.csv')
+    Quad_data_4 = pd.read_csv(nano_4_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_4['datetime_UTC'] = pd.to_datetime(Quad_data_4['datetime_UTC'])
+    Quad_data_4['datetime_UTC'] = Quad_data_4.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_4.set_index('datetime_UTC', inplace = True)
+    Quad_data_4['cr_allmeters_scfh'] = np.nan
+    Quad_data_4['PipeSize_inch'] = 8
+    Quad_data_4['MeterCode'] = 218645
+    Quad_data_4['Flag_field_recorded'] = False
+    Quad_data_4['cr_quad_scfh'] = Quad_data_4['channel_1']
+    Quad_data_4['cr_quad_scfh'] = pd.to_numeric(Quad_data_4['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_4['cr_allmeters_scfh'] = Quad_data_4['cr_quad_scfh']
+    del Quad_data_4['channel_1'] 
+    del Quad_data_4['channel_2']
+    del Quad_data_4['channel_3']
+    del Quad_data_4['channel_4']
+
+    nano_5_path = os.path.join(DataPath, 'nano_211029.csv')
+    Quad_data_5 = pd.read_csv(nano_5_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_5['datetime_UTC'] = pd.to_datetime(Quad_data_5['datetime_UTC'])
+    Quad_data_5['datetime_UTC'] = Quad_data_5.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_5.set_index('datetime_UTC', inplace = True)
+    Quad_data_5['cr_allmeters_scfh'] = np.nan
+    Quad_data_5['PipeSize_inch'] = 8
+    Quad_data_5['MeterCode'] = 218645
+    Quad_data_5['Flag_field_recorded'] = False
+    Quad_data_5['cr_quad_scfh'] = Quad_data_5['channel_1']
+    Quad_data_5['cr_quad_scfh'] = pd.to_numeric(Quad_data_5['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_5['cr_allmeters_scfh'] = Quad_data_5['cr_quad_scfh']
+    del Quad_data_5['channel_1'] 
+    del Quad_data_5['channel_2']
+    del Quad_data_5['channel_3']
+    del Quad_data_5['channel_4']
+
+    nano_6_path = os.path.join(DataPath, 'nano_21112.csv')
+    Quad_data_6 = pd.read_csv(nano_6_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_6['datetime_UTC'] = pd.to_datetime(Quad_data_6['datetime_UTC'])
+    Quad_data_6['datetime_UTC'] = Quad_data_6.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_6.set_index('datetime_UTC', inplace = True)
+    Quad_data_6['cr_allmeters_scfh'] = np.nan
+    Quad_data_6['PipeSize_inch'] = 4
+    Quad_data_6['MeterCode'] = 218645
+    Quad_data_6['Flag_field_recorded'] = False
+    Quad_data_6['cr_quad_scfh'] = Quad_data_6['channel_2']
+    Quad_data_6['cr_quad_scfh'] = pd.to_numeric(Quad_data_6['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_6['cr_allmeters_scfh'] = Quad_data_6['cr_quad_scfh']
+    del Quad_data_6['channel_1'] 
+    del Quad_data_6['channel_2']
+    del Quad_data_6['channel_3']
+    del Quad_data_6['channel_4']    
+    
+    # Concatenate all time series data
+    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3, Quad_data_4, Quad_data_5, Quad_data_6])
+    
+    idx_23 = pd.date_range("2021.10.23 18:23:00", periods = 1440, freq = "s")
+    idx_23 = idx_23.tz_localize(pytz.utc)
+    idx_23 = idx_23.to_frame(index = True)
+    idx_24 = pd.date_range("2021.10.24 17:18:00", periods = 4440, freq = "s")
+    idx_24 = idx_24.tz_localize(pytz.utc)
+    idx_24 = idx_24.to_frame(index = True)
+    idx_27 = pd.date_range("2021.10.27 18:11:00", periods = 1800, freq = "s")
+    idx_27 = idx_27.tz_localize(pytz.utc)
+    idx_27 = idx_27.to_frame(index = True)    
+    idx_28 = pd.date_range("2021.10.28 18:00:00", periods = 1320, freq = "s")
+    idx_28 = idx_28.tz_localize(pytz.utc)
+    idx_28 = idx_28.to_frame(index = True)
+    idx_29 = pd.date_range("2021.10.29 18:08:00", periods = 1380, freq = "s")
+    idx_29 = idx_29.tz_localize(pytz.utc)
+    idx_29 = idx_29.to_frame(index = True)
+    idx_2 = pd.date_range("2021.11.02 18:13:00", periods = 1500, freq = "s")
+    idx_2 = idx_2.tz_localize(pytz.utc)
+    idx_2 = idx_2.to_frame(index = True)
+    Quad_date_range = pd.concat([idx_23, idx_24, idx_27, idx_28, idx_29, idx_2])
+    
+    # Perform outer join between date range and Quadratherm data
+    quadrathermDF = Quad_date_range.join(Quad_data_all, how='outer')
+    time_series = quadrathermDF[0]
+    del quadrathermDF[0]
+
+    # Back-fill missing data
+    quadrathermDF = quadrathermDF.bfill()
+    
+    # Add a column for moving average  
+    quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
+    quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
+    quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
+    
+    so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
+    shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
+    shutoff_points['start_UTC'] = pd.to_datetime(shutoff_points['start_UTC'])
+    shutoff_points['end_UTC'] = pd.to_datetime(shutoff_points['end_UTC'])
+    shutoff_points['start_UTC'] = shutoff_points['start_UTC'].dt.tz_localize(pytz.utc)
+    shutoff_points['end_UTC'] = shutoff_points['end_UTC'].dt.tz_localize(pytz.utc)
+    
+    for i in range(shutoff_points.shape[0]):  
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_allmeters_scfh'] = 0 
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
+          
+        
+    quadrathermDF['TestLocation'] = 'AZ'
+            
+    
+    return quadrathermDF
+
 
 def combineAnemometer_Bridger(sonic_path):
     
