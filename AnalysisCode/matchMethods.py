@@ -63,6 +63,22 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
 
     matchedDF_CarbonMapper = assessUncertainty(matchedDF_CarbonMapper)
 
+    DataPath = os.path.join(cwd, 'MAIRTestData') 
+    print("Checking plume lengths MAIR...")
+    matchedDF_MAIR = matchedDF[matchedDF['OperatorSet'] == 'MAIR']
+    matchedDF_MAIR = matchedDF_MAIR.reset_index()  
+    #Use same Sonic data for MAIR as we generated for Carbon Mapper
+    sonicDF_MAIR = sonicDF_All[sonicDF_All['OperatorSet'] == 'CarbonMapper']    
+    matchedDF_MAIR = checkPlumes(DataPath, matchedDF_MAIR, sonicDF_MAIR, 
+                                                                                tstamp_file = 'transition_stamps.csv',                                          
+                                                                                minPlumeLength = 150)
+
+    print("Classifying detections MAIR...")
+    matchedDF_MAIR = classifyDetections_MAIR(matchedDF_MAIR)  # assign TP, FN, and NE classifications
+
+    matchedDF_MAIR = assessUncertainty(matchedDF_MAIR)
+
+
     # Set flow error
 
 
@@ -211,6 +227,40 @@ def classifyDetections_CarbonMapper(matchedDF):
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0 
+        elif not row['PlumeSteady']:
+            matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
+            matchedDF.loc[idx, 'Detection'] = 0  
+        else:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
+            matchedDF.loc[idx, 'Detection'] = 1
+            
+    return matchedDF
+
+def classifyDetections_MAIR(matchedDF):
+    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
+    :param matchedDF =  dataframe with passes matched to release events
+    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
+
+    for idx, row in matchedDF.iterrows():
+        if not row['PlumeEstablished']:
+            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
+            matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
+            matchedDF.loc[idx, 'Detection'] = -1
+        # False negatives occur if Bridger does not record a detection 
+        # AND Stanford is releasing
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] > 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        # False positives occur if Bridger does record a detection 
+        # AND Stanford is not releasing
+        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
+        #2/21/2022 note, there are no FP results in data set
+        elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0     
         elif not row['PlumeSteady']:
             matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
             matchedDF.loc[idx, 'Detection'] = 0  

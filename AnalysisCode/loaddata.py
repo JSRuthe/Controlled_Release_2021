@@ -100,6 +100,28 @@ def loaddata():
     #bridgerDF = bridgerDF.drop(bridgerDF.index[[0,1,116,117]])
     CarbonMapperDF = CarbonMapperDF.reset_index()    
 
+    # load MAIR data
+    
+    DataPath = os.path.join(cwd, 'MAIRTestData') 
+
+    print("Loading MAIR day 1 data...")
+    MAIR_path = os.path.join(DataPath, 'RF04.20210730.release.final.csv')
+    timestamp_path = os.path.join(DataPath,'MAIR_timestamps.csv')    
+    MAIRday1DF = loadMAIRData(MAIR_path, timestamp_path)
+    MAIRday1DF['WindType'] = 'HRRR'
+    MAIRday1DF['OperatorSet'] = 'MAIR'
+    MAIRday1DF['UnblindingStage'] = 1 
+    
+    print("Loading MAIR day 2 data...")
+    MAIR_path = os.path.join(DataPath, 'RF05.20210803.release.final.csv')
+    timestamp_path = os.path.join(DataPath,'MAIR_timestamps.csv') 
+    MAIRday2DF = loadMAIRData(MAIR_path, timestamp_path)
+    MAIRday2DF['WindType'] = 'HRRR'
+    MAIRday2DF['OperatorSet'] = 'MAIR' 
+    MAIRday2DF['UnblindingStage'] = 1 
+
+    MAIRDF = pd.concat([MAIRday1DF, MAIRday2DF], ignore_index=True)
+
 
     # load GHGSat data 
     DataPath = os.path.join(cwd, 'GHGSatTestData')   
@@ -153,7 +175,7 @@ def loaddata():
     SatelliteDF = pd.concat([SatelliteR1DF, SatelliteR2DF], ignore_index=True)
 
 
-    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, SatelliteDF], ignore_index=True)    
+    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, MAIRDF], ignore_index=True)    
     
   
     # load Bridger quadratherm data
@@ -176,7 +198,7 @@ def loaddata():
     DataPath = os.path.join(cwd, 'SatelliteTestData')
     meterDF_Satellites = loadMeterData_AdditionalSatellites(DataPath)
     
-    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat, meterDF_Satellites])
+    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
     
     
     DataPath = os.path.join(cwd, 'BridgerTestData')  
@@ -299,6 +321,66 @@ def loadCarbonMapperData(filepath, timestamp_path):
 
 
     df['Operator_Timestamp'] = df['Operator_Timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
+        lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
+    StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps['Stanford_timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
+    
+    tol = pd.Timedelta('1 minute')
+    df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
+    df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
+    
+    
+    return df
+
+def loadMAIRData(filepath, timestamp_path):
+    """Load Carbon Mapper data from report and format datetimes."""
+    
+    #df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
+    dfraw = pd.read_csv(filepath, parse_dates=True)
+
+    dfraw.rename(columns={'Time':'Operator_Timestamp'}, inplace=True)
+    
+    dfraw['Operator_Timestamp'] = dfraw.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        datetime.datetime.strptime(x['Operator_Timestamp'], '%Y/%m/%d %H:%M:%S'), axis=1)    
+  
+    dfraw['Operator_Timestamp'] = dfraw.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    column_names = [
+        "PerformerExperimentID",
+        "FacilityID",
+        "EquipmentUnitID",
+        "Operator_Timestamp",
+        "StartTime",
+        "EndTime",
+        "SurveyTime",
+        "Gas",
+        "PlumeLength (hyperspectral technologies only)",
+        "FacilityEmissionRate",
+        "FacilityEmissionRateUpper",
+        "FacilityEmissionRateLower",
+        "UncertaintyType",
+        "WindSpeed",
+        "WindDirection",
+        "TransitDirection",
+        "QC filter",
+        "NumberOfEmissionSourcesReported"]
+
+    df = pd.DataFrame(columns = column_names)
+
+
+    df["Gas"] = 'Methane'
+    df["FacilityEmissionRate"] = dfraw['Emissions']
+    df['Operator_Timestamp'] = pd.to_datetime(dfraw['Operator_Timestamp'])
+    df["FacilityEmissionRateUpper"] = dfraw['Upper']
+    df["FacilityEmissionRateLower"] = dfraw['Lower']
+
     
     StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
@@ -995,16 +1077,73 @@ def loadMeterData_AdditionalSatellites(DataPath):
     del Quad_data_6['channel_2']
     del Quad_data_6['channel_3']
     del Quad_data_6['channel_4']    
+
+    OCR_7_path = os.path.join(DataPath, '211017_releasedat.csv')
+    Quad_data_7 = pd.read_csv(OCR_7_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
+    Quad_data_7['datetime_local'] = pd.to_datetime(Quad_data_7['datetime_local'])
+    Quad_data_7['datetime_local'] = Quad_data_7.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_local']) else
+        x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_7['cr_allmeters_scfh'] = np.nan 
+    Quad_data_7['PipeSize_inch'] = 8
+    Quad_data_7['MeterCode'] = 218645
+    Quad_data_7['Flag_field_recorded'] = True
+    Quad_data_7.set_index('datetime_local', inplace = True)
+    Quad_data_7['cr_quad_scfh'] = pd.to_numeric(Quad_data_7['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_7['cr_allmeters_scfh'] = Quad_data_7['cr_quad_scfh']
+
+    OCR_8_path = os.path.join(DataPath, '211025_releasedat.csv')
+    Quad_data_8 = pd.read_csv(OCR_8_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
+    Quad_data_8['datetime_local'] = pd.to_datetime(Quad_data_8['datetime_local'])
+    Quad_data_8['datetime_local'] = Quad_data_8.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_local']) else
+        x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_8['cr_allmeters_scfh'] = np.nan 
+    Quad_data_8['PipeSize_inch'] = 2
+    Quad_data_8['MeterCode'] = 218645
+    Quad_data_8['Flag_field_recorded'] = True
+    Quad_data_8.set_index('datetime_local', inplace = True)
+    Quad_data_8['cr_quad_scfh'] = pd.to_numeric(Quad_data_8['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_8['cr_allmeters_scfh'] = Quad_data_8['cr_quad_scfh']
+    
+    # For October 25th, use the OCR data up until 18:00
+    Quad_data_8 = Quad_data_8[Quad_data_8.index  < '2021.10.25 17:17:26']
+    
+    nano_9_path = os.path.join(DataPath, 'nano_211025.csv')
+    Quad_data_9 = pd.read_csv(nano_9_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_9['datetime_UTC'] = pd.to_datetime(Quad_data_9['datetime_UTC'])
+    Quad_data_9['datetime_UTC'] = Quad_data_9.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_9.set_index('datetime_UTC', inplace = True)
+    Quad_data_9['cr_allmeters_scfh'] = np.nan
+    Quad_data_9['PipeSize_inch'] = 2
+    Quad_data_9['MeterCode'] = 218645
+    Quad_data_9['Flag_field_recorded'] = False
+    Quad_data_9['cr_quad_scfh'] = Quad_data_9['channel_3']
+    Quad_data_9['cr_quad_scfh'] = pd.to_numeric(Quad_data_9['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_9['cr_allmeters_scfh'] = Quad_data_9['cr_quad_scfh']
+    del Quad_data_9['channel_1'] 
+    del Quad_data_9['channel_2']
+    del Quad_data_9['channel_3']
+    del Quad_data_9['channel_4']      
+    
     
     # Concatenate all time series data
-    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3, Quad_data_4, Quad_data_5, Quad_data_6])
-    
+    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3, Quad_data_4, Quad_data_5, Quad_data_6, Quad_data_7, Quad_data_8, Quad_data_9])
+
+    idx_17 = pd.date_range("2021.10.17 17:43:58", periods = 2342, freq = "s")
+    idx_17 = idx_17.tz_localize(pytz.utc)
+    idx_17 = idx_17.to_frame(index = True)    
     idx_23 = pd.date_range("2021.10.23 18:23:00", periods = 1440, freq = "s")
     idx_23 = idx_23.tz_localize(pytz.utc)
     idx_23 = idx_23.to_frame(index = True)
     idx_24 = pd.date_range("2021.10.24 17:18:00", periods = 4440, freq = "s")
     idx_24 = idx_24.tz_localize(pytz.utc)
     idx_24 = idx_24.to_frame(index = True)
+    idx_25 = pd.date_range("2021.10.25 17:12:12", periods = 2423, freq = "s")
+    idx_25 = idx_25.tz_localize(pytz.utc)
+    idx_25 = idx_25.to_frame(index = True)
     idx_27 = pd.date_range("2021.10.27 18:11:00", periods = 1800, freq = "s")
     idx_27 = idx_27.tz_localize(pytz.utc)
     idx_27 = idx_27.to_frame(index = True)    
@@ -1017,7 +1156,7 @@ def loadMeterData_AdditionalSatellites(DataPath):
     idx_2 = pd.date_range("2021.11.02 18:13:00", periods = 1500, freq = "s")
     idx_2 = idx_2.tz_localize(pytz.utc)
     idx_2 = idx_2.to_frame(index = True)
-    Quad_date_range = pd.concat([idx_23, idx_24, idx_27, idx_28, idx_29, idx_2])
+    Quad_date_range = pd.concat([idx_17, idx_23, idx_24, idx_25, idx_27, idx_28, idx_29, idx_2])
     
     # Perform outer join between date range and Quadratherm data
     quadrathermDF = Quad_date_range.join(Quad_data_all, how='outer')
