@@ -78,6 +78,24 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
 
     matchedDF_MAIR = assessUncertainty(matchedDF_MAIR)
 
+    DataPath = os.path.join(cwd, 'SatelliteTestData') 
+    print("Checking plume lengths Satellite data...")
+    matchedDF_Satellites = matchedDF[matchedDF['OperatorSet'] != 'MAIR' and
+                               matchedDF['OperatorSet'] != 'CarbonMapper' and
+                               matchedDF['OperatorSet'] != 'Bridger' and
+                               matchedDF['OperatorSet'] != 'GHGSat']
+    matchedDF_Satellites = matchedDF_Satellites.reset_index()  
+    sonicDF_Satellites = sonicDF_All    
+    #matchedDF_MAIR = checkPlumes(DataPath, matchedDF_MAIR, sonicDF_MAIR, 
+    #                                                                            tstamp_file = 'transition_stamps.csv',                                          
+    #                                                                            minPlumeLength = 150)
+
+    print("Classifying detections MAIR...")
+    matchedDF_MAIR = classifyDetections_MAIR(matchedDF_MAIR)  # assign TP, FN, and NE classifications
+
+    matchedDF_MAIR = assessUncertainty(matchedDF_MAIR)
+    
+
 
     # Set flow error
 
@@ -91,7 +109,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     #print("Setting errors in flow estimates...")
     #matchedDF = setFlowError(matchedDF)
 
-    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper
+    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR
 
 
 def matchPassToQuadratherm(operatorDF, meterDF_All):
@@ -136,6 +154,7 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
     matchedDF['cr_idx'] = np.nan
     matchedDF['PlumeLength_m'] = np.nan
     matchedDF['PlumeEstablished'] = np.nan
+    matchedDF['PlumeDevelopTime'] = np.nan
 
     for i in range(matchedDF.shape[0]):
         matchedDF['cr_start'][i] = min(Quad_new_setpoint['datetime_UTC'], key = lambda datetime :
@@ -143,6 +162,9 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
                                                    (matchedDF['Stanford_timestamp'][i] - datetime).total_seconds()))
         idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF['cr_start'][i]].index[0]    
         matchedDF['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
+      
+        
+    matchedDF['PlumeDevelopTime'] = (matchedDF['Stanford_timestamp'] - pd.to_datetime(matchedDF['cr_start'])).dt.total_seconds()/60
         
     idx = 2001
     for i in range(Quad_new_setpoint.shape[0]):    

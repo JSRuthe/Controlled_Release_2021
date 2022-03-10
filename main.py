@@ -10,19 +10,19 @@ import os
 
 operatorDF, meterDF_All, sonicDF_All = loaddata()
     
-matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper = performMatching(operatorDF, meterDF_All, sonicDF_All)
+matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR = performMatching(operatorDF, meterDF_All, sonicDF_All)
 
 cwd = os.getcwd()
 
 
-csvPath = os.path.join(cwd, 'matchedDF_Bridger_warning_fix.csv')
-matchedDF_Bridger.to_csv(csvPath)
+#csvPath = os.path.join(cwd, 'matchedDF_Bridger_warning_fix.csv')
+#matchedDF_Bridger.to_csv(csvPath)
 
 #csvPath = os.path.join(cwd, 'matchedDF_GHGSat_update.csv')
 #matchedDF_GHGSat.to_csv(csvPath)
 
-csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_1sigma.csv')
-matchedDF_CarbonMapper.to_csv(csvPath)
+#csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_1sigma.csv')
+#matchedDF_CarbonMapper.to_csv(csvPath)
 
 #csvPath = os.path.join(cwd, 'meterDF_All.csv')
 #meterDF_All.to_csv(csvPath)
@@ -62,17 +62,17 @@ cols = [
 #csvPath = os.path.join(cwd, 'meterDF_CarbonMapper_unblindedToCM.csv')
 #meterDF_CarbonMapper_toTeam.to_csv(csvPath)
 
-matchedDF_GHGSat_toTeam = matchedDF_GHGSat.reindex(columns = cols)
-csvPath = os.path.join(cwd, 'matchedDF_GHGSat_unblindedToGHGSat.csv')
-matchedDF_GHGSat_toTeam.to_csv(csvPath)
+# matchedDF_GHGSat_toTeam = matchedDF_GHGSat.reindex(columns = cols)
+# csvPath = os.path.join(cwd, 'matchedDF_GHGSat_unblindedToGHGSat.csv')
+# matchedDF_GHGSat_toTeam.to_csv(csvPath)
 
-date_start = pd.to_datetime('2021.10.18 00:00:00')
-date_start = date_start.tz_localize('UTC')
-date_end = pd.to_datetime('2021.10.23 00:00:00')
-date_end = date_end.tz_localize('UTC')
-meterDF_GHGSat_toTeam = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
-csvPath = os.path.join(cwd, 'meterDF_GHGSat_unblindedToGHGSat.csv')
-meterDF_GHGSat_toTeam.to_csv(csvPath)
+# date_start = pd.to_datetime('2021.10.18 00:00:00')
+# date_start = date_start.tz_localize('UTC')
+# date_end = pd.to_datetime('2021.10.23 00:00:00')
+# date_end = date_end.tz_localize('UTC')
+# meterDF_GHGSat_toTeam = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+# csvPath = os.path.join(cwd, 'meterDF_GHGSat_unblindedToGHGSat.csv')
+# meterDF_GHGSat_toTeam.to_csv(csvPath)
 
 #matchedDF_Bridger_toTeam = matchedDF_Bridger.reindex(columns = cols)
 #csvPath = os.path.join(cwd, 'matchedDF_Bridger_unblindedToBridger.csv')

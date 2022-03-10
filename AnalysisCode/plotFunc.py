@@ -31,7 +31,7 @@ warnings.filterwarnings('ignore')
 
 
 
-def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
+def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, MatchedDF_MAIR):
     
     #classification statistics Bridger  
     df_counts_Bridger = matchedDF_Bridger.pivot_table( 
@@ -77,9 +77,72 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper):
   
     plt.close()     
 
+    # Plotting MAIR parity
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axs = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    parity_plot(axs, plot_data, 'MAIR')
+
+    plt.savefig('MAIR_parity.png', dpi = 300)
+  
+    plt.close()
+
+    # MAIR and Carbon Mapper comparison
+    
+    # Trim down MAIR and Carbon Mapper dataframes to only include timestamps and 
+    # Emission points
+    
+    column_names = [
+        "Timestamp MAIR",
+        "Emissions MAIR",
+        "Emissions Stanford"]
+    date_start = pd.to_datetime('2021.08.03 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    
+    df_compare = pd.DataFrame(columns = column_names)
+    plot_data_MAIR = matchedDF_MAIR[(matchedDF_MAIR['tc_Classification'] == 'TP') & (matchedDF_MAIR['Operator_Timestamp'] > date_start)]  
+    df_compare["Timestamp MAIR"] = plot_data_MAIR['Operator_Timestamp']
+    df_compare['Emissions MAIR'] = plot_data_MAIR['FacilityEmissionRate']
+    df_compare['Emissions Stanford'] = plot_data_MAIR['cr_kgh_CH4_mean90']
+    
+    
+    plot_data_CarbonMapper = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == 1) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]    
+    
+    tol = pd.Timedelta('1 minute')
+    df_compare = pd.merge_asof(left=df_compare.sort_values('Timestamp MAIR'),right=plot_data_CarbonMapper.sort_values('Operator_Timestamp'), right_on='Operator_Timestamp',left_on='Timestamp MAIR',direction='nearest',tolerance=tol)     
+    df_compare = df_compare[df_compare["FacilityEmissionRate"].notnull()]
+
+    plt.subplots_adjust(hspace = 0.5)
+    fig, ax = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+    
+
+    ax.set_xlabel('Methane release rate [kgh]',fontsize=12)
+    ax.set_ylabel('Reported release rate [kgh]',fontsize=12)
+    ax.set_xlim([0,1000])
+    ax.set_ylim([0,1000])
+    
+    # parity line
+    x_lim = np.array([0,7000])
+    y_lim = np.array([0,7000])
+    ax.plot(x_lim,y_lim,color='black',linewidth=1, label = 'Parity line')
+      
+    x_MAIR = df_compare['Emissions Stanford'].values
+    y_MAIR = df_compare['Emissions MAIR'].fillna(0).values 
+    x_CM = df_compare['Emissions Stanford'].values
+    y_CM = df_compare['FacilityEmissionRate'].fillna(0).values 
+
+    # scatter plots
+    ax.scatter(x_MAIR,y_MAIR,s = 40, color='#8c1515')
+    ax.scatter(x_CM,y_CM,s = 40, color='#FEC51D')
+
+    plt.savefig('MAIR_compare.png', dpi = 300)
+  
+    plt.close()   
+
     # Plot Bridger parity
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
+
 
     
     for i, ax in enumerate(axs.flat):

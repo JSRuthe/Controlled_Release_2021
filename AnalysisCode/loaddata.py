@@ -175,7 +175,7 @@ def loaddata():
     SatelliteDF = pd.concat([SatelliteR1DF, SatelliteR2DF], ignore_index=True)
 
 
-    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, MAIRDF], ignore_index=True)    
+    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, MAIRDF, SatelliteDF], ignore_index=True)    
     
   
     # load Bridger quadratherm data
@@ -198,7 +198,7 @@ def loaddata():
     DataPath = os.path.join(cwd, 'SatelliteTestData')
     meterDF_Satellites = loadMeterData_AdditionalSatellites(DataPath)
     
-    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat])
+    meterDF_All = pd.concat([meterDF_Bridger, meterDF_CarbonMapper, meterDF_GHGSat, meterDF_Satellites])
     
     
     DataPath = os.path.join(cwd, 'BridgerTestData')  
@@ -595,6 +595,8 @@ def loadMeterData_Bridger(DataPath):
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
+    quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
+    quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -608,6 +610,8 @@ def loadMeterData_Bridger(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
         
     # Delete all rows with NaT
     quadrathermDF["TMP"] = quadrathermDF.index.values                   # index is a DateTimeIndex
@@ -701,6 +705,8 @@ def loadMeterData_CarbonMapper(DataPath):
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
+    quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
+    quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -714,7 +720,9 @@ def loadMeterData_CarbonMapper(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
-    
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
+        
     quadrathermDF['TestLocation'] = 'TX'
     
     return quadrathermDF
@@ -943,6 +951,8 @@ def loadMeterData_GHGSat(DataPath):
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
+    quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
+    quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -956,7 +966,8 @@ def loadMeterData_GHGSat(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
-          
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
         
     quadrathermDF['TestLocation'] = 'AZ'
         
@@ -1170,6 +1181,8 @@ def loadMeterData_AdditionalSatellites(DataPath):
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
+    quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
+    quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
     
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
@@ -1183,7 +1196,9 @@ def loadMeterData_AdditionalSatellites(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean30'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean60'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
-          
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
+        
         
     quadrathermDF['TestLocation'] = 'AZ'
             
