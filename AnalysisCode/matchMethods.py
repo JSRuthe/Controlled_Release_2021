@@ -63,6 +63,8 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
 
     matchedDF_CarbonMapper = assessUncertainty(matchedDF_CarbonMapper)
 
+
+
     DataPath = os.path.join(cwd, 'MAIRTestData') 
     print("Checking plume lengths MAIR...")
     matchedDF_MAIR = matchedDF[matchedDF['OperatorSet'] == 'MAIR']
@@ -78,22 +80,24 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
 
     matchedDF_MAIR = assessUncertainty(matchedDF_MAIR)
 
+
+
     DataPath = os.path.join(cwd, 'SatelliteTestData') 
     print("Checking plume lengths Satellite data...")
-    matchedDF_Satellites = matchedDF[matchedDF['OperatorSet'] != 'MAIR' and
-                               matchedDF['OperatorSet'] != 'CarbonMapper' and
-                               matchedDF['OperatorSet'] != 'Bridger' and
-                               matchedDF['OperatorSet'] != 'GHGSat']
+    matchedDF_Satellites = matchedDF[(matchedDF['OperatorSet'] != 'MAIR') &
+                               (matchedDF['OperatorSet'] != 'CarbonMapper') &
+                               (matchedDF['OperatorSet'] != 'Bridger') &
+                               (matchedDF['OperatorSet'] != 'GHGSat')]
     matchedDF_Satellites = matchedDF_Satellites.reset_index()  
     sonicDF_Satellites = sonicDF_All    
-    #matchedDF_MAIR = checkPlumes(DataPath, matchedDF_MAIR, sonicDF_MAIR, 
-    #                                                                            tstamp_file = 'transition_stamps.csv',                                          
-    #                                                                            minPlumeLength = 150)
+    matchedDF_Satellites = checkPlumes(DataPath, matchedDF_Satellites, sonicDF_Satellites, 
+                                                                                tstamp_file = 'transition_stamps.csv',                                          
+                                                                                minPlumeLength = 150)
 
-    print("Classifying detections MAIR...")
-    matchedDF_MAIR = classifyDetections_MAIR(matchedDF_MAIR)  # assign TP, FN, and NE classifications
+    print("Classifying detections Satellites...")
+    matchedDF_Satellites = classifyDetections_Satellites(matchedDF_Satellites)  # assign TP, FN, and NE classifications
 
-    matchedDF_MAIR = assessUncertainty(matchedDF_MAIR)
+    matchedDF_Satellites = assessUncertainty(matchedDF_Satellites)
     
 
 
@@ -109,7 +113,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     #print("Setting errors in flow estimates...")
     #matchedDF = setFlowError(matchedDF)
 
-    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR
+    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR, matchedDF_Satellites
 
 
 def matchPassToQuadratherm(operatorDF, meterDF_All):
@@ -160,10 +164,13 @@ def checkPlumes(DataPath, matchedDF, sonicDF,
         matchedDF['cr_start'][i] = min(Quad_new_setpoint['datetime_UTC'], key = lambda datetime :
                                                   ((matchedDF['Stanford_timestamp'][i] - datetime).total_seconds() < 0,
                                                    (matchedDF['Stanford_timestamp'][i] - datetime).total_seconds()))
-        idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF['cr_start'][i]].index[0]    
-        matchedDF['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
-      
+        idx = Quad_new_setpoint[Quad_new_setpoint['datetime_UTC'] == matchedDF['cr_start'][i]].index[0] 
         
+        if DataPath != r'C:\Users\jruthe\Controlled_Release_2021\SatelliteTestData':
+            matchedDF['cr_end'][i] = Quad_new_setpoint['datetime_UTC'][idx+1]
+        else:
+            matchedDF['cr_end'][i] = 0
+            
     matchedDF['PlumeDevelopTime'] = (matchedDF['Stanford_timestamp'] - pd.to_datetime(matchedDF['cr_start'])).dt.total_seconds()/60
         
     idx = 2001
@@ -329,6 +336,41 @@ def classifyDetections_GHGSat(matchedDF):
             
     return matchedDF
 
+def classifyDetections_Satellites(matchedDF):
+    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
+    :param matchedDF =  dataframe with passes matched to release events
+    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
+
+    for idx, row in matchedDF.iterrows():
+        if not row['PlumeEstablished']:
+            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
+            matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
+            matchedDF.loc[idx, 'Detection'] = -1
+        # False negatives occur if Bridger does not record a detection 
+        # AND Stanford is releasing
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] > 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        # False positives occur if Bridger does record a detection 
+        # AND Stanford is not releasing
+        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
+        #2/21/2022 note, there are no FP results in data set
+        elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0     
+        elif not row['PlumeSteady']:
+            matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
+            matchedDF.loc[idx, 'Detection'] = 0  
+        else:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
+            matchedDF.loc[idx, 'Detection'] = 1
+            
+    return matchedDF
+
+
 def calcPlumeLength(t1, t2, sonicDF):
     """integrate wind speed from t1 to t2 to determine plume length in meters
     :param t1 = start time for integration
@@ -395,8 +437,14 @@ def assessUncertainty(df):
     df['cr_kgh_CH4_mean90'] = np.nan
     df['cr_kgh_CH4_lower90'] = np.nan
     df['cr_kgh_CH4_upper90'] = np.nan    
+    df['cr_kgh_CH4_mean300'] = np.nan
+    df['cr_kgh_CH4_lower300'] = np.nan
+    df['cr_kgh_CH4_upper300'] = np.nan 
+    df['cr_kgh_CH4_mean600'] = np.nan
+    df['cr_kgh_CH4_lower600'] = np.nan
+    df['cr_kgh_CH4_upper600'] = np.nan 
     
-    mean30, std30, mean60, std60, mean90, std90 = assessVariability(df)
+    mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600 = assessVariability(df)
     
     for idx, row in df.iterrows():
         # If row was hand written add an additional uncertainty term
@@ -454,6 +502,44 @@ def assessUncertainty(df):
         df.loc[idx, 'cr_kgh_CH4_mean90'] = ObservationStats[0]
         df.loc[idx, 'cr_kgh_CH4_lower90'] = ObservationStats[1]
         df.loc[idx, 'cr_kgh_CH4_upper90'] = ObservationStats[2]
+
+    for idx, row in df.iterrows():
+        # If row was hand written add an additional uncertainty term
+        if row['Flag_field_recorded'] == True:
+            field_recorded_mean = mean300
+            field_recorded_std = std300
+        else:
+            field_recorded_mean = 1
+            field_recorded_std = 0     
+        
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean300'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  field_recorded_mean,
+                                                                                                  field_recorded_std,
+                                                                                                  NumberMonteCarloDraws = 10000, 
+                                                                                                  hist=0, 
+                                                                                                  units='kgh')
+        df.loc[idx, 'cr_kgh_CH4_mean300'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower300'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper300'] = ObservationStats[2]
+
+    for idx, row in df.iterrows():
+        # If row was hand written add an additional uncertainty term
+        if row['Flag_field_recorded'] == True:
+            field_recorded_mean = mean600
+            field_recorded_std = std600
+        else:
+            field_recorded_mean = 1
+            field_recorded_std = 0     
+        
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean600'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'],
+                                                                                                  field_recorded_mean,
+                                                                                                  field_recorded_std,
+                                                                                                  NumberMonteCarloDraws = 10000, 
+                                                                                                  hist=0, 
+                                                                                                  units='kgh')
+        df.loc[idx, 'cr_kgh_CH4_mean600'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower600'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper600'] = ObservationStats[2]    
     
     return df
 
@@ -473,8 +559,16 @@ def assessVariability(df):
         frac90 = df['cr_scfh_mean90']/df['cr_allmeters_scfh']
         mean90 = frac90.mean()
         std90 = frac90.std() 
+
+        frac300 = df['cr_scfh_mean300']/df['cr_allmeters_scfh']
+        mean300 = frac300.mean()
+        std300 = frac300.std() 
+
+        frac600 = df['cr_scfh_mean90']/df['cr_allmeters_scfh']
+        mean600 = frac600.mean()
+        std600 = frac600.std() 
         
-        return mean30, std30, mean60, std60, mean90, std90
+        return mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600
     
         
         

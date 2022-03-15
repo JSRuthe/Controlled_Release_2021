@@ -10,7 +10,7 @@ import os
 
 operatorDF, meterDF_All, sonicDF_All = loaddata()
     
-matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR = performMatching(operatorDF, meterDF_All, sonicDF_All)
+matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR, matchedDF_Satellites = performMatching(operatorDF, meterDF_All, sonicDF_All)
 
 cwd = os.getcwd()
 
@@ -26,6 +26,9 @@ cwd = os.getcwd()
 
 #csvPath = os.path.join(cwd, 'meterDF_All.csv')
 #meterDF_All.to_csv(csvPath)
+
+csvPath = os.path.join(cwd, 'matchedDF_Satellites.csv')
+matchedDF_Satellites.to_csv(csvPath)
 
 # COlumn names for export to teams:
     
