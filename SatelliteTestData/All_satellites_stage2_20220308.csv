@@ -21,8 +21,8 @@ PerformerExperimentID,FacilityID,EquipmentUnitID,DateOfSurvey,Timestamp (hypersp
 20,1,1,10/24/2021,18:25:02,,,,Sentinel-2/Kayrros,Methane,cloudy,cloudy,,,,,,,N/A
 21,1,1,10/27/2021,18:34:57,,,,Sentinel-2/Kayrros,Methane,376,5134,6929,3340,1-sigma confidence interval,3.32,46.1,189,N/A
 22,1,1,10/29/2021,18:24:58,,,,Sentinel-2/Kayrros,Methane,348,7267,10546,3988,1-sigma confidence interval,4.86,46.1,189,N/A
-23,1,1,1/11/2021,18:34:54,,,,Sentinel-2/Kayrros,Methane,0,0,,,,,,,N/A
-24,1,1,3/11/2021,18:25:01,,,,Sentinel-2/Kayrros,Methane,330,3199,4899,1498,1-sigma confidence interval,2.96,36.9,189,N/A
+23,1,1,11/1/2021,18:34:54,,,,Sentinel-2/Kayrros,Methane,0,0,,,,,,,N/A
+24,1,1,11/3/2021,18:25:01,,,,Sentinel-2/Kayrros,Methane,330,3199,4899,1498,1-sigma confidence interval,2.96,36.9,189,N/A
 25,1,1,10/21/2021,18:10:37,,,,Landsat 8/Kayrros,Methane,319,3234,3921,2547,1-sigma confidence interval,3.9,47.46,189,N/A
 26,1,1,10/28/2021,18:16:48,,,,Landsat 8/Kayrros,Methane,280,2489,3024,1955,1-sigma confidence interval,4.6,45.59,189,N/A
 27,1,1,10/16/2021,18:36:26,,,,PRISMA/Kayrros,Methane,703,3379,4328,2430,1-sigma confidence interval,6.18,15.1,191,N/A

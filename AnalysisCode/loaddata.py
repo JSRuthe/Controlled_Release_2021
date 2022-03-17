@@ -1132,29 +1132,60 @@ def loadMeterData_AdditionalSatellites(DataPath):
     # For October 25th, use the OCR data up until 18:00
     Quad_data_8 = Quad_data_8[Quad_data_8.index  < '2021.10.25 17:17:26']
     
-    nano_9_path = os.path.join(DataPath, 'nano_211025.csv')
-    Quad_data_9 = pd.read_csv(nano_9_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
-    Quad_data_9['datetime_UTC'] = pd.to_datetime(Quad_data_9['datetime_UTC'])
-    Quad_data_9['datetime_UTC'] = Quad_data_9.apply(
-        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
-        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    Quad_data_9.set_index('datetime_UTC', inplace = True)
-    Quad_data_9['cr_allmeters_scfh'] = np.nan
-    Quad_data_9['PipeSize_inch'] = 2
+    OCR_9_path = os.path.join(DataPath, '211016_releasedat_1.csv')
+    Quad_data_9 = pd.read_csv(OCR_9_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
+    Quad_data_9['datetime_local'] = pd.to_datetime(Quad_data_9['datetime_local'])
+    Quad_data_9['datetime_local'] = Quad_data_9.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_local']) else
+        x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_9['cr_allmeters_scfh'] = np.nan 
+    Quad_data_9['PipeSize_inch'] = 8
     Quad_data_9['MeterCode'] = 218645
-    Quad_data_9['Flag_field_recorded'] = False
-    Quad_data_9['cr_quad_scfh'] = Quad_data_9['channel_3']
+    Quad_data_9['Flag_field_recorded'] = True
+    Quad_data_9.set_index('datetime_local', inplace = True)
     Quad_data_9['cr_quad_scfh'] = pd.to_numeric(Quad_data_9['cr_quad_scfh'],errors = 'coerce')
     Quad_data_9['cr_allmeters_scfh'] = Quad_data_9['cr_quad_scfh']
-    del Quad_data_9['channel_1'] 
-    del Quad_data_9['channel_2']
-    del Quad_data_9['channel_3']
-    del Quad_data_9['channel_4']      
+
+    OCR_10_path = os.path.join(DataPath, '211016_releasedat_2.csv')
+    Quad_data_10 = pd.read_csv(OCR_10_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
+    Quad_data_10['datetime_local'] = pd.to_datetime(Quad_data_10['datetime_local'])
+    Quad_data_10['datetime_local'] = Quad_data_10.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_local']) else
+        x['datetime_local'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_10['cr_allmeters_scfh'] = np.nan 
+    Quad_data_10['PipeSize_inch'] = 8
+    Quad_data_10['MeterCode'] = 218645
+    Quad_data_10['Flag_field_recorded'] = True
+    Quad_data_10.set_index('datetime_local', inplace = True)
+    Quad_data_10['cr_quad_scfh'] = pd.to_numeric(Quad_data_10['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_10['cr_allmeters_scfh'] = Quad_data_10['cr_quad_scfh']
+
+    nano_11_path = os.path.join(DataPath, 'nano_211025.csv')
+    Quad_data_11 = pd.read_csv(nano_11_path, skiprows=1, usecols=[0,1,2,3,4],names=['datetime_UTC','channel_1','channel_2','channel_3','channel_4'], parse_dates=True)
+    Quad_data_11['datetime_UTC'] = pd.to_datetime(Quad_data_11['datetime_UTC'])
+    Quad_data_11['datetime_UTC'] = Quad_data_11.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_UTC']) else
+        x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+    Quad_data_11.set_index('datetime_UTC', inplace = True)
+    Quad_data_11['cr_allmeters_scfh'] = np.nan
+    Quad_data_11['PipeSize_inch'] = 2
+    Quad_data_11['MeterCode'] = 218645
+    Quad_data_11['Flag_field_recorded'] = False
+    Quad_data_11['cr_quad_scfh'] = Quad_data_11['channel_3']
+    Quad_data_11['cr_quad_scfh'] = pd.to_numeric(Quad_data_11['cr_quad_scfh'],errors = 'coerce')
+    Quad_data_11['cr_allmeters_scfh'] = Quad_data_11['cr_quad_scfh']
+    del Quad_data_11['channel_1'] 
+    del Quad_data_11['channel_2']
+    del Quad_data_11['channel_3']
+    del Quad_data_11['channel_4']      
     
     
     # Concatenate all time series data
-    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3, Quad_data_4, Quad_data_5, Quad_data_6, Quad_data_7, Quad_data_8, Quad_data_9])
+    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3, Quad_data_4, Quad_data_5, Quad_data_6, Quad_data_7, Quad_data_8, Quad_data_9, Quad_data_10, Quad_data_11])
 
+    idx_16 = pd.date_range("2021.10.16 16:50:56", periods = 6627, freq = "s")
+    idx_16 = idx_16.tz_localize(pytz.utc)
+    idx_16 = idx_16.to_frame(index = True) 
     idx_17 = pd.date_range("2021.10.17 17:43:58", periods = 2342, freq = "s")
     idx_17 = idx_17.tz_localize(pytz.utc)
     idx_17 = idx_17.to_frame(index = True)    
@@ -1179,7 +1210,7 @@ def loadMeterData_AdditionalSatellites(DataPath):
     idx_2 = pd.date_range("2021.11.02 18:13:00", periods = 1500, freq = "s")
     idx_2 = idx_2.tz_localize(pytz.utc)
     idx_2 = idx_2.to_frame(index = True)
-    Quad_date_range = pd.concat([idx_17, idx_23, idx_24, idx_25, idx_27, idx_28, idx_29, idx_2])
+    Quad_date_range = pd.concat([idx_16, idx_17, idx_23, idx_24, idx_25, idx_27, idx_28, idx_29, idx_2])
     
     # Perform outer join between date range and Quadratherm data
     quadrathermDF = Quad_date_range.join(Quad_data_all, how='outer')
@@ -1530,6 +1561,57 @@ def combineAnemometer_GHGSat(sonic_path):
 
 def combineAnemometer_Satellites(sonic_path):
     
+    # Process data for October 16
+    # Location = Ehrenberg
+    # Timezone = MST
+    
+    # Sonic data is in Palo Alto time
+    localtz = pytz.timezone("US/Pacific")
+    date_string = '21.10.16'
+    path_lookup = sonic_path + date_string + '\\'
+    #path_export = path_compiled + date_string
+    cols = [0,1,2]
+    AZ_day = 1
+    offset = 0.8438*AZ_day + 54.865
+    offset = int(round(offset))    
+    
+    sonic_date_range_0  = pd.date_range("2021.10.16 16:50:56", periods = 6627, freq = "s")
+    sonic_date_range_0 = sonic_date_range_0.to_frame(index = True)
+    sonic_date_range_0  = sonic_date_range_0.tz_localize(pytz.utc)
+
+    file = 'AZ_21 Anemometer_filled.csv'
+    data = pd.read_csv(os.path.join(path_lookup, file),skiprows=1, 
+        usecols=cols,names=['Direction','Speed_MPS','time'], index_col='time', parse_dates=True)
+    data = data.dropna()
+    
+    data = data.reset_index()
+
+    df = data.copy()
+    df['Speed_MPS'] = df['Speed_MPS'].astype(float)
+
+    # Set timezone
+    df['time'] = pd.to_datetime(df['time'])
+    df['time'] = df['time'].dt.tz_localize(localtz)
+    df = df.sort_values("time").reset_index(drop=True)    
+    df['time'] = df['time'].apply(lambda x: x.astimezone(pytz.utc))
+
+    # Apply time offset    
+    df['time'] = df['time'] - datetime.timedelta(seconds = offset)
+
+    # Calculate moving average of wind speed
+    df['Speed_Moving_MPS'] = df['Speed_MPS'].rolling(window =300).mean()
+
+    sonicDF_temp0 = df
+    sonicDF_temp0 = sonicDF_temp0.set_index('time')
+
+    # Perform outer join between date range and Quadratherm data
+    #sonicDF_temp1 = sonic_date_range_1.join(sonicDF_temp1, how='outer')
+    sonicDF_temp0 = sonic_date_range_0.merge(sonicDF_temp0, how='outer', left_index=True, right_index=True)
+    sonicDF_temp0 = sonicDF_temp0.iloc[: , 2:]
+    
+     # Back-fill missing data
+    sonicDF_temp0 = sonicDF_temp0.bfill()
+    
     # Process data for October 17
     # Location = Ehrenberg
     # Timezone = MST
@@ -1762,7 +1844,7 @@ def combineAnemometer_Satellites(sonic_path):
      # Back-fill missing data
     sonicDF_temp8 = sonicDF_temp8.bfill()       
     
-    sonicDF = pd.concat([sonicDF_temp1, sonicDF_temp2, sonicDF_temp3, sonicDF_temp4, sonicDF_temp5, sonicDF_temp6, sonicDF_temp7, sonicDF_temp8])
+    sonicDF = pd.concat([sonicDF_temp0, sonicDF_temp1, sonicDF_temp2, sonicDF_temp3, sonicDF_temp4, sonicDF_temp5, sonicDF_temp6, sonicDF_temp7, sonicDF_temp8])
 
 
     return sonicDF
