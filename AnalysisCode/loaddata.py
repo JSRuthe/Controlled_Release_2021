@@ -1599,7 +1599,7 @@ def combineAnemometer_Satellites(sonic_path):
     df['time'] = df['time'] - datetime.timedelta(seconds = offset)
 
     # Calculate moving average of wind speed
-    df['Speed_Moving_MPS'] = df['Speed_MPS'].rolling(window =300).mean()
+    df['Wind_MPS_mean300'] = df['Speed_MPS'].rolling(window =300).mean()
 
     sonicDF_temp0 = df
     sonicDF_temp0 = sonicDF_temp0.set_index('time')
@@ -1876,7 +1876,7 @@ def processAnemometer(path_lookup, localtz, cols, offset):
     df['time'] = df['time'] - datetime.timedelta(seconds = offset)
 
     # Calculate moving average of wind speed
-    df['Speed_Moving_MPS'] = df['Speed_MPS'].rolling(window =300).mean()
+    df['Wind_MPS_mean300'] = df['Speed_MPS'].rolling(window =300).mean()
     
     
     return df
