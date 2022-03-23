@@ -50,7 +50,7 @@ import random as rnd
 # TestLocation = 2
 # NumberMonteCarloDraws = 1000
 
-def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation,field_recorded_mean,field_recorded_std,NumberMonteCarloDraws, hist=0, units='kgh'):
+def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, Operator,field_recorded_mean,field_recorded_std,NumberMonteCarloDraws, hist=0, units='kgh'):
     # Rename parameters if in non-integer form
     if MeterOption == 162928:
         MeterAgeOption = 0
@@ -232,18 +232,7 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     if InputReleaseRate == 0:
         ObservationStats = np.zeros(3)
     else:
-        if TestLocation:        
-            ObservationStats =np.array([np.mean(ObservationRealizationHolder),
-            np.percentile(ObservationRealizationHolder, 2.5),
-            # np.percentile(ObservationRealizationHolder, 5),
-            # np.percentile(ObservationRealizationHolder, 25),
-            # np.percentile(ObservationRealizationHolder, 50),
-            # np.percentile(ObservationRealizationHolder, 75),
-            # np.percentile(ObservationRealizationHolder, 95),
-            np.percentile(ObservationRealizationHolder, 97.5)]) #,
-            # np.std(ObservationRealizationHolder)])            
-
-        else:
+        if Operator == "CarbonMapper":
             ObservationStats =np.array([np.mean(ObservationRealizationHolder),
             np.percentile(ObservationRealizationHolder, 16),
             # np.percentile(ObservationRealizationHolder, 5),
@@ -252,12 +241,23 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             # np.percentile(ObservationRealizationHolder, 75),
             # np.percentile(ObservationRealizationHolder, 95),
             np.percentile(ObservationRealizationHolder, 84)]) #,
+            # np.std(ObservationRealizationHolder)])            
+
+        else:
+            ObservationStats =np.array([np.mean(ObservationRealizationHolder),
+            np.percentile(ObservationRealizationHolder, 2.5),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(ObservationRealizationHolder, 97.5)]) #,
             # np.std(ObservationRealizationHolder)])
 
     if InputReleaseRate == 0:
         ObservationStatsNormed = np.zeros(3)
     else:
-        if TestLocation == "TX":
+        if Operator == "CarbonMapper":
             ObservationStatsNormed =np.array([np.mean(ObservationRealizationHolder),
             np.percentile(ObservationRealizationHolder, 16),
             # np.percentile(ObservationRealizationHolder, 5),

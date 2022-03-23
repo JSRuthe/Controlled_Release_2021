@@ -16,23 +16,23 @@ matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR, mat
 cwd = os.getcwd()
 
 
-#csvPath = os.path.join(cwd, 'matchedDF_Bridger_warning_fix.csv')
-#matchedDF_Bridger.to_csv(csvPath)
+csvPath = os.path.join(cwd, 'matchedDF_Bridger_22323.csv')
+matchedDF_Bridger.to_csv(csvPath)
 
-#csvPath = os.path.join(cwd, 'matchedDF_GHGSat_update.csv')
-#matchedDF_GHGSat.to_csv(csvPath)
+csvPath = os.path.join(cwd, 'matchedDF_GHGSat_22323.csv')
+matchedDF_GHGSat.to_csv(csvPath)
 
-#csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_1sigma.csv')
-#matchedDF_CarbonMapper.to_csv(csvPath)
+csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_1sigma_22323.csv')
+matchedDF_CarbonMapper.to_csv(csvPath)
 
-csvPath = os.path.join(cwd, 'matchedDF_MAIR.csv')
+csvPath = os.path.join(cwd, 'matchedDF_MAIR_22323.csv')
 matchedDF_MAIR.to_csv(csvPath)
 
 #csvPath = os.path.join(cwd, 'meterDF_All.csv')
 #meterDF_All.to_csv(csvPath)
 
-#csvPath = os.path.join(cwd, 'matchedDF_Satellites_22315.csv')
-#matchedDF_Satellites.to_csv(csvPath)
+csvPath = os.path.join(cwd, 'matchedDF_Satellites_22323.csv')
+matchedDF_Satellites.to_csv(csvPath)
 
 # COlumn names for export to teams:
     
@@ -58,7 +58,7 @@ cols = [
     "Operator_Timestamp"]
 
 matchedDF_MAIR_toTeam = matchedDF_MAIR.reindex(columns = cols)
-csvPath = os.path.join(cwd, 'matchedDF_MAIR_unblindedToMAIR.csv')
+csvPath = os.path.join(cwd, 'matchedDF_MAIR_unblindedToMAIR_22323.csv')
 matchedDF_MAIR_toTeam.to_csv(csvPath)
 
 date_start = pd.to_datetime('2021.07.30 00:00:00')
