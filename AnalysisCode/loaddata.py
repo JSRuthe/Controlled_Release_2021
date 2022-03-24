@@ -204,28 +204,32 @@ def loaddata():
     DataPath = os.path.join(cwd, 'BridgerTestData')  
     # load Bridger anemometer data
     print("Loading Bridger anemometer data...")
-    sonic_path = os.path.join(DataPath, 'Sonic\\')
+    #sonic_path = os.path.join(DataPath, 'Sonic\\')
+    sonic_path = os.path.join(DataPath, 'Sonic')
     sonicDF_Bridger = combineAnemometer_Bridger(sonic_path)
     sonicDF_Bridger['OperatorSet'] = 'Bridger'
     
     DataPath = os.path.join(cwd, 'CarbonMapperTestData')  
     # load Carbon Mapper anemometer data
     print("Loading Carbon Mapper anemometer data...")
-    sonic_path = os.path.join(DataPath, 'Sonic\\')
+    #sonic_path = os.path.join(DataPath, 'Sonic\\')
+    sonic_path = os.path.join(DataPath, 'Sonic')
     sonicDF_CarbonMapper = combineAnemometer_CarbonMapper(sonic_path)
     sonicDF_CarbonMapper['OperatorSet'] = 'CarbonMapper'
     
     DataPath = os.path.join(cwd, 'GHGSatTestData')  
     # load GHGSat anemometer data
     print("Loading GHGSat anemometer data...")
-    sonic_path = os.path.join(DataPath, 'Sonic\\')
+    #sonic_path = os.path.join(DataPath, 'Sonic\\')
+    sonic_path = os.path.join(DataPath, 'Sonic')
     sonicDF_GHGSat = combineAnemometer_GHGSat(sonic_path)
     sonicDF_GHGSat['OperatorSet'] = 'GHGSat'
     
     DataPath = os.path.join(cwd, 'SatelliteTestData')  
     # load additional satellite anemometer data
     print("Loading additional satellite anemometer data...")
-    sonic_path = os.path.join(DataPath, 'Sonic\\')
+    #sonic_path = os.path.join(DataPath, 'Sonic\\')
+    sonic_path = os.path.join(DataPath, 'Sonic')
     sonicDF_Satellites = combineAnemometer_Satellites(sonic_path)
     sonicDF_Satellites['OperatorSet'] = 'Satellites'    
     
@@ -1258,7 +1262,8 @@ def combineAnemometer_Bridger(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.11.3'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 19
@@ -1287,7 +1292,8 @@ def combineAnemometer_Bridger(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.11.4'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 20
@@ -1324,7 +1330,8 @@ def combineAnemometer_CarbonMapper(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.7.30'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     offset = 3
@@ -1352,7 +1359,8 @@ def combineAnemometer_CarbonMapper(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.7.31'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,7]
     offset = 3
@@ -1380,7 +1388,8 @@ def combineAnemometer_CarbonMapper(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.8.3'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,7]
     offset = 3
@@ -1415,7 +1424,8 @@ def combineAnemometer_GHGSat(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.18'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 3
@@ -1444,7 +1454,8 @@ def combineAnemometer_GHGSat(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.19'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 4
@@ -1473,7 +1484,8 @@ def combineAnemometer_GHGSat(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.20'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 5
@@ -1502,7 +1514,8 @@ def combineAnemometer_GHGSat(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.21'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 6
@@ -1531,7 +1544,8 @@ def combineAnemometer_GHGSat(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.22'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 7
@@ -1568,7 +1582,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.16'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [0,1,2]
     AZ_day = 1
@@ -1619,7 +1634,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.17'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 2
@@ -1648,7 +1664,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.23'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 8
@@ -1677,7 +1694,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.24'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 9
@@ -1706,7 +1724,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.25'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 10
@@ -1735,7 +1754,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.27'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 12
@@ -1764,7 +1784,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.28'
-    path_lookup = sonic_path + date_string + '\\'
+    #ath_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 13
@@ -1793,7 +1814,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.10.29'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 14
@@ -1822,7 +1844,8 @@ def combineAnemometer_Satellites(sonic_path):
     # Sonic data is in Palo Alto time
     localtz = pytz.timezone("US/Pacific")
     date_string = '21.11.02'
-    path_lookup = sonic_path + date_string + '\\'
+    #path_lookup = sonic_path + date_string + '\\'
+    path_lookup = os.path.join(sonic_path, date_string)
     #path_export = path_compiled + date_string
     cols = [1,2,6]
     AZ_day = 18
