@@ -84,6 +84,45 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
 
     matchedDF_MAIR = assessUncertainty(matchedDF_MAIR)
 
+    DataPath = os.path.join(cwd, 'SOOFIETestData')
+    print("Checking plume lengths SOOFIE...")
+    matchedDF_SOOFIE = matchedDF[matchedDF['OperatorSet'] == 'SOOFIE']
+    matchedDF_SOOFIE = matchedDF_SOOFIE.reset_index()
+    #Use the full sonic dataset
+
+    sonicDF_SOOFIE = sonicDF_All
+
+    #matchedDF_SOOFIE_new = pd.DataFrame(columns=matchedDF_SOOFIE.columns)
+
+    #start_date = pd.to_datetime('2021.10.16 00:00:00')
+    #for single_date in (start_date + datetime.timedelta(days = n) for n in range(20)):
+    #    print(single_date.date())
+
+    # Extract SOOFIE data where we have wind data
+    #sonic_days = pd.Series(sonicDF_All.index).apply(lambda x: x.date).unique()
+    #sonic_days_all = pd.Series(sonicDF_All.index).apply(lambda x: x.date)
+    #SOOFIE_days = pd.Series(matchedDF_SOOFIE['Stanford_timestamp']).apply(lambda x: x.date)
+    #is_sonic = SOOFIE_days.isin(sonic_days)
+    #matchedDF_SOOFIE = matchedDF_SOOFIE[is_sonic]
+    #for single_date in sonic_days:
+    #    isin_single_date = (sonic_days_all == single_date)
+    #    earliest = min(sonicDF_SOOFIE.loc[isin_single_date.values,:].index)
+    #    latest = max(sonicDF_SOOFIE.loc[isin_single_date.values,:].index)
+    #    new_rows = matchedDF_SOOFIE[(matchedDF_SOOFIE['Stanford_timestamp'] > earliest) &
+    #                                (matchedDF_SOOFIE['Stanford_timestamp'] < latest)]
+    #    matchedDF_SOOFIE_new = pd.concat([matchedDF_SOOFIE_new, new_rows])
+    #
+    #matchedDF_SOOFIE = matchedDF_SOOFIE_new
+    #
+    matchedDF_SOOFIE = checkPlumes(DataPath, matchedDF_SOOFIE, sonicDF_SOOFIE,
+                                                                                tstamp_file = 'transition_stamps.csv',
+                                                                                minPlumeLength = 150,
+                                                                                Operator = 'SOOFIE')
+
+    print("Classifying detections SOOFIE...")
+    matchedDF_SOOFIE = classifyDetections_SOOFIE(matchedDF_SOOFIE)  # assign TP, FN, and NE classifications
+
+    matchedDF_SOOFIE = assessUncertainty(matchedDF_SOOFIE)
 
 
     DataPath = os.path.join(cwd, 'SatelliteTestData') 
@@ -118,7 +157,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     #print("Setting errors in flow estimates...")
     #matchedDF = setFlowError(matchedDF)
 
-    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR, matchedDF_Satellites
+    return matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR, matchedDF_Satellites, matchedDF_SOOFIE
 
 
 def matchPassToQuadratherm(operatorDF, meterDF_All, sonicDF_All):
@@ -217,13 +256,12 @@ def classifyDetections_Bridger(matchedDF):
             matchedDF.loc[idx, 'Detection'] = -1
         # False negatives occur if Bridger does not record a detection 
         # AND Stanford is releasing
+        # Bridger reports "NA" for non-detects
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
         # False positives occur if Bridger does record a detection 
         # AND Stanford is not releasing
-        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
-        #2/21/2022 note, there are no FP results in data set
         elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
@@ -249,15 +287,14 @@ def classifyDetections_CarbonMapper(matchedDF):
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
             matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
             matchedDF.loc[idx, 'Detection'] = -1
-        # False negatives occur if Bridger does not record a detection 
+        # False negatives occur if Carbon Mapper does not record a detection
         # AND Stanford is releasing
+        # For Carbon Mapper we use the QC filter to differentiate between detects and non-detects
         elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        # False positives occur if Bridger does record a detection 
+        # False positives occur if Carbon Mapper does record a detection
         # AND Stanford is not releasing
-        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
-        #2/21/2022 note, there are no FP results in data set
         elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
@@ -286,15 +323,14 @@ def classifyDetections_MAIR(matchedDF):
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
             matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
             matchedDF.loc[idx, 'Detection'] = -1
-        # False negatives occur if Bridger does not record a detection 
+        # False negatives occur if MAIR does not record a detection
         # AND Stanford is releasing
+        # MAIR reports "NA" for non-detects
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        # False positives occur if Bridger does record a detection 
+        # False positives occur if MAIR does record a detection
         # AND Stanford is not releasing
-        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
-        #2/21/2022 note, there are no FP results in data set
         elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
@@ -320,15 +356,14 @@ def classifyDetections_GHGSat(matchedDF):
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
             matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
             matchedDF.loc[idx, 'Detection'] = -1
-        # False negatives occur if Bridger does not record a detection 
+        # False negatives occur if GHGSat does not record a detection
         # AND Stanford is releasing
+        # For GHGSat we have added a QC filter column to identify detects and non-detects
         elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        # False positives occur if Bridger does record a detection 
+        # False positives occur if GHGSat does record a detection
         # AND Stanford is not releasing
-        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
-        #2/21/2022 note, there are no FP results in data set
         elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
@@ -364,8 +399,6 @@ def classifyDetections_Satellites(matchedDF):
             matchedDF.loc[idx, 'Detection'] = 0
         # False positives occur if Bridger does record a detection 
         # AND Stanford is not releasing
-        #todo: check with Jeff if cr_SCFH_mean would actually be zero in FP or if he should be checking setpoint instead of metered value.
-        #2/21/2022 note, there are no FP results in data set
         elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
@@ -379,6 +412,42 @@ def classifyDetections_Satellites(matchedDF):
             matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
             matchedDF.loc[idx, 'Detection'] = 1
             
+    return matchedDF
+
+
+def classifyDetections_SOOFIE(matchedDF):
+    """ Classify each pass as TP (True Positive), FN (False Negative), or NE (Not Established)
+    :param matchedDF =  dataframe with passes matched to release events
+    :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
+
+    for idx, row in matchedDF.iterrows():
+        if not row['PlumeEstablished']:
+            # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
+            matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
+            matchedDF.loc[idx, 'Detection'] = -1
+        # False negatives occur if Bridger does not record a detection
+        # AND Stanford is releasing
+        elif (pd.to_numeric(row['FacilityEmissionRate']) == 0) and (row['cr_allmeters_scfh'] > 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        # False positives occur if Bridger does record a detection
+        # AND Stanford is not releasing
+        elif (pd.to_numeric(row['FacilityEmissionRate']) > 0) and (row['cr_allmeters_scfh'] <= 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif (pd.to_numeric(row['FacilityEmissionRate']) == 0) and (row['cr_allmeters_scfh'] <= 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']):
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif not row['PlumeSteady']:
+            matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
+            matchedDF.loc[idx, 'Detection'] = 0
+        else:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TP'  # TP = True Positive
+            matchedDF.loc[idx, 'Detection'] = 1
+
     return matchedDF
 
 
@@ -454,8 +523,11 @@ def assessUncertainty(df):
     df['cr_kgh_CH4_mean600'] = np.nan
     df['cr_kgh_CH4_lower600'] = np.nan
     df['cr_kgh_CH4_upper600'] = np.nan 
-    
-    mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600 = assessVariability(df)
+    df['cr_kgh_CH4_mean900'] = np.nan
+    df['cr_kgh_CH4_lower900'] = np.nan
+    df['cr_kgh_CH4_upper900'] = np.nan
+
+    mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600, mean900, std900 = assessVariability(df)
     
     for idx, row in df.iterrows():
         # If row was hand written add an additional uncertainty term
@@ -469,7 +541,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean30'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 10000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean30'] = ObservationStats[0]
@@ -488,7 +560,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean60'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 10000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean60'] = ObservationStats[0]
@@ -507,7 +579,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean90'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 10000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean90'] = ObservationStats[0]
@@ -526,7 +598,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean300'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 10000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean300'] = ObservationStats[0]
@@ -545,14 +617,34 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean600'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 10000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean600'] = ObservationStats[0]
         df.loc[idx, 'cr_kgh_CH4_lower600'] = ObservationStats[1]
-        df.loc[idx, 'cr_kgh_CH4_upper600'] = ObservationStats[2]    
-    
+        df.loc[idx, 'cr_kgh_CH4_upper600'] = ObservationStats[2]
+
+    for idx, row in df.iterrows():
+        # If row was hand written add an additional uncertainty term
+        if row['Flag_field_recorded'] == True:
+            field_recorded_mean = mean900
+            field_recorded_std = std900
+        else:
+            field_recorded_mean = 1
+            field_recorded_std = 0
+
+        ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean900'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
+                                                                                                  field_recorded_mean,
+                                                                                                  field_recorded_std,
+                                                                                                  NumberMonteCarloDraws=10000,
+                                                                                                  hist=0,
+                                                                                                  units='kgh')
+        df.loc[idx, 'cr_kgh_CH4_mean900'] = ObservationStats[0]
+        df.loc[idx, 'cr_kgh_CH4_lower900'] = ObservationStats[1]
+        df.loc[idx, 'cr_kgh_CH4_upper900'] = ObservationStats[2]
+
     return df
+
 
 def assessVariability(df):
         # THis function calculates variability between the rolling average release rate and the instantaneous release rate and returns the mean and the standard deviation
@@ -575,11 +667,15 @@ def assessVariability(df):
         mean300 = frac300.mean()
         std300 = frac300.std() 
 
-        frac600 = df['cr_scfh_mean90']/df['cr_allmeters_scfh']
+        frac600 = df['cr_scfh_mean600']/df['cr_allmeters_scfh']
         mean600 = frac600.mean()
         std600 = frac600.std() 
-        
-        return mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600
+
+        frac900 = df['cr_scfh_mean900']/df['cr_allmeters_scfh']
+        mean900 = frac900.mean()
+        std900 = frac900.std()
+
+        return mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600, mean900, std900
     
         
         

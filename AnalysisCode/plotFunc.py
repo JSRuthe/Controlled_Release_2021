@@ -52,8 +52,19 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
                                 index='UnblindingStage', 
                                 columns='tc_Classification', 
                                 values = 'PerformerExperimentID',
-                                aggfunc = len)    
+                                aggfunc = len)   
+    
+    df_counts_MAIR = matchedDF_MAIR.pivot_table( 
+                                index='UnblindingStage', 
+                                columns='tc_Classification', 
+                                values = 'PerformerExperimentID',
+                                aggfunc = len) 
 
+    df_counts_SOOFIE = matchedDF_SOOFIE.pivot_table(
+                                index='UnblindingStage',
+                                columns='tc_Classification',
+                                values = 'Operator_Timestamp',
+                                aggfunc = len)
     
     # Plotting Carbon Mapper parity
     plt.subplots_adjust(hspace = 0.5)
@@ -75,11 +86,32 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
          
     plt.savefig('CarbonMapper_parity_warningfix.png', dpi = 300)
   
-    plt.close()     
+    plt.close()
+
+    # Plotting Carbon Mapper parity (test set only)
+    plt.subplots_adjust(hspace=0.5)
+    fig, axs = plt.subplots(2, 2, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    for i, ax in enumerate(axs.flat):
+        # fig,ax1 = plt.subplot(1,1,(stages + 1))
+        if i == 3:
+            break
+        plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (i + 1)) & (
+                    matchedDF_CarbonMapper['tc_Classification'] == 'TP') & (
+                    matchedDF_CarbonMapper['Round 3 test set'] == 1)]
+
+        parity_plot(ax, plot_data, 'CarbonMapper')
+
+    plt.savefig('CarbonMapper_parity_testset.png', dpi=300)
+
+    plt.close()
 
     # Plotting MAIR parity
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    plot_data = matchedDF_MAIR[
+        matchedDF_MAIR['tc_Classification'] == 'TP']
 
     parity_plot(axs, plot_data, 'MAIR')
 
@@ -527,8 +559,8 @@ OUTPUT
   """
 
   # set up plot
-  ax.set_xlabel('Methane release rate [kgh]',fontsize=8)
-  ax.set_ylabel('Reported release rate [kgh]',fontsize=8)
+  ax.set_xlabel('Methane release rate [kgh]',fontsize=10)
+  ax.set_ylabel('Reported release rate [kgh]',fontsize=10)
   ax.set_xlim(plot_lim)
   ax.set_ylim(plot_lim)
 
@@ -583,11 +615,11 @@ OUTPUT
     ax.fill_between(np.sort(x), lower_PI, upper_PI, color='black', alpha=0.05)
 
   # ax.legend(loc=legend_loc, bbox_to_anchor=(1.6, 0.62),fontsize=12)   # legend box on the right
-  ax.legend(loc=legend_loc,fontsize=7)   # legend box within the plot
+  ax.legend(loc=legend_loc,fontsize=8)   # legend box within the plot
   ax.set_yticks(np.arange(0,plot_lim[1]+1000,1000))
-  ax.set_yticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=8)
+  ax.set_yticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10)
   ax.set_xticks(np.arange(0,plot_lim[1]+1000,1000))
-  ax.set_xticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=8)
+  ax.set_xticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10)
  
   
 

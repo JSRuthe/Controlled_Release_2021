@@ -19,7 +19,7 @@ def loaddata():
 
     print("Loading Bridger Stage 1 (HRRR) data ...")
     bridgerHRRR_path = os.path.join(DataPath, 'XOM0011 Stanford CR - HRRR.xlsx')
-    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps_RND3_testset.csv')
     bridgerHRRRDF = loadBridgerData(bridgerHRRR_path, timestamp_path)
     bridgerHRRRDF['WindType'] = 'HRRR'
     bridgerHRRRDF['OperatorSet'] = 'Bridger'
@@ -28,7 +28,7 @@ def loaddata():
 
     print("Loading Bridger Stage 1 (NAM12) data ...")
     bridgerNAM12_path = os.path.join(DataPath, 'XOM0011 Stanford CR - NAM12.xlsx')
-    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps_RND3_testset.csv')
     bridgerNAM12DF = loadBridgerData(bridgerNAM12_path, timestamp_path)
     bridgerNAM12DF['WindType'] = 'NAM12'
     bridgerNAM12DF['OperatorSet'] = 'Bridger'
@@ -37,7 +37,7 @@ def loaddata():
 
     print("Loading Bridger Stage 2 data ...")
     bridgerSonic_path = os.path.join(DataPath, 'XOM0011 Stanford CR - Anemometer.xlsx')
-    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps_RND3_testset.csv')
     bridgerSonicDF = loadBridgerData(bridgerSonic_path, timestamp_path)
     bridgerSonicDF['WindType'] = 'Sonic'
     bridgerSonicDF['OperatorSet'] = 'Bridger'
@@ -46,7 +46,7 @@ def loaddata():
 
     print("Loading Bridger Stage 3 data ...")
     bridgerSonic_path = os.path.join(DataPath, 'XOM0011 Stanford CR - Stage 3.xlsx')
-    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps.csv')
+    timestamp_path = os.path.join(DataPath,'Bridger_Timestamps_RND3_testset.csv')
     bridgerR3DF = loadBridgerData(bridgerSonic_path, timestamp_path)
     bridgerR3DF['WindType'] = 'Sonic'
     bridgerR3DF['OperatorSet'] = 'Bridger'
@@ -69,7 +69,7 @@ def loaddata():
 
     print("Loading Carbon Mapper Stage 1 data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission.csv')
-    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv')    
+    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps_RND3_testset.csv')
     CarbonMapperR1DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR1DF['WindType'] = 'HRRR'
     CarbonMapperR1DF['OperatorSet'] = 'CarbonMapper'
@@ -77,7 +77,7 @@ def loaddata():
     
     print("Loading Carbon Mapper Stage 2 data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission_PostPhase1.csv')
-    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv') 
+    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps_RND3_testset.csv')
     CarbonMapperR2DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR2DF['WindType'] = 'Sonic'
     CarbonMapperR2DF['OperatorSet'] = 'CarbonMapper' 
@@ -85,7 +85,7 @@ def loaddata():
 
     print("Loading Carbon Mapper Stage 3 data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission_Phase3.csv')
-    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps.csv') 
+    timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps_RND3_testset.csv')
     CarbonMapperR3DF = loadCarbonMapperData(CarbonMapper_path, timestamp_path)
     CarbonMapperR3DF['WindType'] = 'Sonic'
     CarbonMapperR3DF['OperatorSet'] = 'CarbonMapper' 
@@ -128,7 +128,7 @@ def loaddata():
     
     print("Loading GHGSat Stage 1 data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report.csv')
-    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
+    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps_RND3_Testset.csv')
     GHGSatR1DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR1DF['WindType'] = 'NASA-GEOS'
     GHGSatR1DF['OperatorSet'] = 'GHGSat'
@@ -137,7 +137,7 @@ def loaddata():
 
     print("Loading GHGSat Stage 2 data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report_Stage2.csv')
-    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
+    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps_RND3_Testset.csv')
     GHGSatR2DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR2DF['WindType'] = 'Sonic'
     GHGSatR2DF['OperatorSet'] = 'GHGSat'
@@ -146,7 +146,7 @@ def loaddata():
 
     print("Loading GHGSat Stage 3 data...")
     GHGSat_path = os.path.join(DataPath, 'GHG-1496-6006-a  AV1 Stanford Controlled Release Data Report_Stage3.csv')
-    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps.csv') 
+    timestamp_path = os.path.join(DataPath,'GHGSat_Timestamps_RND3_Testset.csv')
     GHGSatR3DF = loadGHGSatData(GHGSat_path, timestamp_path)
     GHGSatR3DF['WindType'] = 'Sonic'
     GHGSatR3DF['OperatorSet'] = 'GHGSat'
@@ -174,8 +174,15 @@ def loaddata():
 
     SatelliteDF = pd.concat([SatelliteR1DF, SatelliteR2DF], ignore_index=True)
 
+    print("Loading SOOFIE data...")
+    DataPath = os.path.join(cwd, 'SOOFIETestData')
+    SOOFIE_path = os.path.join(DataPath, 'Stanford 15-min emissions data.csv')
 
-    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, MAIRDF, SatelliteDF], ignore_index=True)    
+    SOOFIEDF = loadSOOFIEData(SOOFIE_path)
+    SOOFIEDF['UnblindingStage'] = 1
+    SOOFIEDF['OperatorSet'] = 'SOOFIE'
+
+    operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, MAIRDF, SatelliteDF, SOOFIEDF], ignore_index=True)
     
   
     # load Bridger quadratherm data
@@ -293,7 +300,7 @@ def loadBridgerData(filepath, timestamp_path):
     # ID = 33931 (the release point) and ignore rows where emission point is the leaky trailer
     df = df.loc[df['EquipmentUnitID'] == 33931] 
     
-    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp', 'Round 3 test set'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
     StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
         lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
@@ -335,7 +342,7 @@ def loadCarbonMapperData(filepath, timestamp_path):
 
     df['Operator_Timestamp'] = df['Operator_Timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
     
-    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp', 'Round 3 test set'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
     StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
         lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
@@ -450,7 +457,7 @@ def loadGHGSatData(filepath, timestamp_path):
         lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
         x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
 
-    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp'], parse_dates=True)
+    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp', 'Round 3 test set'], parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
     StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
         lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
@@ -483,6 +490,76 @@ def loadSatelliteData(filepath):
 
     return df
 
+
+def loadSOOFIEData(filepath):
+    """Load SOOFIE data from report and format datetimes."""
+
+    # df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
+    dfraw = pd.read_csv(filepath, parse_dates=True)
+
+    dfraw.rename(columns={'date': 'Operator_Timestamp'}, inplace=True)
+
+    dfraw['Operator_Timestamp'] = dfraw.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        datetime.datetime.strptime(x['Operator_Timestamp'], '%b %d, %Y @ %H:%M'), axis=1)
+
+    dfraw['Operator_Timestamp'] = dfraw.apply(
+        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+        x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
+
+    dfraw['Operator_Timestamp'] = dfraw['Operator_Timestamp'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+
+    column_names = [
+        "PerformerExperimentID",
+        "FacilityID",
+        "EquipmentUnitID",
+        "Operator_Timestamp",
+        "StartTime",
+        "EndTime",
+        "SurveyTime",
+        "Gas",
+        "PlumeLength (hyperspectral technologies only)",
+        "FacilityEmissionRate",
+        "FacilityEmissionRateUpper",
+        "FacilityEmissionRateLower",
+        "UncertaintyType",
+        "WindSpeed",
+        "WindDirection",
+        "TransitDirection",
+        "QC filter",
+        "NumberOfEmissionSourcesReported"]
+
+    df = pd.DataFrame(columns=column_names)
+
+    df["Gas"] = 'Methane'
+    df["FacilityEmissionRate"] = dfraw['emission']
+    df['Operator_Timestamp'] = pd.to_datetime(dfraw['Operator_Timestamp'])
+    df["WindSpeed"] = dfraw['wind_speed']
+    df["WindDirection"] = dfraw['wind_direction']
+
+    #All_interval_range_1 = pd.date_range("2021.10.16 00:00:00", periods=1920, freq="15min")
+    #All_interval_range_1 = All_interval_range_1.to_frame(index=True)
+
+    #All_interval_range_1[0] = pd.to_datetime(All_interval_range_1[0])
+    #All_interval_range_1[0] = All_interval_range_1.apply(
+    #    lambda x: x[0].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Perform outer join between date range and Quadratherm data
+    #df = All_interval_range_1.join(df, how='outer')
+    #time_series = df[0]
+    #df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),
+    #                   right=All_interval_range_1[0].sort_values(0),
+    #                   right_on = 0,left_on='Operator_Timestamp')
+    #del df[0]
+
+    df.index = df.Operator_Timestamp
+    df = df.resample('15min').asfreq()
+    df['Stanford_timestamp'] = np.nan
+    df.Stanford_timestamp = df.index
+    df = df.reset_index(drop=True)
+    #df['Stanford_timestamp'] = df['Operator_Timestamp']
+
+    return df
 
 def loadMeterData_Bridger(DataPath):
 
@@ -613,7 +690,8 @@ def loadMeterData_Bridger(DataPath):
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
     quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
-    
+    quadrathermDF['cr_scfh_mean900'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=900).mean()
+
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
     shutoff_points['start_UTC'] = pd.to_datetime(shutoff_points['start_UTC'])
@@ -628,7 +706,8 @@ def loadMeterData_Bridger(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
-        
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean900'] = 0
+
     # Delete all rows with NaT
     quadrathermDF["TMP"] = quadrathermDF.index.values                   # index is a DateTimeIndex
     quadrathermDF = quadrathermDF[quadrathermDF.TMP.notnull()]          # remove all NaT values
@@ -723,7 +802,8 @@ def loadMeterData_CarbonMapper(DataPath):
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
     quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
-    
+    quadrathermDF['cr_scfh_mean900'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=900).mean()
+
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
     shutoff_points['start_UTC'] = pd.to_datetime(shutoff_points['start_UTC'])
@@ -738,7 +818,8 @@ def loadMeterData_CarbonMapper(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
-        
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean900'] = 0
+
     quadrathermDF['TestLocation'] = 'TX'
     
     return quadrathermDF
@@ -969,7 +1050,8 @@ def loadMeterData_GHGSat(DataPath):
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
     quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
-    
+    quadrathermDF['cr_scfh_mean900'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=900).mean()
+
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
     shutoff_points['start_UTC'] = pd.to_datetime(shutoff_points['start_UTC'])
@@ -984,6 +1066,7 @@ def loadMeterData_GHGSat(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean900'] = 0
         
     quadrathermDF['TestLocation'] = 'AZ'
         
@@ -1230,7 +1313,8 @@ def loadMeterData_AdditionalSatellites(DataPath):
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
     quadrathermDF['cr_scfh_mean300'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=300).mean()
     quadrathermDF['cr_scfh_mean600'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=600).mean()
-    
+    quadrathermDF['cr_scfh_mean900'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=900).mean()
+
     so_path = os.path.join(DataPath, 'shut_off_stamps.csv')
     shutoff_points = pd.read_csv(so_path, skiprows=0, usecols=[0,1],names=['start_UTC', 'end_UTC'], parse_dates=True)
     shutoff_points['start_UTC'] = pd.to_datetime(shutoff_points['start_UTC'])
@@ -1245,7 +1329,7 @@ def loadMeterData_AdditionalSatellites(DataPath):
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean90'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean300'] = 0
         quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean600'] = 0
-        
+        quadrathermDF.loc[(quadrathermDF.index > shutoff_points['start_UTC'][i]) & (quadrathermDF.index < shutoff_points['end_UTC'][i]), 'cr_scfh_mean900'] = 0
         
     quadrathermDF['TestLocation'] = 'AZ'
             
