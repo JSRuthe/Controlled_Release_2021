@@ -99,10 +99,15 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     
         # % Not clear in documentation, but we assume this is a 95 % CI, or 1.96 sigma uncertainty
         # % on a normally distributed error, so divide by 1.96 to get 1 sigma (SD)
-        ErrorTermOfReading = np.array([0.00, 0.0075, 0.0075]) / 1.96
-        ErrorTermOfFullScaleAbove50 = np.array([0.03, 0, 0]) / 1.96
-        ErrorTermOfFullScaleBelow50 = np.array([0.03, 0.005, 0.005]) / 1.96
-    
+        if TestLocation:
+            ErrorTermOfReading = np.array([0.00, 0.0075, 0.0075]) / 1.96
+            ErrorTermOfFullScaleAbove50 = np.array([0.03, 0, 0]) / 1.96
+            ErrorTermOfFullScaleBelow50 = np.array([0.03, 0.005, 0.005]) / 1.96
+        else:
+            ErrorTermOfReading = np.array([0.00, 0.0075, 0.0075]) / 1.96
+            ErrorTermOfFullScaleAbove50 = np.array([0.03, 0.03, 0]) / 1.96
+            ErrorTermOfFullScaleBelow50 = np.array([0.03, 0.03, 0.005]) / 1.96
+
         if FractionOfFullScale > 0.5:
             ErrorTermOfFullScale = ErrorTermOfFullScaleAbove50
         else:
@@ -170,6 +175,7 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
 
     # % Initialize a holder array to hold the results of monte carlo draws
     ObservationRealizationHolder = np.zeros(NumberMonteCarloDraws)
+    UncertaintyRealizationHolder = np.zeros(NumberMonteCarloDraws)
 
     # % Perform the monte carlo draws
     for ii in np.arange(1, NumberMonteCarloDraws):
@@ -194,6 +200,7 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             # % Retain the value in the loop into the holder array
             # % Estimated SCFH of actual methane
             ObservationRealizationHolder[ii] = ObservationRealization
+            UncertaintyRealizationHolder[ii] = RealizedNoiseValue
         else:
             # Coriolis uncertainty
             RealizedBiasValue = 1
@@ -217,12 +224,13 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             # % Retain the value in the loop into the holder array
             # % Estimated SCFH of actual methane
             ObservationRealizationHolder[ii] = ObservationRealization
-            
+            UncertaintyRealizationHolder[ii] = RealizedNoiseValue
             
     # Convert units to kgh if specified
     if units=='kgh':
         # Use Unit Conversion Script
         ObservationRealizationHolder = SCFH2kgh(ObservationRealizationHolder, T=21.1)
+        UncertaintyRealizationHolder = SCFH2kgh(UncertaintyRealizationHolder, T=21.1)
 
     # Plot histogram if desired
     if hist:
@@ -231,6 +239,7 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
 
     if InputReleaseRate == 0:
         ObservationStats = np.zeros(3)
+        UncertaintyStats = np.zeros(3)
     else:
         if Operator == "CarbonMapper":
             ObservationStats =np.array([np.mean(ObservationRealizationHolder),
@@ -242,7 +251,15 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             # np.percentile(ObservationRealizationHolder, 95),
             np.percentile(ObservationRealizationHolder, 84)]) #,
             # np.std(ObservationRealizationHolder)])            
-
+            UncertaintyStats =np.array([np.mean(UncertaintyRealizationHolder),
+            np.percentile(UncertaintyRealizationHolder, 16),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(UncertaintyRealizationHolder, 84)]) #,
+            # np.std(ObservationRealizationHolder)])
         else:
             ObservationStats =np.array([np.mean(ObservationRealizationHolder),
             np.percentile(ObservationRealizationHolder, 2.5),
@@ -252,6 +269,15 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             # np.percentile(ObservationRealizationHolder, 75),
             # np.percentile(ObservationRealizationHolder, 95),
             np.percentile(ObservationRealizationHolder, 97.5)]) #,
+            # np.std(ObservationRealizationHolder)])
+            UncertaintyStats =np.array([np.mean(UncertaintyRealizationHolder),
+            np.percentile(UncertaintyRealizationHolder, 2.5),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(UncertaintyRealizationHolder, 97.5)]) #,
             # np.std(ObservationRealizationHolder)])
 
     if InputReleaseRate == 0:
@@ -279,3 +305,7 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
             # np.std(ObservationRealizationHolder)]) / np.mean(ObservationRealizationHolder)
             
     return ObservationStats, ObservationStatsNormed, ObservationRealizationHolder
+
+
+
+

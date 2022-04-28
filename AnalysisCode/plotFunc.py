@@ -31,8 +31,15 @@ warnings.filterwarnings('ignore')
 
 
 
-def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, MatchedDF_MAIR):
-    
+def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, MatchedDF_MAIR, meterDF_All):
+
+    font = {'family': 'Arial',
+            'weight': 'normal',
+            'size': 12}
+    font_small = {'family': 'Arial',
+            'weight': 'normal',
+            'size': 48}
+
     #classification statistics Bridger  
     df_counts_Bridger = matchedDF_Bridger.pivot_table( 
                                 index='UnblindingStage', 
@@ -84,9 +91,66 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
          
          
          
-    plt.savefig('CarbonMapper_parity_warningfix.png', dpi = 300)
+    plt.savefig('CarbonMapper_parity_22428.png', dpi = 300)
   
     plt.close()
+
+    CM_histo_dat = [matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'TP', 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'FN', 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'ER', 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'NE', 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'NS', 'cr_kgh_CH4_mean30']]
+
+    CM_bar_dat = matchedDF_CarbonMapper.loc[
+        (matchedDF_CarbonMapper['tc_Classification'] == 'TN') |
+        (matchedDF_CarbonMapper['tc_Classification'] == 'FP'), 'tc_Classification']
+
+    CM_freq = CM_bar_dat.value_counts(normalize=False)
+
+    plt.ion()
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,2, figsize=(10, 6), facecolor='w', edgecolor='k', gridspec_kw={'width_ratios': [1, 8]})
+
+    axes[0].bar(1, CM_freq.values,color = '#999999',
+                edgecolor='black', linewidth=1.2)
+    axes[0].set_ylim([0, 150])
+    axes[0].plot
+    axes[1].hist(CM_histo_dat, 10, stacked=True, density = False,
+                 color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
+                 edgecolor='black', linewidth=1.2)
+    axes[1].set_ylim([0, 150])
+    plt.rc('font', **font)
+    plt.show()
+    plt.savefig('CM_histo_22428.png', dpi=300)
+
+    CM_histo_dat = [matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'TP') &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'FN') &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'ER') &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NE') &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NS') &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               'cr_kgh_CH4_mean30']]
+
+    plt.ion()
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    axes.hist(CM_histo_dat, 5, stacked=True, density = False,
+                 color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
+                 edgecolor='black', linewidth=1.2)
+    axes.set_ylim([0, 50])
+    plt.rc('font', **font_small)
+    plt.show()
+    plt.savefig('CM_histo_22428_small.png', dpi=300)
+
 
     # Plotting Carbon Mapper parity (test set only)
     plt.subplots_adjust(hspace=0.5)
@@ -102,7 +166,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
         parity_plot(ax, plot_data, 'CarbonMapper')
 
-    plt.savefig('CarbonMapper_parity_testset.png', dpi=300)
+    plt.savefig('CarbonMapper_parity_testset_22428.png', dpi=300)
 
     plt.close()
 
@@ -199,6 +263,34 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
   
     plt.close()     
 
+    CM_histo_dat = [matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'TP', 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'FN', 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'ER', 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'NE', 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'NS', 'cr_kgh_CH4_mean30']]
+
+    CM_bar_dat = matchedDF_CarbonMapper.loc[
+        (matchedDF_CarbonMapper['tc_Classification'] == 'TN') |
+        (matchedDF_CarbonMapper['tc_Classification'] == 'FP'), 'tc_Classification']
+
+    CM_freq = CM_bar_dat.value_counts(normalize=False)
+
+    plt.ion()
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,2, figsize=(10, 6), facecolor='w', edgecolor='k', gridspec_kw={'width_ratios': [1, 8]})
+
+    axes[0].bar(1, CM_freq.values,color = '#999999',
+                edgecolor='black', linewidth=1.2)
+    axes[0].set_ylim([0, 150])
+    axes[0].plot
+    axes[1].hist(CM_histo_dat, 10, stacked=True, density = False,
+                 color=['#8c1515','#D2C295','#53284f','#9d9573','#007c92'],
+                 edgecolor='black', linewidth=1.2)
+    axes[1].set_ylim([0, 150])
+    plt.rc('font', **font)
+    plt.show()
+    plt.savefig('CM_histo_22427_3.png', dpi=300)
+
     # Plotting GHGSat parity
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
@@ -217,8 +309,25 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
   
     plt.close()     
 
+    # Plotting Bridger time series plot
+    df = matchedDF_Bridger
+    df = df[np.logical_not(pd.isna(df['Detection Time (UTC)']))]
+    df.loc[idx, 'cr_kgh_CH4_uncertainty_lo'] = df.loc[idx, 'cr_kgh_CH4_mean'] - df.loc[idx, 'cr_kgh_CH4_lower']
+    df.loc[idx, 'cr_kgh_CH4_uncertainty_hi'] = df.loc[idx, 'cr_kgh_CH4_upper'] - df.loc[idx, 'cr_kgh_CH4_mean']
+    df['cr_scfh_hi'] = (matchedDF_Bridger['cr_scfh_mean'] * (
+                matchedDF_Bridger['cr_kgh_CH4_uncertainty_hi'] / matchedDF_Bridger['cr_kgh_CH4_mean']))
+    df['cr_scfh_lo'] = (Stanford_matched['cr_scfh_mean'] * (
+                Stanford_matched['cr_kgh_CH4_uncertainty_lo'] / Stanford_matched['cr_kgh_CH4_mean']))
 
-         
+
+
+    # Plotting Carbon Mapper time series plot
+
+
+    # Plotting GHGSat-AV time series plot
+
+
+
     return
      
         
@@ -617,9 +726,9 @@ OUTPUT
   # ax.legend(loc=legend_loc, bbox_to_anchor=(1.6, 0.62),fontsize=12)   # legend box on the right
   ax.legend(loc=legend_loc,fontsize=8)   # legend box within the plot
   ax.set_yticks(np.arange(0,plot_lim[1]+1000,1000))
-  ax.set_yticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10)
+  ax.set_yticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10, fontname = 'Arial')
   ax.set_xticks(np.arange(0,plot_lim[1]+1000,1000))
-  ax.set_xticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10)
+  ax.set_xticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10, fontname = 'Arial')
  
   
 

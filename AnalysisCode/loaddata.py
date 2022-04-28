@@ -650,7 +650,6 @@ def loadMeterData_Bridger(DataPath):
     hand_data_21114['PipeSize_inch'] = 0.5
     hand_data_21114['MeterCode'] = 21175085
     hand_data_21114['Flag_field_recorded'] = True
-    
 
     # Concatenate all time series data
     Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, Quad_data_3])
@@ -773,9 +772,27 @@ def loadMeterData_CarbonMapper(DataPath):
     hand_data_21731['cr_quad_scfh'] = pd.to_numeric(hand_data_21731['cr_quad_scfh'],errors = 'coerce')
     hand_data_21731['cr_allmeters_scfh'] = hand_data_21731['cr_quad_scfh']
     hand_data_21731['Flag_field_recorded'] = True
-    
+
+    # Zero releases at the start of day August 31 before we started logging
+    hand_data_21803_path = os.path.join(DataPath, '21803_releasedat_Quad.csv')
+    hand_data_21803 = pd.read_csv(hand_data_21803_path, skiprows=1, usecols=[0,1],names=['datetime_local','cr_quad_scfh'], parse_dates=True)
+    hand_data_21803['datetime_local'] = pd.to_datetime(hand_data_21803['datetime_local'])
+    hand_data_21803['datetime_local'] = hand_data_21803.apply(
+        lambda x: pd.NA if pd.isna(x['datetime_local']) else
+        x['datetime_local'].replace(tzinfo=pytz.timezone("US/Central")), axis=1)
+    hand_data_21803["cr_allmeters_scfh"] = np.nan
+    hand_data_21803['datetime_local'] = hand_data_21803['datetime_local'].apply(lambda x: x.astimezone(pytz.timezone('UTC')))
+    hand_data_21803['PipeSize_inch'] = 4
+    hand_data_21803['MeterCode'] = 218645
+    hand_data_21803.set_index('datetime_local', inplace = True)
+    hand_data_21803['cr_quad_scfh'] = pd.to_numeric(hand_data_21803['cr_quad_scfh'],errors = 'coerce')
+    hand_data_21803['cr_allmeters_scfh'] = hand_data_21803['cr_quad_scfh']
+    hand_data_21803['Flag_field_recorded'] = True
+
+
+
     # Concatenate all time series data
-    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, hand_data_21731])
+    Quad_data_all = pd.concat([Quad_data_1, Quad_data_2, hand_data_21731, hand_data_21803])
     
     Quad_date_range_1  = pd.date_range("2021.07.30 15:21:24", periods = 10140, freq = "s")
     Quad_date_range_1 = Quad_date_range_1.tz_localize(pytz.utc)
@@ -783,7 +800,7 @@ def loadMeterData_CarbonMapper(DataPath):
     Quad_date_range_2  = pd.date_range("2021.07.31 15:22:00", periods = 2580, freq = "s")
     Quad_date_range_2 = Quad_date_range_2.tz_localize(pytz.utc)
     Quad_date_range_2 = Quad_date_range_2.to_frame(index = True)
-    Quad_date_range_3  = pd.date_range("2021.08.03 15:49:05", periods = 17391, freq = "s")
+    Quad_date_range_3  = pd.date_range("2021.08.03 15:49:05", periods = 19016, freq = "s")
     Quad_date_range_3 = Quad_date_range_3.tz_localize(pytz.utc)
     Quad_date_range_3 = Quad_date_range_3.to_frame(index = True)
     Quad_date_range = pd.concat([Quad_date_range_1, Quad_date_range_2, Quad_date_range_3])        
