@@ -1,0 +1,44 @@
+
+plt.subplots_adjust(hspace = 0.5)
+fig, ax = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')    
+
+plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"],[0,1,2,3,4,5,20])
+medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
+sns.boxplot(x = "bin", y = "FlowError_percent", data = plot_data)
+ax.set_ylim([-150, 150])
+
+nobs = plot_data["Wind_MPS_mean300"].value_counts(bins = [0,1,2,3,4,5,20]).sort_index(ascending=True).values
+nobs = [str(x) for x in nobs.tolist()]
+nobs = ["n: " + i for i in nobs]
+ 
+# Add it to the plot
+pos = range(len(nobs))
+for tick,label in zip(pos,ax.get_xticklabels()):
+    ax.text(pos[tick],
+            -125,
+            nobs[tick],
+            horizontalalignment='center',
+            size='small',
+            color='k',
+            weight='semibold')
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick,label in zip(pos,ax.get_xticklabels()):
+    ax.text(pos[tick],
+            medians[tick] + 0.03,
+            "{:.2f}".format(medians[tick]),
+            horizontalalignment='center',
+            size='small',
+            color='w',
+            weight='semibold')
+
+
+ax.set_ylabel('Quantification Error [%]',fontsize = 12)
+ax.set_xlabel('Bin - 5 minute wind speed [mps]', fontsize = 12)
+ax.tick_params(labelsize = 12)
+
+plt.rc('font', **font)
+
+plt.savefig('boxwhisker.png', dpi = 300)
+plt.close()   

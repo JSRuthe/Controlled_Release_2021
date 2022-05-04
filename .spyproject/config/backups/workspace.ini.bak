@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = empty-project-type
-recent_files = ['AnalysisCode\\loaddata.py', 'AnalysisCode\\UnitConversion.py', 'AnalysisCode\\matchMethods.py', 'AnalysisCode\\plotFunc.py', '..\\Dropbox\\Doctoral\\Projects\\Research Projects\\manuscripts\\4_Controlled_Releases\\6_Data_Analysis\\e_Compiled_data\\Release_Vols\\Bridger data\\process_release_bridger.py']
+recent_files = ['AnalysisCode\\loaddata.py', 'AnalysisCode\\UnitConversion.py', 'AnalysisCode\\matchMethods.py', 'AnalysisCode\\plotFunc.py', '..\\Dropbox\\Doctoral\\Projects\\Research Projects\\manuscripts\\4_Controlled_Releases\\6_Data_Analysis\\e_Compiled_data\\Release_Vols\\Bridger data\\process_release_bridger.py', 'AnalysisCode\\meterUncertainty.py']
 
 [main]
 version = 0.2.0

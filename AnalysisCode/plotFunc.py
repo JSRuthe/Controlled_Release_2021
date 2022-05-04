@@ -10,11 +10,19 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 
+import plotly
+import plotly.io as pio
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 import matplotlib as mpl
 mpl.use('tkagg')    #YAAA!!  this finally makes the Damn thing work
 import matplotlib.pyplot as plt
 #matplotlib inline
 plt.rcParams['figure.figsize'] = (5, 5) # set default size of plots
+
+import seaborn as sns
 
 # directory for storing graphs generated
 # import os
@@ -38,7 +46,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
             'size': 12}
     font_small = {'family': 'Arial',
             'weight': 'normal',
-            'size': 48}
+            'size': 24}
 
     #classification statistics Bridger  
     df_counts_Bridger = matchedDF_Bridger.pivot_table( 
@@ -73,7 +81,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
                                 values = 'Operator_Timestamp',
                                 aggfunc = len)
     
-    # Plotting Carbon Mapper parity
+## CARBON MAPPER - PARITY
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
     
@@ -88,22 +96,27 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
          plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (i + 1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
          
          parity_plot(ax, plot_data, 'CarbonMapper')
-         
-         
-         
-    plt.savefig('CarbonMapper_parity_22428.png', dpi = 300)
+
+    #plt.savefig('CarbonMapper_parity_22428.png', dpi = 300)
   
     plt.close()
 
-    CM_histo_dat = [matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'TP', 'cr_kgh_CH4_mean30'],
-                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'FN', 'cr_kgh_CH4_mean30'],
-                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'ER', 'cr_kgh_CH4_mean30'],
-                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'NE', 'cr_kgh_CH4_mean30'],
-                    matchedDF_CarbonMapper.loc[matchedDF_CarbonMapper['tc_Classification'] == 'NS', 'cr_kgh_CH4_mean30']]
+    CM_histo_dat = [matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'TP') &
+                                        (matchedDF_CarbonMapper['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'FN') &
+                                        (matchedDF_CarbonMapper['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'ER') &
+                                        (matchedDF_CarbonMapper['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NE') &
+                                        (matchedDF_CarbonMapper['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                    matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NS') &
+                                        (matchedDF_CarbonMapper['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30']]
 
     CM_bar_dat = matchedDF_CarbonMapper.loc[
-        (matchedDF_CarbonMapper['tc_Classification'] == 'TN') |
-        (matchedDF_CarbonMapper['tc_Classification'] == 'FP'), 'tc_Classification']
+        ((matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+        (matchedDF_CarbonMapper['tc_Classification'] == 'TN')) |
+        ((matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+        (matchedDF_CarbonMapper['tc_Classification'] == 'FP')), 'tc_Classification']
 
     CM_freq = CM_bar_dat.value_counts(normalize=False)
 
@@ -113,44 +126,50 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     axes[0].bar(1, CM_freq.values,color = '#999999',
                 edgecolor='black', linewidth=1.2)
-    axes[0].set_ylim([0, 150])
+    axes[0].set_ylim([0, 70])
     axes[0].plot
     axes[1].hist(CM_histo_dat, 10, stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes[1].set_ylim([0, 150])
+    axes[1].set_ylim([0, 70])
     plt.rc('font', **font)
     plt.show()
-    plt.savefig('CM_histo_22428.png', dpi=300)
+    #plt.savefig('CM_histo_22428.png', dpi=300)
 
     CM_histo_dat = [matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'TP') &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'FN') &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'ER') &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NE') &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NS') &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 120),
+                                               (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
                                                'cr_kgh_CH4_mean30']]
 
     plt.ion()
+    plt.rc('font', **font_small)
     plt.subplots_adjust(hspace = 0.5)
     fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
     axes.hist(CM_histo_dat, 5, stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes.set_ylim([0, 50])
-    plt.rc('font', **font_small)
-    plt.show()
-    plt.savefig('CM_histo_22428_small.png', dpi=300)
+    axes.set_ylim([0, 20])
 
+    plt.show()
+    #plt.savefig('CM_histo_22428_small.png', dpi=300)
+    plt.rc('font', **font)
 
     # Plotting Carbon Mapper parity (test set only)
     plt.subplots_adjust(hspace=0.5)
@@ -166,11 +185,226 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
         parity_plot(ax, plot_data, 'CarbonMapper')
 
-    plt.savefig('CarbonMapper_parity_testset_22428.png', dpi=300)
+    #plt.savefig('CarbonMapper_parity_testset_22428.png', dpi=300)
 
     plt.close()
 
-    # Plotting MAIR parity
+    # Plot Stanford quadratherm DF, then plot the matched DF with error bars on top
+
+## PLOTTING CARBON MAPPER TIME SERIES
+
+    fig = make_subplots(rows=3, cols=1)
+
+    # JULY 30
+    plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == 1) & (
+            matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+
+    plot_data = plot_data[np.logical_not(pd.isna(plot_data['Stanford_timestamp']))]
+    plot_data['cr_scfh_hi'] = (
+                plot_data['cr_scfh_mean60'] * ((plot_data['cr_kgh_CH4_upper60'] - plot_data['cr_kgh_CH4_mean60']) / plot_data['cr_kgh_CH4_mean60']))
+    plot_data['cr_scfh_lo'] = ((plot_data['cr_scfh_mean60']) * (
+                (plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']) / plot_data['cr_kgh_CH4_mean60']))
+
+    date_start = pd.to_datetime('2021.07.30 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.07.31 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_CarbonMapper = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_CarbonMapper.index, y=meterDF_CarbonMapper['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=1, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness =1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=1, col=1)
+
+    # JULY 31
+
+    date_start = pd.to_datetime('2021.07.31 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.08.01 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_CarbonMapper = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_CarbonMapper.index, y=meterDF_CarbonMapper['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=2, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=2, col=1)
+
+    # AUGUST 3
+
+    date_start = pd.to_datetime('2021.08.03 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.08.04 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_CarbonMapper = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_CarbonMapper.index, y=meterDF_CarbonMapper['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=3, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=3, col=1)
+
+    fig.update_layout(
+        showlegend=False,
+        plot_bgcolor="white",
+        yaxis_title='Release volume [scfh]',
+        #yaxis2_title='Release volume [scfh]',
+        xaxis=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis2=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis3=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        yaxis=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis2=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis3 = dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        )
+    )
+    # fig.update_xaxes(range=['2021-07-30 16:00:00','2021-07-30 17:00:00'], autorange=False)
+    fig.show()
+
+    #Imagepath = os.path.join(cwd, 'CarbonMapper_series.svg')
+    #fig.write_image(Imagepath)
+
+## CARBON MAPPER BOX AND WHISKER
+
+plt.subplots_adjust(hspace = 0.5)
+fig, axs = plt.subplots(2,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+fig.add_trace(boxWhisker(df =
+
+                        ),
+              row=1, col=1)
+
+fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                         mode='markers',
+                         marker=dict(size=2,
+                                     color='rgb(140,21,21)'),
+                         error_y=dict(
+                             type='data',
+                             symmetric=False,
+                             thickness=1,
+                             width=1.5,
+                             array=df['cr_scfh_hi'],
+                             arrayminus=df['cr_scfh_lo'])),
+              row=2, col=1)
+
+## MAIR PARITY
+
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
@@ -179,11 +413,11 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     parity_plot(axs, plot_data, 'MAIR')
 
-    plt.savefig('MAIR_parity.png', dpi = 300)
+    #plt.savefig('MAIR_parity_22428.png', dpi = 300)
   
     plt.close()
 
-    # MAIR and Carbon Mapper comparison
+## MAIR and Carbon Mapper comparison
     
     # Trim down MAIR and Carbon Mapper dataframes to only include timestamps and 
     # Emission points
@@ -231,11 +465,12 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
     ax.scatter(x_MAIR,y_MAIR,s = 40, color='#8c1515')
     ax.scatter(x_CM,y_CM,s = 40, color='#FEC51D')
 
-    plt.savefig('MAIR_compare.png', dpi = 300)
+    #plt.savefig('MAIR_compare_22428.png', dpi = 300)
   
     plt.close()   
 
-    # Plot Bridger parity
+## BRIDGER PARITY
+
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
 
@@ -259,67 +494,625 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
          
          
          
-    plt.savefig('Bridger_parity_warningfix.png', dpi = 300)
+    #plt.savefig('Bridger_parity_22428, dpi = 300')
   
     plt.close()     
 
-    CM_histo_dat = [matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'TP', 'cr_kgh_CH4_mean30'],
-                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'FN', 'cr_kgh_CH4_mean30'],
-                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'ER', 'cr_kgh_CH4_mean30'],
-                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'NE', 'cr_kgh_CH4_mean30'],
-                    matchedDF_Bridger.loc[matchedDF_Bridger['tc_Classification'] == 'NS', 'cr_kgh_CH4_mean30']]
+## BRIDGER HISTOGRAM
 
-    CM_bar_dat = matchedDF_CarbonMapper.loc[
-        (matchedDF_CarbonMapper['tc_Classification'] == 'TN') |
-        (matchedDF_CarbonMapper['tc_Classification'] == 'FP'), 'tc_Classification']
+    Br_histo_dat = [matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'TP') &
+                    (matchedDF_Bridger['UnblindingStage'] == 1) &
+                    (matchedDF_Bridger['WindType'] == 'HRRR'), 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'FN') &
+                    (matchedDF_Bridger['UnblindingStage'] == 1) &
+                    (matchedDF_Bridger['WindType'] == 'HRRR'), 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'ER') &
+                    (matchedDF_Bridger['UnblindingStage'] == 1) &
+                    (matchedDF_Bridger['WindType'] == 'HRRR'), 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'NE') &
+                    (matchedDF_Bridger['UnblindingStage'] == 1) &
+                    (matchedDF_Bridger['WindType'] == 'HRRR'), 'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'NS') &
+                    (matchedDF_Bridger['UnblindingStage'] == 1) &
+                    (matchedDF_Bridger['WindType'] == 'HRRR'), 'cr_kgh_CH4_mean30']]
 
-    CM_freq = CM_bar_dat.value_counts(normalize=False)
+    Br_bar_dat = matchedDF_Bridger.loc[
+        ((matchedDF_Bridger['UnblindingStage'] == 1) &
+        (matchedDF_Bridger['WindType'] == 'HRRR') &
+        (matchedDF_Bridger['tc_Classification'] == 'TN')) |
+        ((matchedDF_Bridger['UnblindingStage'] == 1) &
+        (matchedDF_Bridger['WindType'] == 'HRRR') &
+        (matchedDF_Bridger['tc_Classification'] == 'FP')), 'tc_Classification']
+
+    Br_freq = Br_bar_dat.value_counts(normalize=False)
 
     plt.ion()
     plt.subplots_adjust(hspace = 0.5)
     fig, axes = plt.subplots(1,2, figsize=(10, 6), facecolor='w', edgecolor='k', gridspec_kw={'width_ratios': [1, 8]})
 
-    axes[0].bar(1, CM_freq.values,color = '#999999',
+    axes[0].bar(1, Br_freq.values,color = '#999999',
                 edgecolor='black', linewidth=1.2)
-    axes[0].set_ylim([0, 150])
+    axes[0].set_ylim([0, 40])
     axes[0].plot
-    axes[1].hist(CM_histo_dat, 10, stacked=True, density = False,
+    axes[1].hist(Br_histo_dat, 10, stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#9d9573','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes[1].set_ylim([0, 150])
+    axes[1].set_ylim([0, 40])
     plt.rc('font', **font)
     plt.show()
-    plt.savefig('CM_histo_22427_3.png', dpi=300)
+    #plt.savefig('Bridger_histo_22428.png', dpi=300)
 
-    # Plotting GHGSat parity
+## BRIDGER HISTOGRAM SMALL
+
+    Br_histo_dat = [matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'TP') &
+                                               (matchedDF_Bridger['UnblindingStage'] == 1) &
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'FN') &
+                                               (matchedDF_Bridger['UnblindingStage'] == 1) &
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'ER') &
+                                               (matchedDF_Bridger['UnblindingStage'] == 1) &
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'NE') &
+                                               (matchedDF_Bridger['UnblindingStage'] == 1) &
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'NS') &
+                                               (matchedDF_Bridger['UnblindingStage'] == 1) &
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               'cr_kgh_CH4_mean30']]
+
+    plt.ion()
+    plt.rc('font', **font_small)
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    axes.hist(Br_histo_dat, 5, stacked=True, density = False,
+                 color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
+                 edgecolor='black', linewidth=1.2)
+    axes.set_ylim([0, 20])
+
+    plt.show()
+    #plt.savefig('Br_histo_22428_small.png', dpi=300)
+    plt.rc('font', **font)
+
+## TIMESERIES BRIDGER
+
+    fig = make_subplots(rows=2, cols=1)
+
+    plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 1) &
+                                  (matchedDF_Bridger['tc_Classification'] == 'TP') &
+                                  (matchedDF_Bridger['WindType'] == 'HRRR')]
+
+    plot_data = plot_data[np.logical_not(pd.isna(plot_data['Stanford_timestamp']))]
+
+    plot_data['cr_scfh_hi'] = (
+                plot_data['cr_scfh_mean60'] * ((plot_data['cr_kgh_CH4_upper60'] - plot_data['cr_kgh_CH4_mean60']) / plot_data['cr_kgh_CH4_mean60']))
+    plot_data['cr_scfh_lo'] = ((plot_data['cr_scfh_mean60']) * (
+                (plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']) / plot_data['cr_kgh_CH4_mean60']))
+
+    # NOVEMBER 3
+
+    date_start = pd.to_datetime('2021.11.03 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.11.04 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_Bridger = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_Bridger.index, y=meterDF_Bridger['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=1, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 2,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=1, col=1)
+
+    # NOVEMBER 4
+
+    date_start = pd.to_datetime('2021.11.04 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.11.05 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_Bridger = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_Bridger.index, y=meterDF_Bridger['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=2, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 2,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=2, col=1)
+
+    fig.update_layout(
+        showlegend=False,
+        plot_bgcolor="white",
+        yaxis_title='Release volume [scfh]',
+        yaxis2_title='Release volume [scfh]',
+        xaxis=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis2=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        yaxis=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis2=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        )
+    )
+    # fig.update_xaxes(range=['2021-07-30 16:00:00','2021-07-30 17:00:00'], autorange=False)
+    fig.show()
+
+    Imagepath = os.path.join(cwd, 'Timeseries_Bridger.svg')
+    fig.write_image(Imagepath)
+
+## GHGSAT PARITY
+
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
-    
+
     for i, ax in enumerate(axs.flat):
          #fig,ax1 = plt.subplot(1,1,(stages + 1))
-         if i == 3: 
+         if i == 3:
              break
          plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (i + 1)) & (matchedDF_GHGSat['tc_Classification'] == 'TP')]
-         
+
          parity_plot(ax, plot_data, 'GHGSat', force_intercept_origin=0, plot_interval = ['confidence'], plot_lim = [0,7000],)
-         
-         
-         
-    plt.savefig('GHGSat_parity_warningfix.png', dpi = 300)
-  
-    plt.close()     
-
-    # Plotting Bridger time series plot
-    df = matchedDF_Bridger
-    df = df[np.logical_not(pd.isna(df['Detection Time (UTC)']))]
-    df.loc[idx, 'cr_kgh_CH4_uncertainty_lo'] = df.loc[idx, 'cr_kgh_CH4_mean'] - df.loc[idx, 'cr_kgh_CH4_lower']
-    df.loc[idx, 'cr_kgh_CH4_uncertainty_hi'] = df.loc[idx, 'cr_kgh_CH4_upper'] - df.loc[idx, 'cr_kgh_CH4_mean']
-    df['cr_scfh_hi'] = (matchedDF_Bridger['cr_scfh_mean'] * (
-                matchedDF_Bridger['cr_kgh_CH4_uncertainty_hi'] / matchedDF_Bridger['cr_kgh_CH4_mean']))
-    df['cr_scfh_lo'] = (Stanford_matched['cr_scfh_mean'] * (
-                Stanford_matched['cr_kgh_CH4_uncertainty_lo'] / Stanford_matched['cr_kgh_CH4_mean']))
 
 
+
+    #plt.savefig('GHGSat_parity_22428.png', dpi = 300)
+
+## GHGSAT HISTOGRAM
+
+    plt.close()
+
+    GHGS_histo_dat = [matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+                      (matchedDF_GHGSat['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                      matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'FN') &
+                      (matchedDF_GHGSat['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                      matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'ER') &
+                      (matchedDF_GHGSat['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
+                      matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'NE') &
+                      (matchedDF_GHGSat['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30']]
+
+    GHGS_bar_dat = matchedDF_GHGSat.loc[
+        ((matchedDF_GHGSat['UnblindingStage'] == 1) &
+        (matchedDF_GHGSat['tc_Classification'] == 'TN')) |
+        ((matchedDF_GHGSat['UnblindingStage'] == 1) &
+        (matchedDF_GHGSat['tc_Classification'] == 'FP')), 'tc_Classification']
+
+    GHGS_freq = GHGS_bar_dat.value_counts(normalize=False)
+
+    plt.ion()
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,2, figsize=(10, 6), facecolor='w', edgecolor='k', gridspec_kw={'width_ratios': [1, 8]})
+
+    #bins = np.arange(0,2000,20)
+
+    axes[0].bar(1, GHGS_freq.values,color = ['#999999','#007c92'],
+                edgecolor='black', linewidth=1.2)
+    axes[0].set_ylim([0, 60])
+    axes[0].plot
+    axes[1].hist(GHGS_histo_dat, 60, stacked=True, density = False,
+                 color=['#8c1515','#D2C295','#53284f','#175e54'],
+                 edgecolor='black', linewidth=1.2)
+    #xlabels = bins[1:].astype(str)
+    #axes[0].set_xlabels[-1] += '+'
+
+    #N_labels = len(xlabels)
+    #axes[0].set_xlim([0, 2000])
+    #axes[0].set_xticks(25 * np.arange(N_labels) + 12.5)
+    #axes[0].set_xticklabels(xlabels)
+
+    axes[1].set_ylim([0, 60])
+    plt.rc('font', **font)
+    plt.show()
+    #plt.savefig('GHGSat_histo_22428.png', dpi=300)
+
+## GHGSAT HISTOGRAM SMALL
+
+    GHGS_histo_dat = [matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+                                               (matchedDF_GHGSat['UnblindingStage'] == 1) &
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'FN') &
+                                               (matchedDF_GHGSat['UnblindingStage'] == 1) &
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'ER') &
+                                               (matchedDF_GHGSat['UnblindingStage'] == 1) &
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'NE') &
+                                               (matchedDF_GHGSat['UnblindingStage'] == 1) &
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               'cr_kgh_CH4_mean30'],
+                    matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'NS') &
+                                               (matchedDF_GHGSat['UnblindingStage'] == 1) &
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               'cr_kgh_CH4_mean30']]
+
+    plt.ion()
+    plt.rc('font', **font_small)
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+    axes.hist(GHGS_histo_dat, 12, stacked=True, density = False,
+                 color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
+                 edgecolor='black', linewidth=1.2)
+    axes.set_ylim([0, 20])
+
+    plt.show()
+    #plt.savefig('GHGSat_histo_22428_small.png', dpi=300)
+
+    fig = make_subplots(rows=5, cols=1)
+
+    plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == 1) & (
+            matchedDF_GHGSat['tc_Classification'] == 'TP')]
+    plot_data = plot_data[np.logical_not(pd.isna(plot_data['Stanford_timestamp']))]
+    plot_data['cr_scfh_hi'] = (
+                plot_data['cr_scfh_mean60'] * ((plot_data['cr_kgh_CH4_upper60'] - plot_data['cr_kgh_CH4_mean60']) / plot_data['cr_kgh_CH4_mean60']))
+    plot_data['cr_scfh_lo'] = ((plot_data['cr_scfh_mean60']) * (
+                (plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']) / plot_data['cr_kgh_CH4_mean60']))
+
+
+    # OCTOBER 18
+
+    date_start = pd.to_datetime('2021.10.18 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.10.19 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_GHGSat = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_GHGSat.index, y=meterDF_GHGSat['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=1, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=1, col=1)
+
+    # OCTOBER 19
+
+    date_start = pd.to_datetime('2021.10.19 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.10.20 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_GHGSat = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_GHGSat.index, y=meterDF_GHGSat['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=2, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=2, col=1)
+
+    # OCTOBER 20
+
+    date_start = pd.to_datetime('2021.10.20 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.10.21 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_GHGSat = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_GHGSat.index, y=meterDF_GHGSat['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=3, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=3, col=1)
+
+    # OCTOBER 21
+
+    date_start = pd.to_datetime('2021.10.21 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.10.22 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_GHGSat = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_GHGSat.index, y=meterDF_GHGSat['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=4, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=4, col=1)
+
+    # OCTOBER 22
+
+    date_start = pd.to_datetime('2021.10.22 00:00:00')
+    date_start = date_start.tz_localize('UTC')
+    date_end = pd.to_datetime('2021.10.23 00:00:00')
+    date_end = date_end.tz_localize('UTC')
+    meterDF_GHGSat = meterDF_All[(meterDF_All.index > date_start) & (meterDF_All.index < date_end)]
+    df = plot_data[(plot_data['Stanford_timestamp'] > date_start) & (plot_data['Stanford_timestamp'] < date_end)]
+
+    fig.add_trace(go.Scatter(x=meterDF_GHGSat.index, y=meterDF_GHGSat['cr_allmeters_scfh'],
+                             mode='lines',
+                             line=dict(width=1.5,
+                                       color='rgb(0,0,0)')),
+                  row=5, col=1)
+
+    fig.add_trace(go.Scatter(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
+                             mode='markers',
+                             marker=dict(size=2,
+                                         color='rgb(140,21,21)'),
+                             error_y=dict(
+                                 type='data',
+                                 symmetric=False,
+                                 thickness = 1,
+                                 width = 1.5,
+                                 array=df['cr_scfh_hi'],
+                                 arrayminus=df['cr_scfh_lo'])),
+                  row=5, col=1)
+
+    fig.update_layout(
+        showlegend=False,
+        plot_bgcolor="white",
+        yaxis_title='Release volume [scfh]',
+        yaxis2_title='Release volume [scfh]',
+        xaxis=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis2=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis3=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis4=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        xaxis5=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            ),
+            tickformat="%H:%M"
+        ),
+        yaxis=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis2=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis3=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis4=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        ),
+        yaxis5=dict(
+            showline=True,
+            showgrid=False,
+            showticklabels=True,
+            linecolor='rgb(0, 0, 0)',
+            linewidth=2,
+            ticks='outside',
+            tickfont=dict(
+                family='Arial',
+                size=10,
+                color='rgb(0, 0, 0)',
+            )
+        )
+    )
+    # fig.update_xaxes(range=['2021-07-30 16:00:00','2021-07-30 17:00:00'], autorange=False)
+    fig.show()
+
+    Imagepath = os.path.join(cwd, 'Timeseries_GHGSat.svg')
+    fig.write_image(Imagepath)
 
     # Plotting Carbon Mapper time series plot
 

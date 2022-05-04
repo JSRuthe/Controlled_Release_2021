@@ -36,6 +36,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     matchedDF_Bridger = classifyDetections_Bridger(matchedDF_Bridger)  # assign TP, FN, and NE classifications
 
     matchedDF_Bridger = assessUncertainty(matchedDF_Bridger)
+    matchedDF_Bridger = setFlowError(matchedDF_Bridger)
 
     DataPath = os.path.join(cwd, 'GHGSatTestData') 
     print("Checking plume lengths GHGSat...")
@@ -50,7 +51,8 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     matchedDF_GHGSat = classifyDetections_GHGSat(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
             
     matchedDF_GHGSat = assessUncertainty(matchedDF_GHGSat)
-                                                                
+    matchedDF_GHGSat = setFlowError(matchedDF_GHGSat)
+
     DataPath = os.path.join(cwd, 'CarbonMapperTestData') 
     print("Checking plume lengths CarbonMapper...")
     matchedDF_CarbonMapper = matchedDF[matchedDF['OperatorSet'] == 'CarbonMapper']
@@ -65,7 +67,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     matchedDF_CarbonMapper = classifyDetections_CarbonMapper(matchedDF_CarbonMapper)  # assign TP, FN, and NE classifications
 
     matchedDF_CarbonMapper = assessUncertainty(matchedDF_CarbonMapper)
-
+    matchedDF_CarbonMapper = setFlowError(matchedDF_CarbonMapper)
 
 
     DataPath = os.path.join(cwd, 'MAIRTestData') 
@@ -367,7 +369,7 @@ def classifyDetections_GHGSat(matchedDF):
         elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
-        elif row['QC filter'] == 0 :
+        elif row['QC filter'] == 0 or pd.isna(row['PerformerExperimentID']) :
             matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
             matchedDF.loc[idx, 'Detection'] = -1
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
@@ -496,13 +498,12 @@ def setNominalAltitude(df):
 
 
 def setFlowError(df):
-    """set flow error for all TP detections """
-    # Bridger estimates using HRRR wind
+
     df['FlowError_kgh'] = df.apply(
-        lambda x: pd.NA if (pd.isna(x['b_kgh'])) & (pd.isna(x['cr_kgh_CH4_mean']))
-        else x['b_kgh'] - x['cr_kgh_CH4_mean'], axis=1)
+        lambda x: pd.NA if (pd.isna(x['FacilityEmissionRate'])) & (pd.isna(x['cr_kgh_CH4_mean60']))
+        else x['FacilityEmissionRate'] - x['cr_kgh_CH4_mean60'], axis=1)
     df['FlowError_percent'] = df.apply(
-        lambda x: pd.NA if pd.isna(x['FlowError_kgh']) else x['FlowError_kgh'] / x['cr_kgh_CH4_mean'] * 100, axis=1)
+        lambda x: pd.NA if pd.isna(x['FacilityEmissionRate']) else x['FlowError_kgh'] / x['cr_kgh_CH4_mean60'] * 100, axis=1)
 
     return df
 

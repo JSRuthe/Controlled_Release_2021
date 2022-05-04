@@ -463,10 +463,12 @@ def loadGHGSatData(filepath, timestamp_path):
         lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
     #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
     
-    tol = pd.Timedelta('1 minute')
-    df = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)     
-    df.loc[df['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df["Operator_Timestamp"]
-    
+    tol = pd.Timedelta('2 minutes')
+    df_1 = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)
+    df_1.loc[df_1['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df_1["Operator_Timestamp"]
+    df_2 = pd.merge_asof(right=df.sort_values('Operator_Timestamp'),left=StanfordTimestamps.sort_values('Stanford_timestamp'), left_on='Stanford_timestamp',right_on='Operator_Timestamp',direction='nearest',tolerance=tol)
+    df = df_1.append(df_2[df_2['PerformerExperimentID'].isnull()]).sort_values(by = ['Stanford_timestamp'])
+
 
     return df
 
