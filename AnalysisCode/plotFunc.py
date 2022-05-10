@@ -80,7 +80,74 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
                                 columns='tc_Classification',
                                 values = 'Operator_Timestamp',
                                 aggfunc = len)
-    
+
+    # Range of releases Bridger
+    print('Bridger, min = ',
+          matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 0.01) &
+                                                 (matchedDF_Bridger['UnblindingStage'] == 1)].min())
+    print('Bridger, max = ',
+          matchedDF_Bridger['cr_kgh_CH4_mean60'][matchedDF_Bridger['UnblindingStage'] == 1].max())
+    print('Bridger min detect = ',
+          matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_Bridger['tc_Classification'] == 'TP')
+                                                 & (matchedDF_Bridger['UnblindingStage'] == 1)].min())
+    count_nzero = matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_Bridger['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_Bridger['UnblindingStage'] == 1)].count()
+
+    print('Bridger, frac > 100 = ', count_gt100/count_nzero)
+
+    # Range of releases Carbon Mapper
+    print('CM, min = ',
+          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].min())
+    print('CM, max = ',
+          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][matchedDF_CarbonMapper['UnblindingStage'] == 1].max())
+    print('CM min detect = ',
+          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')
+                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].min())
+    print('CM max FN = ',
+          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper['tc_Classification'] == 'FN')
+                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].max())
+    count_nzero = matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].count()
+    print('CM, frac > 100 = ', count_gt100/count_nzero)
+
+    counterror_lt100 = matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] < 100)
+                                                & (matchedDF_CarbonMapper['tc_Classification'] == 'ER')
+                                                & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].count()
+    print('CM, # < 100 ERROR = ', counterror_lt100)
+
+    # Range of releases GHGSat-AV
+    print('GHGSat, min = ',
+          matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
+                                                & (matchedDF_GHGSat['UnblindingStage'] == 1)].min())
+    print('GHGSat, max = ',
+          matchedDF_GHGSat['cr_kgh_CH4_mean60'][matchedDF_GHGSat['UnblindingStage'] == 1].max())
+    print('GHGSat min detect = ',
+          matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat['tc_Classification'] == 'TP')].min())
+    print('GHGSat max FN = ',
+          matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat['tc_Classification'] == 'FN')
+                                                 & (matchedDF_GHGSat['UnblindingStage'] == 1)].max())
+    count_nzero = matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_GHGSat['UnblindingStage'] == 1)].count()
+    print('GHGSat, frac > 5 = ', count_gt100/count_nzero)
+
+    counterror_lt100 = matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] < 100)
+                                                & (matchedDF_GHGSat['tc_Classification'] == 'ER')
+                                                & (matchedDF_GHGSat['UnblindingStage'] == 1)].count()
+    print('GHGSat, # < 100 ERROR = ', counterror_lt100)
+
+
 ## CARBON MAPPER - PARITY
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
@@ -126,35 +193,35 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     axes[0].bar(1, CM_freq.values,color = '#999999',
                 edgecolor='black', linewidth=1.2)
-    axes[0].set_ylim([0, 70])
+    axes[0].set_ylim([0, 40])
     axes[0].plot
-    axes[1].hist(CM_histo_dat, 10, stacked=True, density = False,
+    (n_CM, bins, patches) = axes[1].hist(CM_histo_dat, bins = range(0,1500+50,50), stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes[1].set_ylim([0, 70])
+    axes[1].set_ylim([0, 40])
     plt.rc('font', **font)
     plt.show()
-    #plt.savefig('CM_histo_22428.png', dpi=300)
+    plt.savefig('CM_histo_2259_v2.png', dpi=300)
 
     CM_histo_dat = [matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'TP') &
                                                (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 60),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'FN') &
                                                (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 60),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'ER') &
                                                (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 60),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NE') &
                                                (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 60),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_CarbonMapper.loc[(matchedDF_CarbonMapper['tc_Classification'] == 'NS') &
                                                (matchedDF_CarbonMapper['UnblindingStage'] == 1) &
-                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 80),
+                                               (matchedDF_CarbonMapper['cr_kgh_CH4_mean30'] <= 60),
                                                'cr_kgh_CH4_mean30']]
 
     plt.ion()
@@ -162,13 +229,13 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
     plt.subplots_adjust(hspace = 0.5)
     fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
-    axes.hist(CM_histo_dat, 5, stacked=True, density = False,
+    axes.hist(CM_histo_dat, bins = range(0,60+5,5), stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes.set_ylim([0, 20])
+    axes.set_ylim([0, 15])
 
     plt.show()
-    #plt.savefig('CM_histo_22428_small.png', dpi=300)
+    plt.savefig('CM_histo_2259_small_v2.png', dpi=300)
     plt.rc('font', **font)
 
     # Plotting Carbon Mapper parity (test set only)
@@ -380,28 +447,66 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
     #Imagepath = os.path.join(cwd, 'CarbonMapper_series.svg')
     #fig.write_image(Imagepath)
 
-## CARBON MAPPER BOX AND WHISKER
+## --------------------------CARBON MAPPER BOX AND WHISKER---------------------------------------------------------##
 
-plt.subplots_adjust(hspace = 0.5)
-fig, axs = plt.subplots(2,1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
-fig.add_trace(boxWhisker(df =
+plt.subplots_adjust(hspace=0.5)
+fig, axes = plt.subplots(3, 1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
-                        ),
-              row=1, col=1)
+for i in range(3):
 
-fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
-                         mode='markers',
-                         marker=dict(size=2,
-                                     color='rgb(140,21,21)'),
-                         error_y=dict(
-                             type='data',
-                             symmetric=False,
-                             thickness=1,
-                             width=1.5,
-                             array=df['cr_scfh_hi'],
-                             arrayminus=df['cr_scfh_lo'])),
-              row=2, col=1)
+    plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (i + 1)) & (
+            matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+
+    plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
+    medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
+
+    sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[i], color='#8c1515')
+    axes[i].set_ylim([-150, 150])
+
+    nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
+    nobs = [str(x) for x in nobs.tolist()]
+    nobs = ["n: " + i for i in nobs]
+
+    # Add it to the plot
+    pos = range(len(nobs))
+    for tick, label in zip(pos, axes[i].get_xticklabels()):
+        axes[i].text(pos[tick],
+                     -125,
+                     nobs[tick],
+                     horizontalalignment='center',
+                     size='small',
+                     color='k',
+                     weight='semibold')
+
+    # Add it to the plot
+    pos = range(len(nobs))
+    for tick, label in zip(pos, axes[i].get_xticklabels()):
+        axes[i].text(pos[tick],
+                     medians[tick] + 0.03,
+                     "{:.2f}".format(medians[tick]),
+                     horizontalalignment='center',
+                     size='small',
+                     color='w',
+                     weight='semibold')
+
+axes[0].set_xlabel('', fontsize=6)
+axes[1].set_xlabel('', fontsize=6)
+axes[1].set_ylabel('Quantification Error [%]', fontsize=12)
+axes[2].set_xlabel('Bin - 5 minute wind speed [mps]', fontsize=12)
+ax.tick_params(labelsize=12)
+
+axes[0].set_xticks(range(len(nobs)))
+axes[1].set_xticks(range(len(nobs)))
+axes[2].set_xticks(range(len(nobs)))
+axes[0].set_xticklabels(['', '', '', '', '', ''])
+axes[1].set_xticklabels(['', '', '', '', '', ''])
+axes[2].set_xticklabels(['0-1', '1-2', '2-3', '3-4', '4-5', '5+'])
+
+plt.rc('font', **font)
+
+plt.savefig('CarbonMapper_Boxwhisker_22.5.5.svg')
+plt.close()
 
 ## MAIR PARITY
 
@@ -499,7 +604,7 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
     plt.close()     
 
 ## BRIDGER HISTOGRAM
-
+plt.rc('font', **font)
     Br_histo_dat = [matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'TP') &
                     (matchedDF_Bridger['UnblindingStage'] == 1) &
                     (matchedDF_Bridger['WindType'] == 'HRRR'), 'cr_kgh_CH4_mean30'],
@@ -532,37 +637,37 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
 
     axes[0].bar(1, Br_freq.values,color = '#999999',
                 edgecolor='black', linewidth=1.2)
-    axes[0].set_ylim([0, 40])
+    axes[0].set_ylim([0, 30])
     axes[0].plot
-    axes[1].hist(Br_histo_dat, 10, stacked=True, density = False,
+    (n_Bridger, bins, patches) = axes[1].hist(Br_histo_dat, bins = range(0,1500+50,50), stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#9d9573','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes[1].set_ylim([0, 40])
+    axes[1].set_ylim([0, 30])
     plt.rc('font', **font)
     plt.show()
-    #plt.savefig('Bridger_histo_22428.png', dpi=300)
+    plt.savefig('Bridger_histo_2259.png', dpi=300)
 
 ## BRIDGER HISTOGRAM SMALL
 
     Br_histo_dat = [matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'TP') &
                                                (matchedDF_Bridger['UnblindingStage'] == 1) &
-                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'FN') &
                                                (matchedDF_Bridger['UnblindingStage'] == 1) &
-                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'ER') &
                                                (matchedDF_Bridger['UnblindingStage'] == 1) &
-                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'NE') &
                                                (matchedDF_Bridger['UnblindingStage'] == 1) &
-                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_Bridger.loc[(matchedDF_Bridger['tc_Classification'] == 'NS') &
                                                (matchedDF_Bridger['UnblindingStage'] == 1) &
-                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 15),
+                                               (matchedDF_Bridger['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30']]
 
     plt.ion()
@@ -570,13 +675,13 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
     plt.subplots_adjust(hspace = 0.5)
     fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
-    axes.hist(Br_histo_dat, 5, stacked=True, density = False,
+    axes.hist(Br_histo_dat, bins = range(0,60+5,5), stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
                  edgecolor='black', linewidth=1.2)
     axes.set_ylim([0, 20])
 
     plt.show()
-    #plt.savefig('Br_histo_22428_small.png', dpi=300)
+    plt.savefig('Br_histo_2259_small.png', dpi=300)
     plt.rc('font', **font)
 
 ## TIMESERIES BRIDGER
@@ -713,8 +818,190 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
     # fig.update_xaxes(range=['2021-07-30 16:00:00','2021-07-30 17:00:00'], autorange=False)
     fig.show()
 
-    Imagepath = os.path.join(cwd, 'Timeseries_Bridger.svg')
-    fig.write_image(Imagepath)
+    #Imagepath = os.path.join(cwd, 'Timeseries_Bridger.svg')
+    #fig.write_image(Imagepath)
+
+# ---------------------BRIDGER BOX AND WHISKER ---------------------------------------------------------------------#
+
+plt.subplots_adjust(hspace=0.5)
+fig, axes = plt.subplots(2, 2, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+# Unblinding stage 1 - HRRR
+
+plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (1)) & (
+        matchedDF_Bridger['tc_Classification'] == 'TP') & (
+                                      matchedDF_Bridger['WindType'] == 'HRRR')]
+
+plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
+medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
+
+sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[0, 0], color='#D2C295')
+axes[0, 0].set_ylim([-150, 150])
+
+nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
+nobs = [str(x) for x in nobs.tolist()]
+nobs = ["n: " + i for i in nobs]
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[0, 0].get_xticklabels()):
+    axes[0, 0].text(pos[tick],
+                    -125,
+                    nobs[tick],
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[0, 0].get_xticklabels()):
+    axes[0, 0].text(pos[tick],
+                    medians[tick] + 0.03,
+                    "{:.2f}".format(medians[tick]),
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Unblinding stage 1 - NAM12
+
+plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (1)) & (
+        matchedDF_Bridger['tc_Classification'] == 'TP') & (
+                                      matchedDF_Bridger['WindType'] == 'NAM12')]
+
+plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
+medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
+
+sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[0, 1], color='#D2C295')
+axes[0, 1].set_ylim([-150, 150])
+
+nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
+nobs = [str(x) for x in nobs.tolist()]
+nobs = ["n: " + i for i in nobs]
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[0, 1].get_xticklabels()):
+    axes[0, 1].text(pos[tick],
+                    -125,
+                    nobs[tick],
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[0, 1].get_xticklabels()):
+    axes[0, 1].text(pos[tick],
+                    medians[tick] + 0.03,
+                    "{:.2f}".format(medians[tick]),
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Unblinding stage 2
+
+plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 2) & (
+        matchedDF_Bridger['tc_Classification'] == 'TP') & (
+                                      matchedDF_Bridger['WindType'] == 'Sonic')]
+
+plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
+medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
+
+sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[1, 0], color='#D2C295')
+axes[1, 0].set_ylim([-150, 150])
+
+nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
+nobs = [str(x) for x in nobs.tolist()]
+nobs = ["n: " + i for i in nobs]
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[1, 0].get_xticklabels()):
+    axes[1, 0].text(pos[tick],
+                    -125,
+                    nobs[tick],
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[1, 0].get_xticklabels()):
+    axes[1, 0].text(pos[tick],
+                    medians[tick] + 0.03,
+                    "{:.2f}".format(medians[tick]),
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Unblinding stage 3
+
+plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 3) & (
+        matchedDF_Bridger['tc_Classification'] == 'TP') & (
+                                      matchedDF_Bridger['WindType'] == 'Sonic')]
+
+plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
+medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
+
+sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[1, 1], color='#D2C295')
+axes[1, 1].set_ylim([-150, 150])
+
+nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
+nobs = [str(x) for x in nobs.tolist()]
+nobs = ["n: " + i for i in nobs]
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[1, 1].get_xticklabels()):
+    axes[1, 1].text(pos[tick],
+                    -125,
+                    nobs[tick],
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+# Add it to the plot
+pos = range(len(nobs))
+for tick, label in zip(pos, axes[1, 1].get_xticklabels()):
+    axes[1, 1].text(pos[tick],
+                    medians[tick] + 0.03,
+                    "{:.2f}".format(medians[tick]),
+                    horizontalalignment='center',
+                    size='small',
+                    color='k',
+                    weight='semibold')
+
+axes[0, 0].set_xlabel('', fontsize=6)
+axes[0, 1].set_xlabel('', fontsize=6)
+axes[1, 0].set_xlabel('', fontsize=6)
+axes[1, 1].set_xlabel('', fontsize=6)
+axes[0, 1].set_ylabel('', fontsize=6)
+axes[1, 1].set_ylabel('', fontsize=6)
+axes[1, 0].set_ylabel('Quantification Error [%]', fontsize=12)
+axes[1, 0].set_xlabel('Bin - 5 minute wind speed [mps]', fontsize=12)
+ax.tick_params(labelsize=12)
+
+axes[0, 0].set_xticks(range(len(nobs)))
+axes[0, 1].set_xticks(range(len(nobs)))
+axes[1, 0].set_xticks(range(len(nobs)))
+axes[1, 1].set_xticks(range(len(nobs)))
+axes[0, 0].set_xticklabels(['', '', '', '', '', ''])
+axes[0, 1].set_xticklabels(['', '', '', '', '', ''])
+axes[1, 0].set_xticklabels(['0-1', '1-2', '2-3', '3-4', '4-5', '5+'])
+axes[1, 1].set_xticklabels(['0-1', '1-2', '2-3', '3-4', '4-5', '5+'])
+
+plt.rc('font', **font)
+
+plt.savefig('Bridger_Boxwhisker_22.5.5.svg')
+plt.close()
+
 
 ## GHGSAT PARITY
 
@@ -736,7 +1023,7 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
 ## GHGSAT HISTOGRAM
 
     plt.close()
-
+    plt.rc('font', **font)
     GHGS_histo_dat = [matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'TP') &
                       (matchedDF_GHGSat['UnblindingStage'] == 1), 'cr_kgh_CH4_mean30'],
                       matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'FN') &
@@ -764,7 +1051,8 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
                 edgecolor='black', linewidth=1.2)
     axes[0].set_ylim([0, 60])
     axes[0].plot
-    axes[1].hist(GHGS_histo_dat, 60, stacked=True, density = False,
+
+    (n_GHGSat, bins, patches) = axes[1].hist(GHGS_histo_dat, bins = range(0,7500+100,100), stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54'],
                  edgecolor='black', linewidth=1.2)
     #xlabels = bins[1:].astype(str)
@@ -778,29 +1066,29 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
     axes[1].set_ylim([0, 60])
     plt.rc('font', **font)
     plt.show()
-    #plt.savefig('GHGSat_histo_22428.png', dpi=300)
+    plt.savefig('GHGSat_histo_2259.png', dpi=300)
 
 ## GHGSAT HISTOGRAM SMALL
 
     GHGS_histo_dat = [matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'TP') &
                                                (matchedDF_GHGSat['UnblindingStage'] == 1) &
-                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'FN') &
                                                (matchedDF_GHGSat['UnblindingStage'] == 1) &
-                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'ER') &
                                                (matchedDF_GHGSat['UnblindingStage'] == 1) &
-                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'NE') &
                                                (matchedDF_GHGSat['UnblindingStage'] == 1) &
-                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30'],
                     matchedDF_GHGSat.loc[(matchedDF_GHGSat['tc_Classification'] == 'NS') &
                                                (matchedDF_GHGSat['UnblindingStage'] == 1) &
-                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 60),
+                                               (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 50),
                                                'cr_kgh_CH4_mean30']]
 
     plt.ion()
@@ -808,13 +1096,13 @@ fig.add_trace(boxWhisker(x=df['Stanford_timestamp'], y=df['cr_scfh_mean60'],
     plt.subplots_adjust(hspace = 0.5)
     fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k')
 
-    axes.hist(GHGS_histo_dat, 12, stacked=True, density = False,
+    axes.hist(GHGS_histo_dat, bins = range(0,50+2,2), stacked=True, density = False,
                  color=['#8c1515','#D2C295','#53284f','#175e54','#007c92'],
                  edgecolor='black', linewidth=1.2)
-    axes.set_ylim([0, 20])
+    axes.set_ylim([0, 10])
 
     plt.show()
-    #plt.savefig('GHGSat_histo_22428_small.png', dpi=300)
+    plt.savefig('GHGSat_histo_2259_small.png', dpi=300)
 
     fig = make_subplots(rows=5, cols=1)
 

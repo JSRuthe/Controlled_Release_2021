@@ -252,7 +252,15 @@ def classifyDetections_Bridger(matchedDF):
     :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
 
     for idx, row in matchedDF.iterrows():
-        if not row['PlumeEstablished']:
+        # False positives occur if Bridger does record a detection
+        # AND Stanford is not releasing
+        if pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif not row['PlumeEstablished']:
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
             matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
             matchedDF.loc[idx, 'Detection'] = -1
@@ -262,14 +270,6 @@ def classifyDetections_Bridger(matchedDF):
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        # False positives occur if Bridger does record a detection 
-        # AND Stanford is not releasing
-        elif pd.notna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
-            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
-            matchedDF.loc[idx, 'Detection'] = 0
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
-            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
-            matchedDF.loc[idx, 'Detection'] = 0     
         elif not row['PlumeSteady']:
             matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
             matchedDF.loc[idx, 'Detection'] = 0  
@@ -285,7 +285,21 @@ def classifyDetections_CarbonMapper(matchedDF):
     :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
 
     for idx, row in matchedDF.iterrows():
-        if not row['PlumeEstablished']:
+        # False positives occur if Carbon Mapper does record a detection
+        # AND Stanford is not releasing
+        if row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif (row['QC filter'] == 0) and (row['cr_allmeters_scfh'] <= 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER_Zero'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = -1
+        elif (row['QC filter'] == 0) and (row['cr_allmeters_scfh'] > 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = -1
+        elif not row['PlumeEstablished']:
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
             matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
             matchedDF.loc[idx, 'Detection'] = -1
@@ -295,17 +309,6 @@ def classifyDetections_CarbonMapper(matchedDF):
         elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        # False positives occur if Carbon Mapper does record a detection
-        # AND Stanford is not releasing
-        elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
-            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
-            matchedDF.loc[idx, 'Detection'] = 0
-        elif row['QC filter'] == 0 :
-            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
-            matchedDF.loc[idx, 'Detection'] = -1
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
-            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
-            matchedDF.loc[idx, 'Detection'] = 0 
         elif not row['PlumeSteady']:
             matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
             matchedDF.loc[idx, 'Detection'] = 0  
@@ -354,7 +357,23 @@ def classifyDetections_GHGSat(matchedDF):
     :return matchedDF = updated dataframe with each row classified (TP, FN, or NE)"""
 
     for idx, row in matchedDF.iterrows():
-        if not row['PlumeEstablished']:
+        # False positives occur if GHGSat does record a detection
+        # AND Stanford is not releasing
+        if row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
+            matchedDF.loc[idx, 'Detection'] = 0
+        elif (row['QC filter'] == 0 or pd.isna(row['PerformerExperimentID'])) \
+                and (row['cr_allmeters_scfh'] <= 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER_Zero'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = -1
+        elif (row['QC filter'] == 0 or pd.isna(row['PerformerExperimentID']))\
+                and (row['cr_allmeters_scfh'] > 0):
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+            matchedDF.loc[idx, 'Detection'] = -1
+        elif not row['PlumeEstablished']:
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
             matchedDF.loc[idx, 'tc_Classification'] = 'NE'  # NE = Not Established
             matchedDF.loc[idx, 'Detection'] = -1
@@ -364,17 +383,6 @@ def classifyDetections_GHGSat(matchedDF):
         elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] > 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FN'  # FN = False Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        # False positives occur if GHGSat does record a detection
-        # AND Stanford is not releasing
-        elif row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
-            matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
-            matchedDF.loc[idx, 'Detection'] = 0
-        elif row['QC filter'] == 0 or pd.isna(row['PerformerExperimentID']) :
-            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
-            matchedDF.loc[idx, 'Detection'] = -1
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
-            matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
-            matchedDF.loc[idx, 'Detection'] = 0 
         elif not row['PlumeSteady']:
             matchedDF.loc[idx, 'tc_Classification'] = 'NS'  # NS = Not Steady
             matchedDF.loc[idx, 'Detection'] = 0  
