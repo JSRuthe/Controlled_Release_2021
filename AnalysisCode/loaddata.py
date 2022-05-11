@@ -685,7 +685,7 @@ def loadMeterData_Bridger(DataPath):
     time_series = time_series.dt.tz_localize(pytz.utc)
     quadrathermDF.index = time_series
 
-    # Add a column for moving average
+    # Add a column for moving average emission rate
     quadrathermDF['cr_scfh_mean30'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=30).mean()
     quadrathermDF['cr_scfh_mean60'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=60).mean()
     quadrathermDF['cr_scfh_mean90'] = quadrathermDF['cr_allmeters_scfh'].rolling(window=90).mean()
@@ -1717,7 +1717,18 @@ def combineAnemometer_Satellites(sonic_path):
     df['time'] = df['time'] - datetime.timedelta(seconds = offset)
 
     # Calculate moving average of wind speed
-    df['Wind_MPS_mean300'] = df['Speed_MPS'].rolling(window =300).mean()
+    df['Wind_MPS_mean30'] = df['Speed_MPS'].rolling(window=30).mean()
+    df['Wind_MPS_mean60'] = df['Speed_MPS'].rolling(window=60).mean()
+    df['Wind_MPS_mean90'] = df['Speed_MPS'].rolling(window=90).mean()
+    df['Wind_MPS_mean300'] = df['Speed_MPS'].rolling(window=300).mean()
+    df['Wind_MPS_mean600'] = df['Speed_MPS'].rolling(window=600).mean()
+    df['Wind_MPS_mean900'] = df['Speed_MPS'].rolling(window=600).mean()
+    df['Wind_dir_mean30'] = df['Direction'].rolling(window=30).mean()
+    df['Wind_dir_mean60'] = df['Direction'].rolling(window=60).mean()
+    df['Wind_dir_mean90'] = df['Direction'].rolling(window=90).mean()
+    df['Wind_dir_mean300'] = df['Direction'].rolling(window=300).mean()
+    df['Wind_dir_mean600'] = df['Direction'].rolling(window=600).mean()
+    df['Wind_dir_mean900'] = df['Direction'].rolling(window=900).mean()
 
     sonicDF_temp0 = df
     sonicDF_temp0 = sonicDF_temp0.set_index('time')
@@ -2002,7 +2013,18 @@ def processAnemometer(path_lookup, localtz, cols, offset):
     df['time'] = df['time'] - datetime.timedelta(seconds = offset)
 
     # Calculate moving average of wind speed
+    df['Wind_MPS_mean30'] = df['Speed_MPS'].rolling(window=30).mean()
+    df['Wind_MPS_mean60'] = df['Speed_MPS'].rolling(window=60).mean()
+    df['Wind_MPS_mean90'] = df['Speed_MPS'].rolling(window=90).mean()
     df['Wind_MPS_mean300'] = df['Speed_MPS'].rolling(window =300).mean()
+    df['Wind_MPS_mean600'] = df['Speed_MPS'].rolling(window=600).mean()
+    df['Wind_MPS_mean900'] = df['Speed_MPS'].rolling(window=600).mean()
+    df['Wind_dir_mean30'] = df['Direction'].rolling(window=30).mean()
+    df['Wind_dir_mean60'] = df['Direction'].rolling(window=60).mean()
+    df['Wind_dir_mean90'] = df['Direction'].rolling(window=90).mean()
+    df['Wind_dir_mean300'] = df['Direction'].rolling(window=300).mean()
+    df['Wind_dir_mean600'] = df['Direction'].rolling(window=600).mean()
+    df['Wind_dir_mean900'] = df['Direction'].rolling(window=900).mean()
     
-    
+
     return df

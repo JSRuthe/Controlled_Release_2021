@@ -174,8 +174,12 @@ def matchPassToQuadratherm(operatorDF, meterDF_All, sonicDF_All):
     matchedDF = operatorDF.merge(meterDF_All, left_on = ['Stanford_timestamp'], right_index = True)
 
     # Add wind speed MPS moving average column
-    matchedDF = matchedDF.merge(sonicDF_All[['Wind_MPS_mean300']], left_on = ['Stanford_timestamp'], right_index = True)
-
+    matchedDF = matchedDF.merge(sonicDF_All[['Wind_MPS_mean30', 'Wind_MPS_mean60', 'Wind_MPS_mean90', 'Wind_MPS_mean300',
+                                             'Wind_MPS_mean600', 'Wind_MPS_mean900',
+                                             'Wind_dir_mean30', 'Wind_dir_mean60', 'Wind_dir_mean90',
+                                             'Wind_dir_mean300', 'Wind_dir_mean600', 'Wind_dir_mean900']],
+                                left_on = ['Stanford_timestamp'], right_index = True)
+    # matchedDF = matchedDF.merge(sonicDF_All[['Wind_dir_mean300']], left_on=['Stanford_timestamp'], right_index=True)
 
 
     return matchedDF
