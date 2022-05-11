@@ -132,7 +132,8 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     matchedDF_Satellites = matchedDF[(matchedDF['OperatorSet'] != 'MAIR') &
                                (matchedDF['OperatorSet'] != 'CarbonMapper') &
                                (matchedDF['OperatorSet'] != 'Bridger') &
-                               (matchedDF['OperatorSet'] != 'GHGSat')]
+                               (matchedDF['OperatorSet'] != 'GHGSat') &
+                               (matchedDF['OperatorSet'] != 'SOOFIE')]
     matchedDF_Satellites = matchedDF_Satellites.reset_index()  
     sonicDF_Satellites = sonicDF_All    
     matchedDF_Satellites = checkPlumes(DataPath, matchedDF_Satellites, sonicDF_Satellites, 
