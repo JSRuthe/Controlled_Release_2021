@@ -298,11 +298,12 @@ def classifyDetections_CarbonMapper(matchedDF):
         elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        elif (row['QC filter'] == 0) and (row['cr_allmeters_scfh'] <= 0):
-            matchedDF.loc[idx, 'tc_Classification'] = 'ER_Zero'  # ER = Error
-            matchedDF.loc[idx, 'Detection'] = -1
-        elif (row['QC filter'] == 0) and (row['cr_allmeters_scfh'] > 0):
-            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+        #elif (row['QC filter'] == 0) and (row['cr_allmeters_scfh'] <= 0):
+        #    matchedDF.loc[idx, 'tc_Classification'] = 'ER_Zero'  # ER = Error
+        #    matchedDF.loc[idx, 'Detection'] = -1
+        #elif (row['QC filter'] == 0) and (row['cr_allmeters_scfh'] > 0):
+        elif row['QC filter'] == 0:
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER_FAL'  # ER = Error
             matchedDF.loc[idx, 'Detection'] = -1
         elif not row['PlumeEstablished']:
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1
@@ -367,16 +368,20 @@ def classifyDetections_GHGSat(matchedDF):
         if row['QC filter'] == 1 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'FP'  # FP = False Positive
             matchedDF.loc[idx, 'Detection'] = 0
-        elif pd.isna(row['FacilityEmissionRate']) and row['cr_allmeters_scfh'] <= 0:
+        elif row['QC filter'] == 2 and row['cr_allmeters_scfh'] <= 0:
             matchedDF.loc[idx, 'tc_Classification'] = 'TN'  # TN = True Negative
             matchedDF.loc[idx, 'Detection'] = 0
-        elif (row['QC filter'] == 0 or pd.isna(row['PerformerExperimentID'])) \
-                and (row['cr_allmeters_scfh'] <= 0):
-            matchedDF.loc[idx, 'tc_Classification'] = 'ER_Zero'  # ER = Error
+        #elif (row['QC filter'] < 1 or pd.isna(row['PerformerExperimentID'])) \
+        #        and (row['cr_allmeters_scfh'] <= 0):
+        #    matchedDF.loc[idx, 'tc_Classification'] = 'ER_Zero'  # ER = Error
+        #    matchedDF.loc[idx, 'Detection'] = -1
+        #elif (row['QC filter'] == 0.5) and (row['cr_allmeters_scfh'] > 0):
+        elif row['QC filter'] == 0.5:
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER_MIS'  # ER = Error
             matchedDF.loc[idx, 'Detection'] = -1
-        elif (row['QC filter'] == 0 or pd.isna(row['PerformerExperimentID']))\
-                and (row['cr_allmeters_scfh'] > 0):
-            matchedDF.loc[idx, 'tc_Classification'] = 'ER'  # ER = Error
+        #elif (row['QC filter'] == 0.75) and (row['cr_allmeters_scfh'] > 0):
+        elif row['QC filter'] == 0.75:
+            matchedDF.loc[idx, 'tc_Classification'] = 'ER_FAQ'  # ER = Error
             matchedDF.loc[idx, 'Detection'] = -1
         elif not row['PlumeEstablished']:
             # tc_Classification is a categorical string describing the classification, Detection is describes same thing with -1, 0, 1

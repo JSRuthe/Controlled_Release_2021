@@ -8,6 +8,7 @@ import pandas as pd
 import bisect
 import numpy as np
 from UnitConversion import convertUnits, SCFH2kgh, mph2ms, applyComposition, gps2kgh, kgh2SCFH, gps2scfh
+from dateutil.parser import parse
 
 def loaddata():
     """Load all data from testing"""
@@ -418,29 +419,32 @@ def loadMAIRData(filepath, timestamp_path):
 
 def loadGHGSatData(filepath, timestamp_path):
     """Load GHGSat data from report and format datetimes."""
-    #df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
+    # df = pd.read_excel(filepath, sheet_name='Survey Summary', skiprows=0, engine='openpyxl')
     df = pd.read_csv(filepath, parse_dates=[['DateOfSurvey', 'Timestamp (hyperspectral technologies only)']])
-    
-    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)':'Operator_Timestamp'}, inplace=True)
-    cwd = os.getcwd()   
-    QC_filter = pd.read_csv(os.path.join(cwd, 'GHGSatTestData','QC_filter.csv'), header = None, names = ['QC filter'])  
-        
+
+    df.rename(columns={'DateOfSurvey_Timestamp (hyperspectral technologies only)': 'Operator_Timestamp'}, inplace=True)
+    cwd = os.getcwd()
+    QC_filter = pd.read_csv(os.path.join(cwd, 'GHGSatTestData', 'QC_filter.csv'), header=None, names=['QC filter'])
+
     # GHGSat does not report a timestamp for all passes. Non-retrievals are identified
     # by rows without a timestamp.
-    # Therfore, need to choose a different column to filter out blank rows in the 
+    # Therfore, need to choose a different column to filter out blank rows in the
     # spreadsheet. Choose to filter out  rows with a blank Performer Experiment ID
     # (Jeff - Need to verify this is a good approacah)
-    
+
     df = df[df["PerformerExperimentID"].notnull()]
     df['QC filter'] = QC_filter['QC filter']
 
+    # Drop rows with Equipment ID = 2 (Secondary source)
+    df = df.drop(df[(df['EquipmentUnitID'] == 2)].index)
+
     # TEMPORARY: Remove the following rows with failed retrievals:
-        # 	PerformerExperimentID = 1496-1-302-827-1026-4
-        #  	PerformerExperimentID = 1496-2-305-537-736-51
-        # 	PerformerExperimentID = 1496-4-102-1292-1491-118
-        # 	PerformerExperimentID = 1496-4-123-527-726-138
-        # 	PerformerExperimentID = 1496-4-129-863-1062-144
-        # 	PerformerExperimentID = 1496-4-141-613-812-154
+    # 	PerformerExperimentID = 1496-1-302-827-1026-4
+    #  	PerformerExperimentID = 1496-2-305-537-736-51
+    # 	PerformerExperimentID = 1496-4-102-1292-1491-118
+    # 	PerformerExperimentID = 1496-4-123-527-726-138
+    # 	PerformerExperimentID = 1496-4-129-863-1062-144
+    # 	PerformerExperimentID = 1496-4-141-613-812-154
 
     df = df.drop(df[(df['PerformerExperimentID'] == '1496-1-302-827-1026-4')].index)
     df = df.drop(df[(df['PerformerExperimentID'] == '1496-2-305-537-736-51')].index)
@@ -449,26 +453,54 @@ def loadGHGSatData(filepath, timestamp_path):
     df = df.drop(df[(df['PerformerExperimentID'] == '1496-4-129-863-1062-144')].index)
     df = df.drop(df[(df['PerformerExperimentID'] == '1496-4-141-613-812-154')].index)
 
+    # df['Operator_Timestamp'] = df.apply(
+    #    lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
+    #    datetime.datetime.strptime(x['Operator_Timestamp'], '%Y-%m-%d %H:%M:%S'), axis=1)
+
     df['Operator_Timestamp'] = df.apply(
-        lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
-        datetime.datetime.strptime(x['Operator_Timestamp'], '%Y-%m-%d %H:%M:%S'), axis=1)    
-  
+        lambda x: pd.NA if not is_date(x['Operator_Timestamp']) else
+        datetime.datetime.strptime(x['Operator_Timestamp'], '%Y-%m-%d %H:%M:%S'), axis=1)
+
     df['Operator_Timestamp'] = df.apply(
         lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
         x['Operator_Timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
 
-    StanfordTimestamps = pd.read_csv(timestamp_path, header = None, names = ['Stanford_timestamp', 'Round 3 test set'], parse_dates=True)
+    StanfordTimestamps = pd.read_csv(timestamp_path, header=None, names=['Stanford_timestamp', 'Round 3 test set'],
+                                     parse_dates=True)
     StanfordTimestamps['Stanford_timestamp'] = pd.to_datetime(StanfordTimestamps['Stanford_timestamp'])
     StanfordTimestamps['Stanford_timestamp'] = StanfordTimestamps.apply(
         lambda x: x['Stanford_timestamp'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
-    #StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
-    
-    tol = pd.Timedelta('2 minutes')
-    df_1 = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',left_on='Operator_Timestamp',direction='nearest',tolerance=tol)
-    df_1.loc[df_1['Stanford_timestamp'].isnull(),'Stanford_timestamp'] = df_1["Operator_Timestamp"]
-    df_2 = pd.merge_asof(right=df.sort_values('Operator_Timestamp'),left=StanfordTimestamps.sort_values('Stanford_timestamp'), left_on='Stanford_timestamp',right_on='Operator_Timestamp',direction='nearest',tolerance=tol)
-    df = df_1.append(df_2[df_2['PerformerExperimentID'].isnull()]).sort_values(by = ['Stanford_timestamp'])
+    # StanfordTimestamps.set_index('Stanford_timestamp', inplace = True)
 
+    tol = pd.Timedelta('2 minutes')
+    df_1 = pd.merge_asof(left=df.sort_values('Operator_Timestamp'),
+                         right=StanfordTimestamps.sort_values('Stanford_timestamp'), right_on='Stanford_timestamp',
+                         left_on='Operator_Timestamp', direction='nearest', tolerance=tol)
+    df_1.loc[df_1['Stanford_timestamp'].isnull(), 'Stanford_timestamp'] = df_1["Operator_Timestamp"]
+    df_2 = pd.merge_asof(right=df.sort_values('Operator_Timestamp'),
+                         left=StanfordTimestamps.sort_values('Stanford_timestamp'), left_on='Stanford_timestamp',
+                         right_on='Operator_Timestamp', direction='nearest', tolerance=tol)
+    # df_2 contains the error values not contained in df_1
+
+    # First identify all errors as missing data points
+    df_2['QC filter'][df_2['PerformerExperimentID'].isnull()] = 0.5
+    df = df_1.append(df_2[df_2['PerformerExperimentID'].isnull()]).sort_values(by=['Stanford_timestamp'])
+
+    # Some were flagged by GHGSat
+    df['QC filter'][df['Stanford_timestamp'] == pd.to_datetime('2021-10-18 17:38:00').tz_localize(
+        'UTC')] = 0.75  # 1496-1-302-827-1026-4
+    df['QC filter'][df['Stanford_timestamp'] == pd.to_datetime('2021-10-19 18:54:42').tz_localize(
+        'UTC')] = 0.75  # 1496-2-305-537-736-51
+    df['QC filter'][df['Stanford_timestamp'] == pd.to_datetime('2021-10-21 17:49:15').tz_localize(
+        'UTC')] = 0.75  # 1496-4-102-1292-1491-118
+    df['QC filter'][df['Stanford_timestamp'] == pd.to_datetime('2021-10-21 19:14:33').tz_localize(
+        'UTC')] = 0.75  # 1496-4-123-527-726-138
+    df['QC filter'][df['Stanford_timestamp'] == pd.to_datetime('2021-10-21 19:39:00').tz_localize(
+        'UTC')] = 0.75  # 1496-4-129-863-1062-144
+    df['QC filter'][df['Stanford_timestamp'] == pd.to_datetime('2021-10-21 20:25:10').tz_localize(
+        'UTC')] = 0.75  # 1496-4-141-613-812-154
+
+    # 22.5.14 - Double checked that QC code is working properly
 
     return df
 
@@ -2028,3 +2060,18 @@ def processAnemometer(path_lookup, localtz, cols, offset):
     
 
     return df
+
+
+def is_date(string, fuzzy=False):
+    """
+    Return whether the string can be interpreted as a date.
+
+    :param string: str, string to check for date
+    :param fuzzy: bool, ignore unknown tokens in string if True
+    """
+    try:
+        parse(string, fuzzy=fuzzy)
+        return True
+
+    except ValueError:
+        return False
