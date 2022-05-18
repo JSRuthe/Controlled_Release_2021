@@ -1,0 +1,36 @@
+
+	plt.subplots_adjust(hspace = 0.5)
+	fig, axes = plt.subplots(4,4, figsize=(10, 6), facecolor='w', edgecolor='k')
+## CARBON MAPPER - PARITY
+	matchedDF_CarbonMapper['FacilityEmissionRateUpper'] = matchedDF_CarbonMapper['FacilityEmissionRateUpper'].replace('#VALUE!',np.NaN)
+	matchedDF_CarbonMapper['FacilityEmissionRateLower'] = matchedDF_CarbonMapper['FacilityEmissionRateLower'].replace('#VALUE!',np.NaN)
+
+	for i in range(4):
+		for j in range(3):
+			if i == 0:
+				if j == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'HRRR')]
+				else:
+             				plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & (matchedDF_Bridger['tc_Classification'] == 'TP')]
+					
+				parity_plot(axes[i,j], plot_data, 'Bridger')
+			elif i ==1:
+				if j == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'NAM12')]
+				else:
+             				plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & (matchedDF_Bridger['tc_Classification'] == 'TP')]					
+				parity_plot(axes[i,j], plot_data, 'Bridger')
+			elif i == 2:
+				plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (j + 1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+				parity_plot(axes[i,j], plot_data, 'CarbonMapper')
+			elif i == 3:	 
+				plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & 
+						    (matchedDF_GHGSat['tc_Classification'] == 'TP') &
+						    (matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 2000)]
+				parity_plot(axes[i,j], plot_data, 'GHGSat')
+
+	plt.savefig('Allteams_parity_225111.pdf', dpi = 300)

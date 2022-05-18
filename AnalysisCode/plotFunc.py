@@ -68,7 +68,19 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
                                 columns='tc_Classification', 
                                 values = 'PerformerExperimentID',
                                 aggfunc = len)   
-    
+
+    df_GHGSat_zero = pd.pivot_table(matchedDF_GHGSat[matchedDF_GHGSat['cr_kgh_CH4_mean30'] == 0],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+    df_GHGSat_nonzero = pd.pivot_table(matchedDF_GHGSat[matchedDF_GHGSat['cr_kgh_CH4_mean30'] > 0],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
     df_counts_MAIR = matchedDF_MAIR.pivot_table( 
                                 index='UnblindingStage', 
                                 columns='tc_Classification', 
@@ -81,72 +93,163 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
                                 values = 'Operator_Timestamp',
                                 aggfunc = len)
 
+    df_Bridger_rnd3 = pd.pivot_table(matchedDF_Bridger[(matchedDF_Bridger['WindType'] == 'HRRR') &
+                                                      (matchedDF_Bridger['Round 3 test set'] == 1)],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+    df_Bridger_rnd3_lvls = pd.pivot_table(matchedDF_Bridger[(matchedDF_Bridger['WindType'] == 'HRRR') &
+                                                      (matchedDF_Bridger['Round 3 test set'] == 1)],
+                                index = 'cr_start',
+                                values = 'cr_kgh_CH4_mean30',
+                               aggfunc = ('count','mean'))
+
+    df_Bridger_rnd3_lvls = pd.pivot_table(matchedDF_Bridger[(matchedDF_Bridger['WindType'] == 'HRRR') &
+                                                            (matchedDF_Bridger['UnblindingStage'] == 1)],
+                                index = 'cr_start',
+                                columns='Round 3 test set',
+                                values = 'cr_kgh_CH4_mean30',
+                                aggfunc = ('count','mean'))
+
+    df_GHGSat_rnd3 = pd.pivot_table(matchedDF_GHGSat[matchedDF_GHGSat['Round 3 test set'] == 1],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+    df_GHGSat_rnd3_lvls = pd.pivot_table(matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == 1)],
+                                index = 'cr_start',
+                                columns='Round 3 test set',
+                                values = 'cr_kgh_CH4_mean30',
+                                aggfunc = ('count','mean'))
+
+    df_CM_rnd3 = pd.pivot_table(matchedDF_CarbonMapper[matchedDF_CarbonMapper['Round 3 test set'] == 1],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
     # Range of releases Bridger
+
+    matchedDF_Bridger_filter = matchedDF_Bridger.drop(matchedDF_Bridger[(matchedDF_Bridger['tc_Classification'] == 'NE') |
+                                                                        (matchedDF_Bridger['tc_Classification'] == 'NS')
+                                                      ].index)
+
     print('Bridger, min = ',
-          matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 0.01) &
-                                                 (matchedDF_Bridger['UnblindingStage'] == 1)].min())
+          matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 0.01) &
+                                                 (matchedDF_Bridger_filter['UnblindingStage'] == 1)].min())
     print('Bridger, max = ',
-          matchedDF_Bridger['cr_kgh_CH4_mean60'][matchedDF_Bridger['UnblindingStage'] == 1].max())
+          matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][matchedDF_Bridger_filter['UnblindingStage'] == 1].max())
     print('Bridger min detect = ',
-          matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_Bridger['tc_Classification'] == 'TP')
-                                                 & (matchedDF_Bridger['UnblindingStage'] == 1)].min())
-    count_nzero = matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_Bridger['UnblindingStage'] == 1)].count()
-    count_gt100 = matchedDF_Bridger['cr_kgh_CH4_mean60'][(matchedDF_Bridger['cr_kgh_CH4_mean60'] > 100)
-                                                 & (matchedDF_Bridger['UnblindingStage'] == 1)].count()
+          matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_Bridger_filter['tc_Classification'] == 'TP')
+                                                 & (matchedDF_Bridger_filter['UnblindingStage'] == 1)].min())
+    count_nzero = matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_Bridger_filter['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_Bridger_filter['UnblindingStage'] == 1)].count()
 
     print('Bridger, frac > 100 = ', count_gt100/count_nzero)
 
+    CI_data =  matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 1) &
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') &
+                                	           (matchedDF_Bridger['WindType'] == 'HRRR')]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data,[2.5, 97.5])
+    print('Bridger, error (95% CI) = ', CI_error)
+    print('Bridger, error (mean) = ', np.mean(CI_data))
+
     # Range of releases Carbon Mapper
+
+    matchedDF_CarbonMapper_filter = matchedDF_CarbonMapper.drop(matchedDF_CarbonMapper[
+                                                      (matchedDF_CarbonMapper['tc_Classification'] == 'NE') |
+                                                      (matchedDF_CarbonMapper['tc_Classification'] == 'NS')
+                                                      ].index)
+
     print('CM, min = ',
-          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].min())
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].min())
     print('CM, max = ',
-          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][matchedDF_CarbonMapper['UnblindingStage'] == 1].max())
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][matchedDF_CarbonMapper_filter['UnblindingStage'] == 1].max())
     print('CM min detect = ',
-          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')
-                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].min())
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['tc_Classification'] == 'TP')
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].min())
     print('CM max FN = ',
-          matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_CarbonMapper['tc_Classification'] == 'FN')
-                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].max())
-    count_nzero = matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].count()
-    count_gt100 = matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] > 100)
-                                                 & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].count()
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['tc_Classification'] == 'FN')
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].max())
+    count_nzero = matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].count()
     print('CM, frac > 100 = ', count_gt100/count_nzero)
 
-    counterror_lt100 = matchedDF_CarbonMapper['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper['cr_kgh_CH4_mean60'] < 100)
-                                                & (matchedDF_CarbonMapper['tc_Classification'] == 'ER')
-                                                & (matchedDF_CarbonMapper['UnblindingStage'] == 1)].count()
-    print('CM, # < 100 ERROR = ', counterror_lt100)
+    countTP_lt100 = matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] < 100)
+                                                & (matchedDF_CarbonMapper_filter['tc_Classification'] == 'TP')
+                                                & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].count()
+    print('CM, # < 100 TP = ', countTP_lt100)
+    print('CM, frac < 100 TP', countTP_lt100 / (count_nzero - count_gt100))
+
+    CI_data =  matchedDF_CarbonMapper_filter[(matchedDF_CarbonMapper_filter['UnblindingStage'] == 1) &
+                                	           (matchedDF_CarbonMapper_filter['tc_Classification'] == 'TP')]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data,[2.5, 97.5])
+    print('Bridger, error (95% CI) = ', CI_error)
+    print('Bridger, error (mean) = ', np.mean(CI_data))
+
 
     # Range of releases GHGSat-AV
+
+    matchedDF_GHGSat_filter = matchedDF_GHGSat.drop(matchedDF_GHGSat[
+                                                      (matchedDF_GHGSat['tc_Classification'] == 'NE') |
+                                                      (matchedDF_GHGSat['tc_Classification'] == 'NS')
+                                                      ].index)
+
     print('GHGSat, min = ',
-          matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
-                                                & (matchedDF_GHGSat['UnblindingStage'] == 1)].min())
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].min())
     print('GHGSat, max = ',
-          matchedDF_GHGSat['cr_kgh_CH4_mean60'][matchedDF_GHGSat['UnblindingStage'] == 1].max())
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][matchedDF_GHGSat_filter['UnblindingStage'] == 1].max())
     print('GHGSat min detect = ',
-          matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_GHGSat['tc_Classification'] == 'TP')].min())
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat_filter['tc_Classification'] == 'TP')].min())
     print('GHGSat max FN = ',
-          matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_GHGSat['tc_Classification'] == 'FN')
-                                                 & (matchedDF_GHGSat['UnblindingStage'] == 1)].max())
-    count_nzero = matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 0.01)
-                                                 & (matchedDF_GHGSat['UnblindingStage'] == 1)].count()
-    count_gt100 = matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] > 100)
-                                                 & (matchedDF_GHGSat['UnblindingStage'] == 1)].count()
-    print('GHGSat, frac > 5 = ', count_gt100/count_nzero)
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat_filter['tc_Classification'] == 'FN')
+                                                 & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].max())
+    count_nzero = matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].count()
+    count_gt100 =matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].count()
+    print('GHGSat, frac > 100 = ', count_gt100/count_nzero)
 
-    counterror_lt100 = matchedDF_GHGSat['cr_kgh_CH4_mean60'][(matchedDF_GHGSat['cr_kgh_CH4_mean60'] < 100)
-                                                & (matchedDF_GHGSat['tc_Classification'] == 'ER')
-                                                & (matchedDF_GHGSat['UnblindingStage'] == 1)].count()
-    print('GHGSat, # < 100 ERROR = ', counterror_lt100)
+    countTP_lt100 = matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] < 100)
+                                                & (matchedDF_GHGSat_filter['tc_Classification'] == 'TP')
+                                                & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].count()
+    print('GHGSat, # < 100 TP = ', countTP_lt100)
+    print('GHGSat, frac < 100 TP', countTP_lt100 / (count_nzero - count_gt100))
 
+    CI_data = matchedDF_GHGSat_filter[(matchedDF_GHGSat_filter['UnblindingStage'] == 1) &
+                                            (matchedDF_GHGSat_filter['tc_Classification'] == 'TP')]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data, [2.5, 97.5])
+    print('GHGSat (all), error (95% CI) = ', CI_error)
+    print('GHGSat(all), error (mean) = ', np.mean(CI_data))
+
+    CI_data = matchedDF_GHGSat_filter[(matchedDF_GHGSat_filter['UnblindingStage'] == 1) &
+                                            (matchedDF_GHGSat_filter['tc_Classification'] == 'TP') &
+                                            (matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] < 2000)]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data, [2.5, 97.5])
+    print('GHGSat (<2000), error (95% CI) = ', CI_error)
+    print('GHGSat (<2000), error (mean) = ', np.mean(CI_data))
 
 ## CARBON MAPPER - PARITY
     plt.subplots_adjust(hspace = 0.5)
@@ -444,69 +547,8 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
     # fig.update_xaxes(range=['2021-07-30 16:00:00','2021-07-30 17:00:00'], autorange=False)
     fig.show()
 
-    #Imagepath = os.path.join(cwd, 'CarbonMapper_series.svg')
-    #fig.write_image(Imagepath)
-
-## --------------------------CARBON MAPPER BOX AND WHISKER---------------------------------------------------------##
-
-
-plt.subplots_adjust(hspace=0.5)
-fig, axes = plt.subplots(3, 1, figsize=(10, 6), facecolor='w', edgecolor='k')
-
-for i in range(3):
-
-    plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (i + 1)) & (
-            matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
-
-    plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
-    medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
-
-    sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[i], color='#8c1515')
-    axes[i].set_ylim([-150, 150])
-
-    nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
-    nobs = [str(x) for x in nobs.tolist()]
-    nobs = ["n: " + i for i in nobs]
-
-    # Add it to the plot
-    pos = range(len(nobs))
-    for tick, label in zip(pos, axes[i].get_xticklabels()):
-        axes[i].text(pos[tick],
-                     -125,
-                     nobs[tick],
-                     horizontalalignment='center',
-                     size='small',
-                     color='k',
-                     weight='semibold')
-
-    # Add it to the plot
-    pos = range(len(nobs))
-    for tick, label in zip(pos, axes[i].get_xticklabels()):
-        axes[i].text(pos[tick],
-                     medians[tick] + 0.03,
-                     "{:.2f}".format(medians[tick]),
-                     horizontalalignment='center',
-                     size='small',
-                     color='w',
-                     weight='semibold')
-
-axes[0].set_xlabel('', fontsize=6)
-axes[1].set_xlabel('', fontsize=6)
-axes[1].set_ylabel('Quantification Error [%]', fontsize=12)
-axes[2].set_xlabel('Bin - 5 minute wind speed [mps]', fontsize=12)
-ax.tick_params(labelsize=12)
-
-axes[0].set_xticks(range(len(nobs)))
-axes[1].set_xticks(range(len(nobs)))
-axes[2].set_xticks(range(len(nobs)))
-axes[0].set_xticklabels(['', '', '', '', '', ''])
-axes[1].set_xticklabels(['', '', '', '', '', ''])
-axes[2].set_xticklabels(['0-1', '1-2', '2-3', '3-4', '4-5', '5+'])
-
-plt.rc('font', **font)
-
-plt.savefig('CarbonMapper_Boxwhisker_22.5.5.svg')
-plt.close()
+    Imagepath = os.path.join(cwd, 'Timeseries_CarbonMapper.svg')
+    fig.write_image(Imagepath)
 
 ## MAIR PARITY
 
@@ -820,187 +862,6 @@ plt.rc('font', **font)
 
     #Imagepath = os.path.join(cwd, 'Timeseries_Bridger.svg')
     #fig.write_image(Imagepath)
-
-# ---------------------BRIDGER BOX AND WHISKER ---------------------------------------------------------------------#
-
-plt.subplots_adjust(hspace=0.5)
-fig, axes = plt.subplots(2, 2, figsize=(10, 6), facecolor='w', edgecolor='k')
-
-# Unblinding stage 1 - HRRR
-
-plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (1)) & (
-        matchedDF_Bridger['tc_Classification'] == 'TP') & (
-                                      matchedDF_Bridger['WindType'] == 'HRRR')]
-
-plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
-medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
-
-sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[0, 0], color='#D2C295')
-axes[0, 0].set_ylim([-150, 150])
-
-nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
-nobs = [str(x) for x in nobs.tolist()]
-nobs = ["n: " + i for i in nobs]
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[0, 0].get_xticklabels()):
-    axes[0, 0].text(pos[tick],
-                    -125,
-                    nobs[tick],
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[0, 0].get_xticklabels()):
-    axes[0, 0].text(pos[tick],
-                    medians[tick] + 0.03,
-                    "{:.2f}".format(medians[tick]),
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Unblinding stage 1 - NAM12
-
-plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (1)) & (
-        matchedDF_Bridger['tc_Classification'] == 'TP') & (
-                                      matchedDF_Bridger['WindType'] == 'NAM12')]
-
-plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
-medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
-
-sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[0, 1], color='#D2C295')
-axes[0, 1].set_ylim([-150, 150])
-
-nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
-nobs = [str(x) for x in nobs.tolist()]
-nobs = ["n: " + i for i in nobs]
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[0, 1].get_xticklabels()):
-    axes[0, 1].text(pos[tick],
-                    -125,
-                    nobs[tick],
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[0, 1].get_xticklabels()):
-    axes[0, 1].text(pos[tick],
-                    medians[tick] + 0.03,
-                    "{:.2f}".format(medians[tick]),
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Unblinding stage 2
-
-plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 2) & (
-        matchedDF_Bridger['tc_Classification'] == 'TP') & (
-                                      matchedDF_Bridger['WindType'] == 'Sonic')]
-
-plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
-medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
-
-sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[1, 0], color='#D2C295')
-axes[1, 0].set_ylim([-150, 150])
-
-nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
-nobs = [str(x) for x in nobs.tolist()]
-nobs = ["n: " + i for i in nobs]
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[1, 0].get_xticklabels()):
-    axes[1, 0].text(pos[tick],
-                    -125,
-                    nobs[tick],
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[1, 0].get_xticklabels()):
-    axes[1, 0].text(pos[tick],
-                    medians[tick] + 0.03,
-                    "{:.2f}".format(medians[tick]),
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Unblinding stage 3
-
-plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 3) & (
-        matchedDF_Bridger['tc_Classification'] == 'TP') & (
-                                      matchedDF_Bridger['WindType'] == 'Sonic')]
-
-plot_data["bin"] = pd.cut(plot_data["Wind_MPS_mean300"], [0, 1, 2, 3, 4, 5, 20])
-medians = plot_data.groupby(["bin"])["FlowError_percent"].median().values
-
-sns.boxplot(x="bin", y="FlowError_percent", data=plot_data, ax=axes[1, 1], color='#D2C295')
-axes[1, 1].set_ylim([-150, 150])
-
-nobs = plot_data["Wind_MPS_mean300"].value_counts(bins=[0, 1, 2, 3, 4, 5, 20]).sort_index(ascending=True).values
-nobs = [str(x) for x in nobs.tolist()]
-nobs = ["n: " + i for i in nobs]
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[1, 1].get_xticklabels()):
-    axes[1, 1].text(pos[tick],
-                    -125,
-                    nobs[tick],
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-# Add it to the plot
-pos = range(len(nobs))
-for tick, label in zip(pos, axes[1, 1].get_xticklabels()):
-    axes[1, 1].text(pos[tick],
-                    medians[tick] + 0.03,
-                    "{:.2f}".format(medians[tick]),
-                    horizontalalignment='center',
-                    size='small',
-                    color='k',
-                    weight='semibold')
-
-axes[0, 0].set_xlabel('', fontsize=6)
-axes[0, 1].set_xlabel('', fontsize=6)
-axes[1, 0].set_xlabel('', fontsize=6)
-axes[1, 1].set_xlabel('', fontsize=6)
-axes[0, 1].set_ylabel('', fontsize=6)
-axes[1, 1].set_ylabel('', fontsize=6)
-axes[1, 0].set_ylabel('Quantification Error [%]', fontsize=12)
-axes[1, 0].set_xlabel('Bin - 5 minute wind speed [mps]', fontsize=12)
-ax.tick_params(labelsize=12)
-
-axes[0, 0].set_xticks(range(len(nobs)))
-axes[0, 1].set_xticks(range(len(nobs)))
-axes[1, 0].set_xticks(range(len(nobs)))
-axes[1, 1].set_xticks(range(len(nobs)))
-axes[0, 0].set_xticklabels(['', '', '', '', '', ''])
-axes[0, 1].set_xticklabels(['', '', '', '', '', ''])
-axes[1, 0].set_xticklabels(['0-1', '1-2', '2-3', '3-4', '4-5', '5+'])
-axes[1, 1].set_xticklabels(['0-1', '1-2', '2-3', '3-4', '4-5', '5+'])
-
-plt.rc('font', **font)
-
-plt.savefig('Bridger_Boxwhisker_22.5.5.svg')
-plt.close()
 
 
 ## GHGSAT PARITY
