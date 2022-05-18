@@ -1,0 +1,53 @@
+PerformerExperimentID,FacilityID,EquipmentUnitID,DateOfSurvey,Timestamp (hyperspectral technologies only),StartTime,EndTime,SurveyTime,OperatorSet,Satellite,Team,Gas,PlumeLength (hyperspectral technologies only),FacilityEmissionRate,FacilityEmissionRateUpper,FacilityEmissionRateLower,UncertaintyType,UncertaintyTypeManual,WindSpeed,WindDirection,TransitDirection,NumberOfEmissionSourcesReported
+1,1,1,10/16/21,17:26:40,,,,GHGSat C2/GHGSat,GHGSat C2,GHGSat,Methane,,1534,1886,1181,23%,+/- 1 sigma,4.27,,,N/A
+2,1,1,10/24/21,17:35:19,,,,GHGSat C2/GHGSat,GHGSat C2,GHGSat,Methane,,4408,5378,3438,22%,+/- 1 sigma,2.49,,,N/A
+3,1,1,10/25/21,17:24:37,,,,GHGSat C2/GHGSat,GHGSat C2,GHGSat,Methane,,253,317,189,25%,+/- 1 sigma,5.93,,,N/A
+,1,1,11/2/21,17:33,,,,GHGSat C2/GHGSat,GHGSat C2,GHGSat,Methane,NT,NT,NT,NT,NT,,,,,N/A
+,1,1,11/3/21,17:22,,,,GHGSat C2/GHGSat,GHGSat C2,GHGSat,Methane,NT,NT,NT,NT,NT,,,,,N/A
+4,1,1,10/16/21,18:36:26,,,,PRISMA/UPV,PRISMA,UPV,Methane,445,3778,,,1614,UT 1 sigma,6.943938356,,,N/A
+5,1,1,10/21/21,18:23:12,,,,PRISMA/UPV,PRISMA,UPV,Methane,1004.9,6469,,,2434,UT 1 sigma,3.935766667,,,N/A
+6,1,1,10/27/21,18:26:30,,,,PRISMA/UPV,PRISMA,UPV,Methane,1020.9,5645,,,2098,UT 1 sigma,3.744716667,,,N/A
+,1,1,11/2/21,18:29,,,,PRISMA/UPV,PRISMA,UPV,Methane,NT,NT,NT,NT,NT,,,,,
+7,1,1,10/19/21,18:24:58,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,170.88,7234,18:24:58.763092Z,276.5,2331,UT 1 sigma,2.4,,,N/A
+8,1,2,10/21/21,18:10:37,,,,Landsat 8/UPV,Landsat 8,UPV,Methane,278.21,4085,18:10:37.5283260Z,178.88,1531,UT 1 sigma,3.98,,,N/A
+9,1,1,10/22/21,18:34:54,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,164.92,2773,18:34:54.542039Z,111.71,893,UT 1 sigma,2.08,,,N/A
+10,1,1,10/24/21,18:25:02,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,,FR,FR,FR,FR,,,,,N/A
+11,1,1,10/27/21,18:34:57,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,184.39,4427,18:34:57.856604Z,132.57,1651,UT 1 sigma,3.82,,,N/A
+12,1,2,10/28/21,18:16:48,,,,Landsat 8/UPV,Landsat 8,UPV,Methane,120,1735,18:16:48.2627780Z,28.38,710,UT 1 sigma,4.81,,,N/A
+13,1,1,10/29/21,18:24:58,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,,0,,,,,,,,N/A
+14,1,1,11/1/21,18:34:54,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,,0,,,,,,,,N/A
+15,1,1,11/3/21,18:25:01,,,,Sentinel-2/UPV,Sentinel-2,UPV,Methane,111.35,1344,18:25:01.184114Z,25.45,539,UT 1 sigma,3.59,,,N/A
+16,,,10/23/21,18:40:53,,,,WV3/UPV,WV3,UPV,Methane,277,4790,,,1876,UT 1 sigma,4.673416667,,,N/A
+17,1,1,10/17/21,18:34:58,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,0,0,,,,,,,,N/A
+18,1,1,10/19/21,18:24:58,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,319,6098,7431,4765,1-sigma confidence interval,+/- 1 sigma,2.49,14.79,189,N/A
+19,1,1,10/22/21,18:34:54,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,0,0,,,,,,,,N/A
+20,1,1,10/24/21,18:25:02,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,cloudy,cloudy,,,,,,,,N/A
+21,1,1,10/27/21,18:34:57,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,376,5134,6929,3340,1-sigma confidence interval,+/- 1 sigma,3.32,46.1,189,N/A
+22,1,1,10/29/21,18:24:58,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,348,7267,10546,3988,1-sigma confidence interval,+/- 1 sigma,4.86,46.1,189,N/A
+23,1,1,11/1/21,18:34:54,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,0,0,,,,,,,,N/A
+24,1,1,11/3/21,18:25:01,,,,Sentinel-2/Kayrros,Sentinel-2,Kayrros,Methane,330,3199,4899,1498,1-sigma confidence interval,+/- 1 sigma,2.96,36.9,189,N/A
+25,1,1,10/21/21,18:10:37,,,,Landsat 8/Kayrros,Landsat 8,Kayrros,Methane,319,3234,3921,2547,1-sigma confidence interval,+/- 1 sigma,3.9,47.46,189,N/A
+26,1,1,10/28/21,18:16:48,,,,Landsat 8/Kayrros,Landsat 8,Kayrros,Methane,280,2489,3024,1955,1-sigma confidence interval,+/- 1 sigma,4.6,45.59,189,N/A
+27,1,1,10/16/21,18:36:26,,,,PRISMA/Kayrros,PRISMA,Kayrros,Methane,703,3379,4328,2430,1-sigma confidence interval,+/- 1 sigma,6.18,15.1,191,N/A
+28,1,1,10/21/21,18:23:12,,,,PRISMA/Kayrros,PRISMA,Kayrros,Methane,1228,4781,5727,3835,1-sigma confidence interval,+/- 1 sigma,3.89,42.9,191,N/A
+29,1,1,10/27/21,18:26:30,,,,PRISMA/Kayrros,PRISMA,Kayrros,Methane,422,5051,6454,3648,1-sigma confidence interval,+/- 1 sigma,3.36,46.7,191,N/A
+,1,1,11/2/21,18:29,,,,PRISMA/Kayrros,PRISMA,Kayrros,Methane,NT,NT,NT,NT,NT,,,,,
+30,1,1,10/23/21,18:40:53,,,,WV3/Kayrros,WV3,Kayrros,Methane,318,1578,2053,1236,1-sigma confidence interval,+/- 1 sigma,4.31,207,190,N/A
+31,1,1,10/17/21,18:34:58,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,0,0,0,0,,0,,,
+32,1,1,10/19/21,18:24:58,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,5684,7053,4315,+/- 1 sigma,+/- 1 sigma,1.545715,,,
+33,1,1,10/22/21,18:34:54,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,2652,3335,1969,+/- 1 sigma,+/- 1 sigma,2.373983,,,
+34,1,1,10/24/21,18:25:02,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,FR,FR,FR,FR,,FR,,,
+35,1,1,10/27/21,18:34:57,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,4447,5582,3312,+/- 1 sigma,+/- 1 sigma,3.699061,,,
+36,1,1,10/29/21,18:24:58,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,4757,5890,3624,+/- 1 sigma,+/- 1 sigma,4.727615,,,
+37,1,1,11/1/21,18:34:54,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,0,0,0,0,,0,,,
+38,1,1,11/3/21,18:25:01,,,,Sentinel-2/Harvard,Sentinel-2,Harvard,Methane,,1787,2333,1241,+/- 1 sigma,+/- 1 sigma,3.798211,,,
+39,,,10/17/21,18:34:58,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,Exclude,Exclude,Exclude,Exclude,Exclude,,Exclude,,,
+40,,,10/19/21,18:24:58,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,340,4680,3410,6000,Min/max,Min/max,2.6 [1.7-3.4]  ,197,,
+41,,,10/21/21,18:10:37,,,,Landsat 8/SRON,Landsat 8,SRON,Methane,490,2780,2450,3170,Min/max,Min/max,4.1 [3.9-4.4] ,221,,
+42,,,10/22/21,18:34:54,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,330,1500,1203,1790,Min/max,Min/max,1.9 [1.4-2.3],113,,
+43,,,10/24/21,18:25:02,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,FR,FR,FR,FR,FR,,FR,FR,,
+44,,,10/27/21,18:34:57,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,260,2380,1940,2840,Min/max,Min/max,4.2 [3.9-4.4] ,221,,
+45,,,10/28/21,18:16:48,,,,Landsat 8/SRON,Landsat 8,SRON,Methane,FR,FR,FR,FR,FR,,FR,FR,,
+46,,,10/29/21,18:24:58,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,0,0,0,0,0,,0,0,,
+47,,,11/1/21,18:34:54,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,FR,FR,FR,FR,FR,,FR,FR,,
+48,,,11/3/21,18:25:01,,,,Sentinel-2/SRON,Sentinel-2,SRON,Methane,0,0,0,0,0,,0,0,,

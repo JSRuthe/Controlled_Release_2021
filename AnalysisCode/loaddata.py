@@ -161,13 +161,13 @@ def loaddata():
     DataPath = os.path.join(cwd, 'SatelliteTestData')   
     
     print("Loading Satellite Stage 1 data...")
-    Sat_path = os.path.join(DataPath, 'All_satellites_stage1_20220511.csv')
+    Sat_path = os.path.join(DataPath, 'All_satellites_stage1_20220518.csv')
     
     SatelliteR1DF = loadSatelliteData(Sat_path)
     SatelliteR1DF['UnblindingStage'] = 1    
     
     print("Loading Satellite Stage 2 data...")
-    Sat_path = os.path.join(DataPath, 'All_satellites_stage2_20220511.csv')
+    Sat_path = os.path.join(DataPath, 'All_satellites_stage2_20220518.csv')
     
     SatelliteR2DF = loadSatelliteData(Sat_path)
     SatelliteR2DF['UnblindingStage'] = 2 
@@ -181,9 +181,9 @@ def loaddata():
     SOOFIEDF = loadSOOFIEData(SOOFIE_path)
     SOOFIEDF['UnblindingStage'] = 1
     SOOFIEDF['OperatorSet'] = 'SOOFIE'
-
     operatorDF = pd.concat([bridgerDF, CarbonMapperDF, GHGSatDF, MAIRDF, SatelliteDF, SOOFIEDF], ignore_index=True)
-    
+
+
   
     # load Bridger quadratherm data
     print("Loading Bridger Quadratherm data...")
