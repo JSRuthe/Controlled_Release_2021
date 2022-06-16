@@ -162,13 +162,13 @@ def loaddata():
     DataPath = os.path.join(cwd, 'SatelliteTestData')   
     
     print("Loading Satellite Stage 1 data...")
-    Sat_path = os.path.join(DataPath, 'All_satellites_stage1_20220518.csv')
+    Sat_path = os.path.join(DataPath, 'All_satellites_stage1_20220601.csv')
     
     SatelliteR1DF = loadSatelliteData(Sat_path)
     SatelliteR1DF['UnblindingStage'] = 1    
     
     print("Loading Satellite Stage 2 data...")
-    Sat_path = os.path.join(DataPath, 'All_satellites_stage2_20220518.csv')
+    Sat_path = os.path.join(DataPath, 'All_satellites_stage2_20220601.csv')
     
     SatelliteR2DF = loadSatelliteData(Sat_path)
     SatelliteR2DF['UnblindingStage'] = 2 
