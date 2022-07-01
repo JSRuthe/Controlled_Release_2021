@@ -109,7 +109,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
     df_Bridger_rnd3_lvls = pd.pivot_table(matchedDF_Bridger[(matchedDF_Bridger['WindType'] == 'HRRR') &
                                                             (matchedDF_Bridger['UnblindingStage'] == 1)],
                                 index = 'cr_start',
-                                columns='Round 3 test set',
+                                #columns='Round 3 test set',
                                 values = 'cr_kgh_CH4_mean30',
                                 aggfunc = ('count','mean'))
 
@@ -121,7 +121,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     df_GHGSat_rnd3_lvls = pd.pivot_table(matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == 1)],
                                 index = 'cr_start',
-                                columns='Round 3 test set',
+                                #columns='Round 3 test set',
                                 values = 'cr_kgh_CH4_mean30',
                                 aggfunc = ('count','mean'))
 
@@ -130,6 +130,26 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
                                 columns = 'tc_Classification',
                                 values = 'PerformerExperimentID',
                                aggfunc = len)
+
+    df_CM_rnd3_lvls = pd.pivot_table(matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == 1)],
+                                index = 'cr_start',
+                                #columns='Round 3 test set',
+                                values = 'cr_kgh_CH4_mean30',
+                                aggfunc = ('count','mean'))
+
+    print('Bridger, levels held for n average = ',
+          df_Bridger_rnd3_lvls['count'].mean())
+    print('Carbon Mapper, levels held for n average = ',
+          df_CM_rnd3_lvls['count'].mean())
+    print('GHGSat levels held for n average = ',
+          df_GHGSat_rnd3_lvls['count'].mean())
+
+    print('Bridger, zero levels = ',
+          df_Bridger_rnd3_lvls['count'][(df_Bridger_rnd3_lvls['mean'] < 0.01)].sum())
+    print('Carbon Mapper, zero levels = ',
+          df_CM_rnd3_lvls['count'][(df_CM_rnd3_lvls['mean'] < 0.01)].sum())
+    print('GHGSat, zero levels = ',
+          df_GHGSat_rnd3_lvls['count'][(df_GHGSat_rnd3_lvls['mean'] < 0.01)].sum())
 
     # Range of releases Bridger
 
@@ -186,8 +206,8 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     Bridger_daily = pd.pivot_table(matchedDF_Bridger_filter,
                                   index='Day',
-                                  values='Time_diff',
-                                  aggfunc=('count', 'mean', 'sum'))
+                                  values=['Time_diff', 'Altitude (feet)'],
+                                  aggfunc={'Time_diff':('count', 'mean', 'sum'), 'Altitude (feet)': 'mean'})
 
 
     # Range of releases Carbon Mapper
@@ -254,8 +274,8 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     CarbonMapper_daily = pd.pivot_table(matchedDF_CarbonMapper_filter,
                                   index='Day',
-                                  values='Time_diff',
-                                  aggfunc=('count', 'mean', 'sum'))
+                                  values=['Time_diff', 'Altitude (feet)'],
+                                  aggfunc={'Time_diff':('count', 'mean', 'sum'), 'Altitude (feet)': 'mean'})
 
     # Range of releases GHGSat-AV
 
@@ -318,7 +338,7 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
         'Stanford_timestamp'].shift(-1).dt.date
     filter_average = filter_average.reset_index(drop=True)
 
-   matchedDF_GHGSat_filter['Time_diff'][matchedDF_GHGSat_filter['Stanford_timestamp'].dt.date != matchedDF_GHGSat_filter[
+    matchedDF_GHGSat_filter['Time_diff'][matchedDF_GHGSat_filter['Stanford_timestamp'].dt.date != matchedDF_GHGSat_filter[
         'Stanford_timestamp'].shift(1).dt.date] = np.nan
 
     print('GHGSat, revisit average', np.mean(difference.loc[filter_average]))
@@ -327,8 +347,8 @@ def plotMain(matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, Matche
 
     GHGSat_daily = pd.pivot_table(matchedDF_GHGSat_filter,
                                   index='Day',
-                                  values='Time_diff',
-                                  aggfunc=('count', 'mean','sum'))
+                                  values=['Time_diff', 'Altitude (feet)'],
+                                  aggfunc={'Time_diff':('count', 'mean', 'sum'), 'Altitude (feet)': 'mean'})
 ## CARBON MAPPER - PARITY
     plt.subplots_adjust(hspace = 0.5)
     fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')

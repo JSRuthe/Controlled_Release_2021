@@ -239,9 +239,8 @@ def loaddata():
     #sonic_path = os.path.join(DataPath, 'Sonic\\')
     sonic_path = os.path.join(DataPath, 'Sonic')
     sonicDF_Satellites = combineAnemometer_Satellites(sonic_path)
-    sonicDF_Satellites['OperatorSet'] = 'Satellites'    
-    
-    
+    sonicDF_Satellites['OperatorSet'] = 'Satellites'
+
     sonicDF_All = pd.concat([sonicDF_Bridger, sonicDF_CarbonMapper, sonicDF_GHGSat, sonicDF_Satellites])
     
     return operatorDF, meterDF_All, sonicDF_All
@@ -2075,3 +2074,4 @@ def is_date(string, fuzzy=False):
 
     except ValueError:
         return False
+
