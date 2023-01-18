@@ -1762,6 +1762,20 @@ def combineAnemometer_Satellites(sonic_path):
     df['Wind_dir_mean600'] = df['Direction'].rolling(window=600).mean()
     df['Wind_dir_mean900'] = df['Direction'].rolling(window=900).mean()
 
+    # Calculate moving standard deviation
+    df['Wind_MPS_sd30'] = df['Speed_MPS'].rolling(window=30).std()
+    df['Wind_MPS_sd60'] = df['Speed_MPS'].rolling(window=60).std()
+    df['Wind_MPS_sd90'] = df['Speed_MPS'].rolling(window=90).std()
+    df['Wind_MPS_sd300'] = df['Speed_MPS'].rolling(window=300).std()
+    df['Wind_MPS_sd600'] = df['Speed_MPS'].rolling(window=600).std()
+    df['Wind_MPS_sd900'] = df['Speed_MPS'].rolling(window=600).std()
+    df['Wind_dir_sd30'] = df['Direction'].rolling(window=30).std()
+    df['Wind_dir_sd60'] = df['Direction'].rolling(window=60).std()
+    df['Wind_dir_sd90'] = df['Direction'].rolling(window=90).std()
+    df['Wind_dir_sd300'] = df['Direction'].rolling(window=300).std()
+    df['Wind_dir_sd600'] = df['Direction'].rolling(window=600).std()
+    df['Wind_dir_sd900'] = df['Direction'].rolling(window=900).std()
+
     sonicDF_temp0 = df
     sonicDF_temp0 = sonicDF_temp0.set_index('time')
 
