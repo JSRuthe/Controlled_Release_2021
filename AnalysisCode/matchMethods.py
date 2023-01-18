@@ -38,6 +38,10 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     matchedDF_Bridger = assessUncertainty(matchedDF_Bridger)
     matchedDF_Bridger = setFlowError(matchedDF_Bridger)
 
+    print("Loading Bridger FlightRadar24 data...")
+    flightradar_path = os.path.join(DataPath, 'FlightRadar24')
+    matchedDF_Bridger = ProcessFlightRadar_Bridger(flightradar_path, matchedDF_Bridger)
+
     DataPath = os.path.join(cwd, 'GHGSatTestData') 
     print("Checking plume lengths GHGSat...")
     matchedDF_GHGSat = matchedDF[matchedDF['OperatorSet'] == 'GHGSat']
@@ -52,6 +56,10 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
             
     matchedDF_GHGSat = assessUncertainty(matchedDF_GHGSat)
     matchedDF_GHGSat = setFlowError(matchedDF_GHGSat)
+
+    print("Loading GHGSat FlightRadar24 data...")
+    flightradar_path = os.path.join(DataPath, 'FlightRadar24')
+    matchedDF_GHGSat = ProcessFlightRadar_GHGSat(flightradar_path, matchedDF_GHGSat)
 
     DataPath = os.path.join(cwd, 'CarbonMapperTestData') 
     print("Checking plume lengths CarbonMapper...")
@@ -69,6 +77,9 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     matchedDF_CarbonMapper = assessUncertainty(matchedDF_CarbonMapper)
     matchedDF_CarbonMapper = setFlowError(matchedDF_CarbonMapper)
 
+    print("Loading Carbon Mapper FlightRadar24 data...")
+    flightradar_path = os.path.join(DataPath, 'FlightRadar24')
+    matchedDF_CarbonMapper = ProcessFlightRadar_CarbonMapper(flightradar_path, matchedDF_CarbonMapper)
 
     DataPath = os.path.join(cwd, 'MAIRTestData') 
     print("Checking plume lengths MAIR...")
@@ -566,7 +577,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean30'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 10000,
+                                                                                                  NumberMonteCarloDraws = 500,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean30'] = ObservationStats[0]
@@ -708,6 +719,149 @@ def assessVariability(df):
         std900 = frac900.std()
 
         return mean30, std30, mean60, std60, mean90, std90, mean300, std300, mean600, std600, mean900, std900
-    
-        
-        
+
+
+def ProcessFlightRadar_CarbonMapper(DataPath, df):
+
+    # Process 21.7.30 data
+    flightradar_1_path = os.path.join(DataPath, 'CM_289a6aed.csv')
+    flightradar_1_data = pd.read_csv(flightradar_1_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_1_data['datetime_UTC'] = flightradar_1_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_1_data['datetime_UTC'] = flightradar_1_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Process 21.7.31 data
+    flightradar_2_path = os.path.join(DataPath, 'CM_289d9f7b.csv')
+    flightradar_2_data = pd.read_csv(flightradar_2_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_2_data['datetime_UTC'] = flightradar_2_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_2_data['datetime_UTC'] = flightradar_2_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Process 21.8.3 data
+    flightradar_3_path = os.path.join(DataPath, 'CM_28a6630c.csv')
+    flightradar_3_data = pd.read_csv(flightradar_3_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_3_data['datetime_UTC'] = flightradar_3_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_3_data['datetime_UTC'] = flightradar_3_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    flightradar_all_data = pd.concat([flightradar_1_data, flightradar_2_data, flightradar_3_data])
+
+    tol = pd.Timedelta('1 minute')
+    df = pd.merge_asof(
+        left=df.sort_values('Stanford_timestamp'),
+        right=flightradar_all_data.sort_values('datetime_UTC'),
+        right_on='datetime_UTC',
+        left_on='Stanford_timestamp',
+        direction='nearest',
+        tolerance=tol)
+
+    return df
+
+def ProcessFlightRadar_GHGSat(DataPath, df):
+
+    # Process 21.10.18 data
+    #flightradar_1_path = os.path.join(DataPath, 'CM_289a6aed.csv')
+    #flightradar_1_data = pd.read_csv(flightradar_1_path, skiprows=1, usecols=[1, 4],
+    #                          names=['datetime_UTC', 'Altitude (feet)'],
+    #                          parse_dates=True)
+    #flightradar_1_data['datetime_UTC'] = flightradar_1_data.apply(
+    #    lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    #flightradar_1_data['datetime_UTC'] = flightradar_1_data.apply(
+    #    lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Process 21.10.19 data
+    flightradar_2_path = os.path.join(DataPath, '2990289d.csv')
+    flightradar_2_data = pd.read_csv(flightradar_2_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_2_data['datetime_UTC'] = flightradar_2_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_2_data['datetime_UTC'] = flightradar_2_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Process 21.10.20 data
+    flightradar_3_path = os.path.join(DataPath, '299363a5.csv')
+    flightradar_3_data = pd.read_csv(flightradar_3_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_3_data['datetime_UTC'] = flightradar_3_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_3_data['datetime_UTC'] = flightradar_3_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Process 21.10.21 data
+    flightradar_4_path = os.path.join(DataPath, '29968a46.csv')
+    flightradar_4_data = pd.read_csv(flightradar_4_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_4_data['datetime_UTC'] = flightradar_4_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_4_data['datetime_UTC'] = flightradar_4_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    # Process 21.10.22 data
+    flightradar_5_path = os.path.join(DataPath, '2999c344.csv')
+    flightradar_5_data = pd.read_csv(flightradar_5_path, skiprows=1, usecols=[1, 4],
+                              names=['datetime_UTC', 'Altitude (feet)'],
+                              parse_dates=True)
+    flightradar_5_data['datetime_UTC'] = flightradar_5_data.apply(
+        lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+    flightradar_5_data['datetime_UTC'] = flightradar_5_data.apply(
+        lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+    flightradar_all_data = pd.concat([flightradar_2_data, flightradar_3_data, flightradar_4_data, flightradar_5_data])
+
+    tol = pd.Timedelta('1 minute')
+    df = pd.merge_asof(
+        left=df.sort_values('Stanford_timestamp'),
+        right=flightradar_all_data.sort_values('datetime_UTC'),
+        right_on='datetime_UTC',
+        left_on='Stanford_timestamp',
+        direction='nearest',
+        tolerance=tol)
+
+    return df
+
+def ProcessFlightRadar_Bridger(DataPath, df):
+        # Process 21.11.3 data
+        #flightradar_1_path = os.path.join(DataPath, 'CM_289a6aed.csv')
+        #flightradar_1_data = pd.read_csv(flightradar_1_path, skiprows=1, usecols=[1, 4],
+        #                                 names=['datetime_UTC', 'Altitude (feet)'],
+        #                                 parse_dates=True)
+        #flightradar_1_data['datetime_UTC'] = flightradar_1_data.apply(
+        #    lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+        #flightradar_1_data['datetime_UTC'] = flightradar_1_data.apply(
+        #    lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+        # Process 21.11.4 data
+        flightradar_2_path = os.path.join(DataPath, '29bf1f42.csv')
+        flightradar_2_data = pd.read_csv(flightradar_2_path, skiprows=1, usecols=[1, 4],
+                                         names=['datetime_UTC', 'Altitude (feet)'],
+                                         parse_dates=True)
+        flightradar_2_data['datetime_UTC'] = flightradar_2_data.apply(
+            lambda x: datetime.datetime.strptime(x['datetime_UTC'], '%Y-%m-%dT%H:%M:%SZ'), axis=1)
+        flightradar_2_data['datetime_UTC'] = flightradar_2_data.apply(
+            lambda x: x['datetime_UTC'].replace(tzinfo=pytz.timezone("UTC")), axis=1)
+
+        flightradar_all_data = flightradar_2_data
+        #flightradar_all_data = pd.concat([flightradar_1_data, flightradar_2_data, flightradar_3_data])
+
+        tol = pd.Timedelta('1 minute')
+        df = pd.merge_asof(
+            left=df.sort_values('Stanford_timestamp'),
+            right=flightradar_all_data.sort_values('datetime_UTC'),
+            right_on='datetime_UTC',
+            left_on='Stanford_timestamp',
+            direction='nearest',
+            tolerance=tol)
+
+        return df
