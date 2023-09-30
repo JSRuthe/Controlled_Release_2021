@@ -1,0 +1,112 @@
+import pandas as pd
+import numpy as np
+
+from scipy import stats
+import statsmodels.api as sm
+
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+import matplotlib as mpl
+mpl.use('tkagg')    #YAAA!!  this finally makes the Damn thing work
+import matplotlib.pyplot as plt
+
+from datetime import date
+today = date.today()
+fdate = date.today().strftime('%m%d%Y')    # append the data today when exporting the graphs
+
+font = {'family': 'Arial',
+            'weight': 'normal',
+            'size': 12}
+font_small = {'family': 'Arial',
+            'weight': 'normal',
+            'size': 24}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+df_Bridger_rnd3_lvls = pd.pivot_table(matchedDF_Bridger[(matchedDF_Bridger['WindType'] == 'HRRR') &
+                                                            (matchedDF_Bridger['UnblindingStage'] == 1)],
+                                index = 'cr_start',
+                                #columns='Round 3 test set',
+                                values = 'cr_kgh_CH4_mean30',
+                                aggfunc = ('count','mean'))
+
+df_Bridger_rnd3_lvls['datetime_col'] = pd.to_datetime(df_Bridger_rnd3_lvls.index)
+df_Bridger_rnd3_lvls['Time_diff_min'] =  df_Bridger_rnd3_lvls['datetime_col'].diff().dropna().dt.total_seconds()/60
+
+df_GHGSat_rnd3_lvls = pd.pivot_table(matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == 1)],
+                                index = 'cr_start',
+                                #columns='Round 3 test set',
+                                values = 'cr_kgh_CH4_mean30',
+                                aggfunc = ('count','mean'))
+
+df_GHGSat_rnd3_lvls['datetime_col'] = pd.to_datetime(df_GHGSat_rnd3_lvls.index)
+df_GHGSat_rnd3_lvls['Time_diff_min'] =  df_GHGSat_rnd3_lvls['datetime_col'].diff().dropna().dt.total_seconds()/60
+
+df_CM_rnd3_lvls = pd.pivot_table(matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == 1)],
+                                index = 'cr_start',
+                                #columns='Round 3 test set',
+                                values = 'cr_kgh_CH4_mean30',
+                                aggfunc = ('count','mean'))
+
+df_CM_rnd3_lvls['datetime_col'] = pd.to_datetime(df_CM_rnd3_lvls.index)
+df_CM_rnd3_lvls['Time_diff_min'] =  df_CM_rnd3_lvls['datetime_col'].diff().dropna().dt.total_seconds()/60
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+print('Bridger, Total levels = ',
+          df_Bridger_rnd3_lvls['count'][(df_Bridger_rnd3_lvls['Time_diff_min'] < 720)].count())
+print('Carbon Mapper, Total levels = ',
+          df_CM_rnd3_lvls['count'][(df_CM_rnd3_lvls['Time_diff_min'] < 720)].count())
+print('GHGSat, Total levels = ',
+          df_GHGSat_rnd3_lvls['count'][(df_GHGSat_rnd3_lvls['Time_diff_min'] < 720)].count())
+
+print('Bridger, Level held for, on average (min) = ',
+          df_Bridger_rnd3_lvls['Time_diff_min'][(df_Bridger_rnd3_lvls['Time_diff_min'] < 720)].mean())
+print('Carbon Mapper, Level held for, on average (min) = ',
+          df_CM_rnd3_lvls['Time_diff_min'][(df_CM_rnd3_lvls['Time_diff_min'] < 720)].mean())
+print('GHGSat, Level held for, on average (min) = ',
+          df_GHGSat_rnd3_lvls['Time_diff_min'][(df_GHGSat_rnd3_lvls['Time_diff_min'] < 720)].mean())
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+cwd = os.getcwd()
+plt.ion()
+    
+fig, axes = plt.subplots(2,3, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+# Subplot 1
+
+axes[0,0].hist(df_Bridger_rnd3_lvls['Time_diff_min'][(df_Bridger_rnd3_lvls['Time_diff_min'] < 720)], 
+		 bins = range(0,40+5,5), stacked=True, density = False,
+                 color='#8c1515',
+                 edgecolor='black', linewidth=1.2)
+axes[0,0].set_ylim([0, 15])
+axes[0,0].set_xlim([0, 40])
+#axes[0,0].set(yticklabels=[])
+#axes[0,0].set_xticks([5, 25, 50])
+
+# Subplot 2
+
+axes[0,1].hist(df_CM_rnd3_lvls['Time_diff_min'][(df_CM_rnd3_lvls['Time_diff_min'] < 720)], 
+		 bins = range(0,40+5,5), stacked=True, density = False,
+                 color='#D2C295',
+                 edgecolor='black', linewidth=1.2)
+axes[0,1].set_ylim([0, 15])
+axes[0,1].set_xlim([0, 40])
+#axes[0,1].set(yticklabels=[])
+#axes[0,1].set_xticks([5, 25, 50])
+
+# Subplot 3
+
+axes[1,0].hist(df_GHGSat_rnd3_lvls['Time_diff_min'][(df_GHGSat_rnd3_lvls['Time_diff_min'] < 720)], 
+		 bins = range(0,40+5,5), stacked=True, density = False,
+                 color='#175E54',
+                 edgecolor='black', linewidth=1.2)
+axes[1,0].set_ylim([0, 15])
+axes[1,0].set_xlim([0, 40])
+#axes[1,0].set(yticklabels=[])
+#axes[1,0].set_xticks([5, 25, 50])
+
+plt.subplots_adjust(hspace = 0.4, wspace = 0.4)
+plt.savefig('histo_lvls_2291.svg', dpi=300)

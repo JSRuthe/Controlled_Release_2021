@@ -84,6 +84,17 @@ def loaddata():
     CarbonMapperR2DF['OperatorSet'] = 'CarbonMapper' 
     CarbonMapperR2DF['UnblindingStage'] = 2 
 
+    
+    # For phase 2 remove duplicate rows:
+
+    CarbonMapperR2DF = CarbonMapperR2DF.drop(CarbonMapperR2DF[(CarbonMapperR2DF['PerformerExperimentID'] == 165)].index)
+    CarbonMapperR2DF = CarbonMapperR2DF.drop(CarbonMapperR2DF[(CarbonMapperR2DF['PerformerExperimentID'] == 166)].index)
+    CarbonMapperR2DF = CarbonMapperR2DF.drop(CarbonMapperR2DF[(CarbonMapperR2DF['PerformerExperimentID'] == 168)].index)
+    CarbonMapperR2DF = CarbonMapperR2DF.drop(CarbonMapperR2DF[(CarbonMapperR2DF['PerformerExperimentID'] == 169)].index)
+    CarbonMapperR2DF = CarbonMapperR2DF.drop(CarbonMapperR2DF[(CarbonMapperR2DF['PerformerExperimentID'] == 163)].index)
+    CarbonMapperR2DF = CarbonMapperR2DF.drop(CarbonMapperR2DF[(CarbonMapperR2DF['PerformerExperimentID'] == 164)].index)
+
+
     print("Loading Carbon Mapper Stage 3 data...")
     CarbonMapper_path = os.path.join(DataPath, 'CarbonMapper_ControlledRelease_submission_Phase3.csv')
     timestamp_path = os.path.join(DataPath,'CarbonMapper_Timestamps_RND3_testset.csv')
@@ -330,7 +341,7 @@ def loadCarbonMapperData(filepath, timestamp_path):
     df['Operator_Timestamp'].fillna(value=np.nan, inplace=True)
     df = df[df["QC filter"].notnull()]
     
-    
+
     df['Operator_Timestamp'] = df.apply(
         lambda x: pd.NA if pd.isna(x['Operator_Timestamp']) else
         datetime.datetime.strptime(x['Operator_Timestamp'], '%m/%d/%Y %H:%M:%S'), axis=1)

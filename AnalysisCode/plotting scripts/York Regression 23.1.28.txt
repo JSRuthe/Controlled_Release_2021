@@ -1,0 +1,407 @@
+
+import pandas as pd
+import numpy as np
+import datetime
+from pytz import timezone
+import pytz
+from dateutil import parser
+from scipy import stats
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from statsmodels.sandbox.regression.predstd import wls_prediction_std
+
+import plotly
+import plotly.io as pio
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+from pylr2 import regress2
+
+import matplotlib as mpl
+mpl.use('tkagg')    #YAAA!!  this finally makes the Damn thing work
+import matplotlib.pyplot as plt
+#matplotlib inline
+plt.rcParams['figure.figsize'] = (5, 5) # set default size of plots
+
+import seaborn as sns
+
+# directory for storing graphs generated
+# import os
+# graph_dir = os.path.join('drive/My Drive/', root_path)+'graphs_SI/'
+
+from datetime import date
+today = date.today()
+fdate = date.today().strftime('%m%d%Y')    # append the data today when exporting the graphs
+
+
+# ignore some warnings
+import warnings
+warnings.filterwarnings('ignore')
+
+
+
+    font = {'family': 'Arial',
+            'weight': 'normal',
+            'size': 12}
+    font_small = {'family': 'Arial',
+            'weight': 'normal',
+            'size': 24}
+
+## SIMPLE PLOTTING # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #  
+## CARBON MAPPER - PARITY
+    #plt.subplots_adjust(hspace = 0.5)
+    #fig, axs = plt.subplots(2,2, figsize=(10, 6), facecolor='w', edgecolor='k')
+    plt.subplots_adjust(hspace = 0.5)
+    fig, axes = plt.subplots(1,1, figsize=(10, 6), facecolor='w', edgecolor='k') 
+
+   
+    matchedDF_CarbonMapper['FacilityEmissionRateUpper'] = matchedDF_CarbonMapper['FacilityEmissionRateUpper'].replace('#VALUE!',np.NaN)
+    matchedDF_CarbonMapper['FacilityEmissionRateLower'] = matchedDF_CarbonMapper['FacilityEmissionRateLower'].replace('#VALUE!',np.NaN)
+
+  
+#for i, ax in enumerate(axs.flat):
+    #fig,ax1 = plt.subplot(1,1,(stages + 1))
+    #if i == 3:
+    #    break
+    plot_data = matchedDF_CarbonMapper[
+        (matchedDF_CarbonMapper['UnblindingStage'] == (1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+    ax, df_reg = parity_plot(axes, plot_data, 'CarbonMapper', plot_color='#8c1515')	
+
+    plt.savefig('CarbonMapper_york_23128.png', dpi = 300)
+## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  
+
+
+plt.subplots_adjust(hspace = 0.5)
+plt.rc('font', **font_small)
+fig, axes = plt.subplots(3,4, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+
+## CARBON MAPPER - PARITY
+	matchedDF_CarbonMapper['FacilityEmissionRateUpper'] = matchedDF_CarbonMapper['FacilityEmissionRateUpper'].replace('#VALUE!',np.NaN)
+	matchedDF_CarbonMapper['FacilityEmissionRateLower'] = matchedDF_CarbonMapper['FacilityEmissionRateLower'].replace('#VALUE!',np.NaN)
+
+	for i in range(4):
+		for j in range(3):
+			if i == 0:
+				if j == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'HRRR')]
+					ax, df_reg = parity_plot(axes[i,j], plot_data, 'Bridger', plot_color = '#D2C295')
+					df = pd.DataFrame(df_reg,index=pd.Index(['ols_slope', 'ols_int', 'York_slope', 'York_int', 'SMA_slope', 'SMA_int'], name='Rows'))
+				else:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) &
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP')]
+					ax, df_reg = parity_plot(axes[i,j], plot_data, 'Bridger', plot_color = '#8c1515')
+					df_add = pd.DataFrame(df_reg,index=pd.Index(['ols_slope', 'ols_int', 'York_slope', 'York_int','SMA_slope','SMA_int'], name='Rows'))				
+					df.join(df_add)
+			elif i ==1:
+				if j == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'NAM12')]
+					ax, df_reg = parity_plot(axes[i-1,j], plot_data, 'Bridger', plot_color = '#53284f')
+					df_add = pd.DataFrame(df_reg, index=pd.Index(['ols_slope', 'ols_int', 'York_slope','York_int','SMA_slope','SMA_int'], name='Rows'))				
+					df.join(df_add)
+			elif i == 2:
+				if j == 0:
+					plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (j + 1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+					ax, df_reg = parity_plot(axes[i-1,j], plot_data, 'CarbonMapper', plot_color = '#D2C295')
+					df_add = pd.DataFrame(df_reg,
+                  				index=pd.Index(['ols_slope', 'ols_int', 'York_slope', 'York_int', 'SMA_slope', 'SMA_int'], name='Rows'))	
+					df.join(df_add)
+				else:
+					plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (j + 1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+					ax, df_reg = parity_plot(axes[i-1,j], plot_data, 'CarbonMapper', plot_color = '#8c1515')
+					df_add = pd.DataFrame(df_reg,
+                  				index=pd.Index(['ols_slope', 'ols_int', 'York_slope', 'York_int', 'SMA_slope', 'SMA_int'], name='Rows'))	
+					df.join(df_add)
+			elif i == 3:	 
+				if j == 0:
+					plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & 
+						    	(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+						    	(matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 2000)]
+					ax, df_reg = parity_plot(axes[i-1,j], plot_data, 'GHGSat', plot_color = '#175e54')
+					df_add = pd.DataFrame(df_reg,
+                  				index=pd.Index(['ols_slope', 'ols_int', 'York_slope', 'York_int', 'SMA_slope', 'SMA_int'], name='Rows'))				
+					df.join(df_add)
+				else:
+					plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & 
+						    	(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+						    	(matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 2000)]
+					ax, df_reg = parity_plot(axes[i-1,j], plot_data, 'GHGSat', plot_color = '#8c1515')
+					df_add = pd.DataFrame(df_reg,
+                  				index=pd.Index(['ols_slope', 'ols_int', 'York_slope', 'York_int', 'SMA_slope', 'SMA_int'], name='Rows'))				
+					df.join(df_add)
+
+	plt.savefig('Allteams_yorkparity_23129.svg', dpi = 300)
+
+
+
+
+## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  
+
+
+def yorkreg_results(x,y, Xstd, Ystd, b0, Ri=0, printCoefs=0, makeLine=0,eps=1e-7):
+
+    """
+"YorkFit", written by Rick Wehr, 2011, translated into R by Rachel Chang
+
+Universal routine for finding the best straight line fit
+to data with variable, correlated errors,
+including error and goodness of fit estimates, following Eq. (13) of
+York 2004, American Journal of Physics, which was based in turn on
+York 1969, Earth and Planetary Sciences Letters
+
+X, Y, Xstd, Ystd: waves containing X points, Y points, and their standard deviations
+  WARNING: Xstd and Ystd cannot be zero as this will cause Xw or Yw to be NaN
+  Use a very small value instead.
+Ri: correlation coefficients for X and Y errors -- length 1 or length of X and Y
+b0: rough initial guess for the slope (can be gotten from a standard least-squares fit without errors)
+printCoefs: set equal to 1 to display results in the command window
+makeLine: set equal to 1 to generate a Y wave for the fit line
+Returns a matrix with the intercept and slope plus their uncertainties
+    """
+
+    tol = abs(b0)*eps #the fit will stop iterating when the slope converges to within this value
+    tol_std = abs(Ystd)*eps
+
+    #a,b: final intercept and slope
+    #a.err, b.err: estimated uncertainties in intercept and slope
+
+	
+    # WAVE DEFINITIONS #
+	
+    Xw = 1/(Xstd**2) #X weights
+    Yw = 1/(Ystd**2) #Y weights
+ 		 
+    # ITERATIVE CALCULATION OF SLOPE AND INTERCEPT #
+ 	
+    b = b0
+    b_diff = tol + 1
+    std_diff = tol + 1
+
+    iter = 0
+    while(std_diff>tol):
+
+      iter = iter + 1
+      print('itere ', iter)
+      std_old = Ystd
+      #print('Ystd', std_old)
+
+      while(b_diff>tol):
+        b_old = b
+        Ystd_old = Ystd
+        alpha_i = np.sqrt(Xw*Yw)
+        Wi = (Xw*Yw)/((b**2)*Yw + Xw - 2*b*Ri*alpha_i)
+        WiX = Wi*x
+        WiY = Wi*y
+        sumWiX = np.nansum(WiX)
+        sumWiY = np.nansum(WiY)
+        sumWi = np.nansum(Wi)
+        Xbar = sumWiX/sumWi
+        Ybar = sumWiY/sumWi
+        Ui = x - Xbar
+        Vi = y - Ybar
+        
+        Bi = Wi*((Ui/Yw) + (b*Vi/Xw) - (b*Ui+Vi)*Ri/alpha_i)
+        wTOPint = Bi*Wi*Vi
+        wBOTint = Bi*Wi*Ui
+        sumTOP = np.nansum(wTOPint)
+        sumBOT = np.nansum(wBOTint)
+        b = sumTOP/sumBOT
+        
+        b_diff = abs(b-b_old)
+
+      a = Ybar - b*Xbar
+      #wYorkFitCoefs = np.r_[a,b]
+  	
+      # ERROR CALCULATION #
+	
+      Xadj = Xbar + Bi
+      WiXadj = Wi*Xadj
+      sumWiXadj = np.nansum(WiXadj)
+      Xadjbar = sumWiXadj/sumWi
+      Uadj = Xadj - Xadjbar
+      wErrorTerm = Wi*Uadj*Uadj
+      errorSum = np.nansum(wErrorTerm)
+      b_err = np.sqrt(1/errorSum)
+      a_err = np.sqrt((1/sumWi) + (Xadjbar**2)*(b_err**2))
+      #wYorkFitErrors = c(a_err,b_err)
+
+      # GOODNESS OF FIT CALCULATION #
+      #lgth = length(x)
+      #wSint = Wi*(y - b*X - a)^2
+      #sumSint = np.nansum(wSint)
+      #wYorkGOF = c(sumSint/(lgth-2),sqrt(2/(lgth-2))) #GOF (should equal 1 if assumptions are valid), #standard error in GOF
+  
+      y_pred = a + b*x
+      Ystd = np.std(abs(y - y_pred))
+      std_diff = abs(Ystd-std_old)
+
+    slope = b
+    intercept = a
+    return slope,intercept,y_pred, Ystd
+
+
+
+
+
+def parity_plot(ax, plot_data, Operator, plot_color, force_intercept_origin=0, plot_interval=['confidence'],
+                plot_lim = [0,2000], legend_loc='upper left'):
+
+  """
+plot parity chart: scatter plot with a parity line, a regression line, and a confidence interval
+
+INPUTS
+- ax is the subplot ax to plot on
+- plot_data is the processed data
+- force_intercept_origin decides which regression to use
+- plot_interval can be ['confidence','prediction'] or either one of those in the list
+- plot_lim is the limit of the x and y axes
+- legend_loc is the location of the legend
+
+OUTPUT
+- ax is the plotted parity chart
+  """
+
+  # set up plot
+  #ax.set_xlabel('Methane release rate [kgh]',fontsize=10)
+  #ax.set_ylabel('Reported release rate [kgh]',fontsize=10)
+  ax.set_xlim(plot_lim)
+  ax.set_ylim(plot_lim)
+
+  # parity line
+  x_lim = np.array([0,2000])
+  y_lim = np.array([0,2000])
+  ax.plot(x_lim,y_lim,color='black',linewidth=1, label = 'Parity line')
+
+  x = plot_data['cr_kgh_CH4_mean60'].values
+  y = plot_data['FacilityEmissionRate'].fillna(0).values
+
+  # regression
+
+  n,pearson_corr,slope_ols,intercept_ols,r_value,x_lim,y_pred_ols,lower_CI,upper_CI,lower_PI,upper_PI,residual,std_err = linreg_results(x,y)
+
+  if Operator == 'CarbonMapper':
+    Xstd_ols = np.mean(abs(plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']))
+    Xstd_perc_ols = np.mean(np.divide(abs(plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']),plot_data['cr_kgh_CH4_mean60']))
+  else:
+    Xstd_ols = np.mean(abs(plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']))
+    Xstd_ols = Xstd_ols/1.959964
+
+  Ystd_ols = np.std(abs(y - y_pred_ols))
+  Ystd_perc_ols = np.std(np.divide(abs(y - y_pred_ols),y_pred_ols))
+
+
+  #print('Ystd before ', Ystd_perc_ols)
+  #print('Slope before ', slope_ols)
+
+  slope_york,intercept_york,y_pred,Ystd = yorkreg_results(x,y, Xstd=Xstd_ols, Ystd=Ystd_ols, b0=intercept_ols, Ri=0, printCoefs=0, makeLine=0,eps=1e-7)
+
+  results = regress2(x, y, _method_type_2="reduced major axis")
+  # Apparently reduced major axis is the same as 
+
+  Ystd_perc = np.std(np.divide(abs(y - y_pred),y_pred))
+  #print('Ystd after ', Ystd_perc)
+  #print('Slope after ', slope)
+
+  # scatter plots
+
+  yerr = np.array(list(zip(
+      abs(plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_lower60']),
+      abs(plot_data['cr_kgh_CH4_mean60'] - plot_data['cr_kgh_CH4_upper60'])))).T
+  xerr = np.array(list(zip(
+      abs(plot_data['FacilityEmissionRate'] - np.float64(plot_data['FacilityEmissionRateLower'])),
+      abs(plot_data['FacilityEmissionRate'] - np.float64(plot_data['FacilityEmissionRateUpper']))))).T
+  #xerr = np.float64(xerr)
+  #ax.scatter(x,y,s = 10, color='#8c1515',alpha = 0.2,label='$n$ = %d' %(n))
+  ax.errorbar(x, y, xerr,
+             yerr,
+             fmt='o', markersize=2, color=plot_color,ecolor=plot_color, elinewidth=1, capsize=0,alpha=0.2);
+
+  # plot regression line
+
+  ax.plot(x,y_pred,'-',color=plot_color,linewidth=1,
+              label = '$y$ = %0.2f$x+$%0.2f' % (slope_york,intercept_york))
+
+  #ax.legend(loc=legend_loc, bbox_to_anchor=(1.6, 0.62),fontsize=12)   # legend box on the right
+  #ax.legend(loc=legend_loc,fontsize=8)   # legend box within the plot
+  #ax.set_yticks(np.arange(0,plot_lim[1],4000))
+  #ax.set_yticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10, fontname = 'Arial')
+  #ax.set_xticks(np.arange(0,plot_lim[1],4000))
+  #ax.set_xticklabels(np.arange(0,plot_lim[1]+1000,1000).astype('int'),fontsize=10, fontname = 'Arial')
+
+  labels = [item.get_text() for item in ax.get_xticklabels()]
+  empty_string_labels = [''] * len(labels)
+  ax.set_xticklabels(empty_string_labels)
+  labels = [item.get_text() for item in ax.get_yticklabels()]
+  empty_string_labels = [''] * len(labels)
+  ax.set_yticklabels(empty_string_labels)
+
+
+  #column_names = [
+  #      "Xdata",
+  #      "Ydata",
+  #      "Ypred_ols",
+  #      "Ypred_york"]
+
+  #df_reg = pd.DataFrame(columns = column_names)
+  #df_reg["Xdata"] = x
+  #df_reg["Ydata"] = y
+  #df_reg["Ypred_ols"] = y_pred_ols
+  #df_reg["Ypred_york"] = y_pred
+
+  df_reg = np.array([slope_ols,intercept_ols,slope_york,intercept_york,results["slope"],results["intercept"]])
+
+  return ax, df_reg
+
+
+
+def linreg_results(x,y):
+
+    """
+Regression to output all values to be potentially used in plotting:
+n = number of points in scatter plot;
+pearson_corr = peason's correlation coefficient;
+slope, intercept = regression parameters;
+r_value = R (not R_squared);
+x_lim = (min&max) of x;
+y_pred = (min&max) of y_predction computed with slope, intercept, and x_lim;
+lower_CI, upper_CI are bounds of 95% confidence interval for the fit line;
+lower_PI, upper_CI are bounds of 95% prediction interval for predictions;
+see reference: http://www2.stat.duke.edu/~tjl13/s101/slides/unit6lec3H.pdf
+    """
+
+    n = len(x)
+    pearson_corr, _ = stats.pearsonr(x, y)    # Pearson's correlation coefficient
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+    x_lim = np.array([0,max(x)])
+    y_pred = intercept + slope*x
+    residual = y - (intercept+slope*x)
+    dof = n - 2                               # degree of freedom
+    t_score = stats.t.ppf(1-0.025, df=dof)    # one-sided t-test
+
+    # sort x from smallest to largest for ease of plotting
+    df = pd.DataFrame()
+    df['x'] = x
+    df['y'] = y
+    df = df.sort_values('x')
+    x = df.x.values
+    y = df.y.values
+
+    y_hat = intercept + slope*x
+    x_mean = np.mean(x)
+    S_yy = np.sum(np.power(y-y_hat,2))      # total sum of error in y
+    S_xx = np.sum(np.power(x-x_mean,2))     # total sum of variation in x
+
+    # find lower and upper bounds of CI and PI
+    lower_CI = y_hat - t_score * np.sqrt(S_yy/dof * (1/n+np.power(x-x_mean,2)/S_xx))
+    upper_CI = y_hat + t_score * np.sqrt(S_yy/dof * (1/n+np.power(x-x_mean,2)/S_xx))
+    lower_PI = y_hat - t_score * np.sqrt(S_yy/dof * (1/n+1+np.power(x-x_mean,2)/S_xx))
+    upper_PI = y_hat + t_score * np.sqrt(S_yy/dof * (1/n+1+np.power(x-x_mean,2)/S_xx))
+
+    return n,pearson_corr,slope,intercept,r_value,x_lim,y_pred,lower_CI,upper_CI,lower_PI,upper_PI,residual,std_err

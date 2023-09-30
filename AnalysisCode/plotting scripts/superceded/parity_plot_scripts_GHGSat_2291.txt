@@ -1,0 +1,13 @@
+plt.subplots_adjust(hspace=0.5)
+plt.rc('font', **font_small)
+fig, axes = plt.subplots(3, 4, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+for j in range(3):
+    if j == 0:
+        plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & (matchedDF_GHGSat['tc_Classification'] == 'TP')]
+        parity_plot(axes[0, j], plot_data, 'GHGSat', plot_color='#175e54')
+    else:
+        plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & (matchedDF_GHGSat['tc_Classification'] == 'TP')]
+        parity_plot(axes[0, j], plot_data, 'GHGSat', plot_color='#8c1515')
+
+plt.savefig('GHGSat_parity_23415.svg', dpi = 300)

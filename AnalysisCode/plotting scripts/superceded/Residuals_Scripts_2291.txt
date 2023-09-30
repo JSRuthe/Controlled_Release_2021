@@ -1,0 +1,102 @@
+RESIDUAL PLOTS
+
+	plt.subplots_adjust(hspace = 0.5)
+	fig, axes = plt.subplots(2,3, figsize=(10, 6), facecolor='w', edgecolor='k')
+    	plt.rc('font', **font)
+
+	matchedDF_CarbonMapper['FacilityEmissionRateUpper'] = matchedDF_CarbonMapper['FacilityEmissionRateUpper'].replace('#VALUE!',np.NaN)
+	matchedDF_CarbonMapper['FacilityEmissionRateLower'] = matchedDF_CarbonMapper['FacilityEmissionRateLower'].replace('#VALUE!',np.NaN)
+
+	for i in range(3):
+			if i == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (i + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'HRRR')]
+
+					x = plot_data['cr_kgh_CH4_mean60'].values
+					y = plot_data['FlowError_kgh'].fillna(0).values 
+
+					axes[0,i].scatter(x,y,s=10, color = '#8c1515', alpha = 0.2)
+
+					y = plot_data['FlowError_percent'].fillna(0).values 
+					axes[1,i].scatter(x,y,s=10, color = '#8c1515', alpha = 0.2)
+
+					axes[0,i].set_xlim([0,2000])
+					axes[0,i].set_ylim([-1000,1000])
+    					#axes[0,i].set_yticks([0, 10, 20, 30, 35])
+    					axes[0,i].set(xticklabels=[])
+    					#axes[0,i].set_xticks([])
+    					# for minor ticks
+    					#axes[0,i].set_xticks([], minor=True)	
+
+					axes[1,i].set_xlim([0,2000])
+					axes[1,i].set_ylim([-100,200])
+			
+
+			elif i ==1:
+					plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (i + 1)) & 
+                                	           (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+
+					x = plot_data['cr_kgh_CH4_mean60'].values
+					y = plot_data['FlowError_kgh'].fillna(0).values 
+
+					axes[0,i].scatter(x,y,s=10, color = '#8c1515', alpha = 0.2)
+
+					y = plot_data['FlowError_percent'].fillna(0).values 
+					axes[1,i].scatter(x,y,s=10, color = '#8c1515', alpha = 0.2)
+
+					axes[0,i].set_xlim([0,2000])
+					axes[0,i].set_ylim([-1000,1000])
+    					#axes[0,i].set_yticks([0, 10, 20, 30, 35])
+    					axes[0,i].set(yticklabels=[])
+    					#axes[0,i].set_yticks([])
+    					# for minor ticks
+    					#axes[0,i].set_yticks([], minor=True)	
+
+    					axes[0,i].set(xticklabels=[])
+    					#axes[0,i].set_xticks([])
+    					# for minor ticks
+    					#axes[0,i].set_xticks([], minor=True)	
+
+					axes[1,i].set_xlim([0,2000])
+					axes[1,i].set_ylim([-100,200])
+    					axes[1,i].set(yticklabels=[])
+    					#axes[1,i].set_yticks([])
+    					# for minor ticks
+    					#axes[1,i].set_yticks([], minor=True)	
+
+			elif i == 2:
+					plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (i + 1)) & 
+						    	(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+						    	(matchedDF_GHGSat['cr_kgh_CH4_mean60'] <= 2000)]
+
+					x = plot_data['cr_kgh_CH4_mean60'].values
+					y = plot_data['FlowError_kgh'].fillna(0).values 
+
+					axes[0,i].scatter(x,y,s=10, color = '#8c1515', alpha = 0.2)
+
+					y = plot_data['FlowError_percent'].fillna(0).values 
+					axes[1,i].scatter(x,y,s=10, color = '#8c1515', alpha = 0.2)
+
+					axes[0,i].set_xlim([0,2000])
+					axes[0,i].set_ylim([-1000,1000])
+    					#axes[0,i].set_yticks([0, 10, 20, 30, 35])
+    					axes[0,i].set(yticklabels=[])
+    					#axes[0,i].set_yticks([])
+    					# for minor ticks
+    					#axes[0,i].set_yticks([], minor=True)	
+
+    					axes[0,i].set(xticklabels=[])
+    					#axes[0,i].set_xticks([])
+    					# for minor ticks
+    					#axes[0,i].set_xticks([], minor=True)	
+
+					axes[1,i].set_xlim([0,2000])
+					axes[1,i].set_ylim([-100,200])
+    					axes[1,i].set(yticklabels=[])
+    					#axes[1,i].set_yticks([])
+    					# for minor ticks
+    					#axes[1,i].set_yticks([], minor=True)	
+
+					
+	plt.savefig('Allteams_residuals_2291.svg', dpi = 300)

@@ -1,0 +1,260 @@
+    #classification statistics Bridger  
+    df_counts_Bridger = matchedDF_Bridger.pivot_table( 
+                                index='UnblindingStage', 
+                                columns='tc_Classification', 
+                                values = 'QC filter',
+                                aggfunc = len)
+
+ 
+    #classification statistics Carbon Mapper
+    df_counts_CM = matchedDF_CarbonMapper.pivot_table( 
+                                index='UnblindingStage', 
+                                columns='tc_Classification', 
+                                values = 'QC filter',
+                                aggfunc = len)    
+    
+    #classification statistics GHGSat
+    df_counts_GHGSat = matchedDF_GHGSat.pivot_table( 
+                                index='UnblindingStage', 
+                                columns='tc_Classification', 
+                                values = 'PerformerExperimentID',
+                                aggfunc = len)   
+
+    df_GHGSat_zero = pd.pivot_table(matchedDF_GHGSat[matchedDF_GHGSat['cr_kgh_CH4_mean30'] == 0],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+    df_GHGSat_nonzero = pd.pivot_table(matchedDF_GHGSat[matchedDF_GHGSat['cr_kgh_CH4_mean30'] > 0],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+
+    df_Bridger_rnd3 = pd.pivot_table(matchedDF_Bridger[(matchedDF_Bridger['WindType'] == 'HRRR') &
+                                                      (matchedDF_Bridger['Round 3 test set'] == 1)],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+
+    df_GHGSat_rnd3 = pd.pivot_table(matchedDF_GHGSat[matchedDF_GHGSat['Round 3 test set'] == 1],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+
+    df_CM_rnd3 = pd.pivot_table(matchedDF_CarbonMapper[matchedDF_CarbonMapper['Round 3 test set'] == 1],
+                                index = 'UnblindingStage',
+                                columns = 'tc_Classification',
+                                values = 'PerformerExperimentID',
+                               aggfunc = len)
+
+
+    # Range of releases Bridger
+
+    matchedDF_Bridger_filter = matchedDF_Bridger.drop(matchedDF_Bridger[(matchedDF_Bridger['tc_Classification'] == 'NE') |
+                                                                        (matchedDF_Bridger['tc_Classification'] == 'NS')
+                                                      ].index)
+
+    print('Bridger, min = ',
+          matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 0.01) &
+                                                 (matchedDF_Bridger_filter['UnblindingStage'] == 1)].min())
+    print('Bridger, max = ',
+          matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][matchedDF_Bridger_filter['UnblindingStage'] == 1].max())
+    print('Bridger min detect = ',
+          matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_Bridger_filter['tc_Classification'] == 'TP')
+                                                 & (matchedDF_Bridger_filter['UnblindingStage'] == 1)].min())
+    count_nzero = matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_Bridger_filter['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_Bridger_filter['cr_kgh_CH4_mean60'][(matchedDF_Bridger_filter['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_Bridger_filter['UnblindingStage'] == 1)].count()
+
+    print('Bridger, frac > 100 = ', count_gt100/count_nzero)
+
+    CI_data =  matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 1) &
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') &
+                                	           (matchedDF_Bridger['WindType'] == 'HRRR')]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data,[2.5, 97.5])
+    print('Bridger, error (95% CI) = ', CI_error)
+    print('Bridger, error (mean) = ', np.mean(CI_data))
+
+    matchedDF_Bridger_filter = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == 1) & (matchedDF_Bridger['WindType'] == 'HRRR')]
+
+    matchedDF_Bridger_filter['Stanford_timestamp'] = pd.to_datetime(matchedDF_Bridger_filter['Stanford_timestamp'])
+    matchedDF_Bridger_filter['Time_diff'] = matchedDF_Bridger_filter[
+        'Stanford_timestamp'].diff().dropna().dt.total_seconds()
+
+    difference = matchedDF_Bridger_filter[
+        'Stanford_timestamp'].diff().dropna().dt.total_seconds()
+    difference = difference.reset_index(drop=True)
+
+    filter_average = matchedDF_Bridger_filter['Stanford_timestamp'].dt.date == matchedDF_Bridger_filter[
+        'Stanford_timestamp'].shift(-1).dt.date
+    filter_average = filter_average.reset_index(drop=True)
+
+
+    matchedDF_Bridger_filter['Time_diff'][
+        matchedDF_Bridger_filter['Stanford_timestamp'].dt.date != matchedDF_Bridger_filter[
+        'Stanford_timestamp'].shift(1).dt.date] = np.nan
+
+    print('Bridger, revisit average', np.mean(difference.loc[filter_average]))
+
+    matchedDF_Bridger_filter['Day'] = matchedDF_Bridger_filter['Stanford_timestamp'].dt.day
+
+    Bridger_daily = pd.pivot_table(matchedDF_Bridger_filter,
+                                  index='Day',
+                                  values=['Time_diff', 'Altitude (feet)'],
+                                  aggfunc={'Time_diff':('count', 'mean', 'sum'), 'Altitude (feet)': 'mean'})
+
+
+    # Range of releases Carbon Mapper
+
+    matchedDF_CarbonMapper_filter = matchedDF_CarbonMapper.drop(matchedDF_CarbonMapper[
+                                                      (matchedDF_CarbonMapper['tc_Classification'] == 'NE') |
+                                                      (matchedDF_CarbonMapper['tc_Classification'] == 'NS')
+                                                      ].index)
+
+    print('CM, min = ',
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].min())
+    print('CM, max = ',
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][matchedDF_CarbonMapper_filter['UnblindingStage'] == 1].max())
+    print('CM min detect = ',
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['tc_Classification'] == 'TP')
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].min())
+    print('CM max FN = ',
+          matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['tc_Classification'] == 'FN')
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].max())
+    count_nzero = matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].count()
+    count_gt100 = matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].count()
+    print('CM, frac > 100 = ', count_gt100/count_nzero)
+
+    countTP_lt100 = matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'][(matchedDF_CarbonMapper_filter['cr_kgh_CH4_mean60'] < 100)
+                                                & (matchedDF_CarbonMapper_filter['tc_Classification'] == 'TP')
+                                                & (matchedDF_CarbonMapper_filter['UnblindingStage'] == 1)].count()
+    print('CM, # < 100 TP = ', countTP_lt100)
+    print('CM, frac < 100 TP', countTP_lt100 / (count_nzero - count_gt100))
+
+    CI_data =  matchedDF_CarbonMapper_filter[(matchedDF_CarbonMapper_filter['UnblindingStage'] == 1) &
+                                	           (matchedDF_CarbonMapper_filter['tc_Classification'] == 'TP')]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data,[2.5, 97.5])
+    print('CM, error (95% CI) = ', CI_error)
+    print('CM, error (mean) = ', np.mean(CI_data))
+
+    matchedDF_CarbonMapper_filter = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == 1)]
+
+    matchedDF_CarbonMapper_filter['Stanford_timestamp'] = pd.to_datetime(matchedDF_CarbonMapper_filter['Stanford_timestamp'])
+
+    matchedDF_CarbonMapper_filter['Time_diff'] = matchedDF_CarbonMapper_filter[
+        'Stanford_timestamp'].diff().dropna().dt.total_seconds()
+
+    difference = matchedDF_CarbonMapper_filter[
+        'Stanford_timestamp'].diff().dropna().dt.total_seconds()
+    difference = difference.reset_index(drop=True)
+
+    filter_average = matchedDF_CarbonMapper_filter['Stanford_timestamp'].dt.date == matchedDF_CarbonMapper_filter[
+        'Stanford_timestamp'].shift(-1).dt.date
+    filter_average = filter_average.reset_index(drop=True)
+
+
+    matchedDF_CarbonMapper_filter['Time_diff'][
+        matchedDF_CarbonMapper_filter['Stanford_timestamp'].dt.date != matchedDF_CarbonMapper_filter[
+        'Stanford_timestamp'].shift(1).dt.date] = np.nan
+
+    print('Carbon Mapper, revisit average', np.mean(difference.loc[filter_average]))
+
+    matchedDF_CarbonMapper_filter['Day'] = matchedDF_CarbonMapper_filter['Stanford_timestamp'].dt.day
+
+    CarbonMapper_daily = pd.pivot_table(matchedDF_CarbonMapper_filter,
+                                  index='Day',
+                                  values=['Time_diff', 'Altitude (feet)'],
+                                  aggfunc={'Time_diff':('count', 'mean', 'sum'), 'Altitude (feet)': 'mean'})
+
+    # Range of releases GHGSat-AV
+
+    matchedDF_GHGSat_filter = matchedDF_GHGSat.drop(matchedDF_GHGSat[
+                                                      (matchedDF_GHGSat['tc_Classification'] == 'NE') |
+                                                      (matchedDF_GHGSat['tc_Classification'] == 'NS')
+                                                      ].index)
+
+    print('GHGSat, min = ',
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].min())
+    print('GHGSat, max = ',
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][matchedDF_GHGSat_filter['UnblindingStage'] == 1].max())
+    print('GHGSat min detect = ',
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat_filter['tc_Classification'] == 'TP')].min())
+    print('GHGSat max FN = ',
+          matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat_filter['tc_Classification'] == 'FN')
+                                                 & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].max())
+    count_nzero = matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 0.01)
+                                                 & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].count()
+    count_gt100 =matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] > 100)
+                                                 & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].count()
+    print('GHGSat, frac > 100 = ', count_gt100/count_nzero)
+
+    countTP_lt100 = matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'][(matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] < 100)
+                                                & (matchedDF_GHGSat_filter['tc_Classification'] == 'TP')
+                                                & (matchedDF_GHGSat_filter['UnblindingStage'] == 1)].count()
+    print('GHGSat, # < 100 TP = ', countTP_lt100)
+    print('GHGSat, frac < 100 TP', countTP_lt100 / (count_nzero - count_gt100))
+
+    CI_data = matchedDF_GHGSat_filter[(matchedDF_GHGSat_filter['UnblindingStage'] == 1) &
+                                            (matchedDF_GHGSat_filter['tc_Classification'] == 'TP')]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data, [2.5, 97.5])
+    print('GHGSat (all), error (95% CI) = ', CI_error)
+    print('GHGSat(all), error (mean) = ', np.mean(CI_data))
+
+    CI_data = matchedDF_GHGSat_filter[(matchedDF_GHGSat_filter['UnblindingStage'] == 1) &
+                                            (matchedDF_GHGSat_filter['tc_Classification'] == 'TP') &
+                                            (matchedDF_GHGSat_filter['cr_kgh_CH4_mean60'] < 2000)]
+
+    CI_data = CI_data['FlowError_percent'].to_numpy()
+    CI_error = np.percentile(CI_data, [2.5, 97.5])
+    print('GHGSat (<2000), error (95% CI) = ', CI_error)
+    print('GHGSat (<2000), error (mean) = ', np.mean(CI_data))
+
+    matchedDF_GHGSat_filter = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == 1)]
+
+    matchedDF_GHGSat_filter['Stanford_timestamp'] = pd.to_datetime(matchedDF_GHGSat_filter['Stanford_timestamp'])
+
+    matchedDF_GHGSat_filter['Time_diff'] = matchedDF_GHGSat_filter['Stanford_timestamp'].diff().dropna().dt.total_seconds()
+    matchedDF_GHGSat_filter = matchedDF_GHGSat_filter.drop(matchedDF_GHGSat_filter[
+                                                               (matchedDF_GHGSat_filter['PerformerExperimentID'] == '1496-1-115-657-856-28')].index)
+    difference = matchedDF_GHGSat_filter[
+        'Stanford_timestamp'].diff().dropna().dt.total_seconds()
+    difference = difference.reset_index(drop=True)
+
+    filter_average = matchedDF_GHGSat_filter['Stanford_timestamp'].dt.date == matchedDF_GHGSat_filter[
+        'Stanford_timestamp'].shift(-1).dt.date
+    filter_average = filter_average.reset_index(drop=True)
+
+    matchedDF_GHGSat_filter['Time_diff'][matchedDF_GHGSat_filter['Stanford_timestamp'].dt.date != matchedDF_GHGSat_filter[
+        'Stanford_timestamp'].shift(1).dt.date] = np.nan
+
+    print('GHGSat, revisit average', np.mean(difference.loc[filter_average]))
+
+    matchedDF_GHGSat_filter['Day'] = matchedDF_GHGSat_filter['Stanford_timestamp'].dt.day
+
+    GHGSat_daily = pd.pivot_table(matchedDF_GHGSat_filter,
+                                  index='Day',
+                                  values=['Time_diff', 'Altitude (feet)'],
+                                  aggfunc={'Time_diff':('count', 'mean', 'sum'), 'Altitude (feet)': 'mean'})

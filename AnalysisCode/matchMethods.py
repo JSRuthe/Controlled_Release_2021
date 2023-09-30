@@ -30,14 +30,14 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_Bridger = sonicDF_All[sonicDF_All['OperatorSet'] == 'Bridger']
     matchedDF_Bridger = checkPlumes(DataPath, matchedDF_Bridger, sonicDF_Bridger, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv', 
-                                                                                minPlumeLength = 150,
+                                                                                minPlumeLength = 300,
                                                                                 Operator = 'Bridger')
     print("Classifying detections Bridger...")
     matchedDF_Bridger = classifyDetections_Bridger(matchedDF_Bridger)  # assign TP, FN, and NE classifications
 
     matchedDF_Bridger = assessUncertainty(matchedDF_Bridger)
     matchedDF_Bridger = setFlowError(matchedDF_Bridger)
-
+    matchedDF_Bridger = setWindError(matchedDF_Bridger)
     print("Loading Bridger FlightRadar24 data...")
     flightradar_path = os.path.join(DataPath, 'FlightRadar24')
     matchedDF_Bridger = ProcessFlightRadar_Bridger(flightradar_path, matchedDF_Bridger)
@@ -49,13 +49,14 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_GHGSat = sonicDF_All[sonicDF_All['OperatorSet'] == 'GHGSat']    
     matchedDF_GHGSat = checkPlumes(DataPath, matchedDF_GHGSat, sonicDF_GHGSat, 
                                                                                 tstamp_file = 'transition_stamps_v2.csv',                                                 
-                                                                                minPlumeLength = 150,
+                                                                                minPlumeLength = 300,
                                                                                 Operator = 'GHGSat')
     print("Classifying detections GHGSat...")
     matchedDF_GHGSat = classifyDetections_GHGSat(matchedDF_GHGSat)  # assign TP, FN, and NE classifications
             
     matchedDF_GHGSat = assessUncertainty(matchedDF_GHGSat)
     matchedDF_GHGSat = setFlowError(matchedDF_GHGSat)
+    matchedDF_GHGSat = setWindError(matchedDF_GHGSat)
 
     print("Loading GHGSat FlightRadar24 data...")
     flightradar_path = os.path.join(DataPath, 'FlightRadar24')
@@ -68,7 +69,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
     sonicDF_CarbonMapper = sonicDF_All[sonicDF_All['OperatorSet'] == 'CarbonMapper']    
     matchedDF_CarbonMapper = checkPlumes(DataPath, matchedDF_CarbonMapper, sonicDF_CarbonMapper, 
                                                                                 tstamp_file = 'transition_stamps.csv',                                          
-                                                                                minPlumeLength = 150,
+                                                                                minPlumeLength = 300,
                                                                                 Operator = 'CarbonMapper')
 
     print("Classifying detections CarbonMapper...")
@@ -76,7 +77,7 @@ def performMatching(operatorDF, meterDF_All, sonicDF_All):
 
     matchedDF_CarbonMapper = assessUncertainty(matchedDF_CarbonMapper)
     matchedDF_CarbonMapper = setFlowError(matchedDF_CarbonMapper)
-
+    matchedDF_CarbonMapper = setWindError(matchedDF_CarbonMapper)
     print("Loading Carbon Mapper FlightRadar24 data...")
     flightradar_path = os.path.join(DataPath, 'FlightRadar24')
     matchedDF_CarbonMapper = ProcessFlightRadar_CarbonMapper(flightradar_path, matchedDF_CarbonMapper)
@@ -540,6 +541,16 @@ def setFlowError(df):
 
     return df
 
+def setWindError(df):
+
+    df['WindError_mps'] = df.apply(
+        lambda x: pd.NA if (pd.isna(x['WindSpeed'])) & (pd.isna(x['Wind_MPS_mean300']))
+        else x['WindSpeed'] - x['Wind_MPS_mean300'], axis=1)
+    df['WindError_percent'] = df.apply(
+        lambda x: pd.NA if pd.isna(x['WindSpeed']) else x['WindError_mps'] / x['Wind_MPS_mean300'] * 100, axis=1)
+
+    return df
+
 def assessUncertainty(df):
     # (InputReleaseRate, MeterOption, PipeDiamOption, TestLocation, NumberMonteCarloDraws, hist=0, units='kgh'):
     df['cr_kgh_CH4_mean30'] = np.nan
@@ -577,7 +588,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean30'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 1000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean30'] = ObservationStats[0]
@@ -601,7 +612,7 @@ def assessUncertainty(df):
                                                                                             row['OperatorSet'],
                                                                                             field_recorded_mean,
                                                                                             field_recorded_std,
-                                                                                            NumberMonteCarloDraws = 500,
+                                                                                            NumberMonteCarloDraws = 1000,
                                                                                             hist=0,
                                                                                             units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean60'] = ObservationStats[0]
@@ -622,7 +633,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean90'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 1000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean90'] = ObservationStats[0]
@@ -641,7 +652,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean300'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 1000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean300'] = ObservationStats[0]
@@ -660,7 +671,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean600'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws = 500,
+                                                                                                  NumberMonteCarloDraws = 1000,
                                                                                                   hist=0, 
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean600'] = ObservationStats[0]
@@ -679,7 +690,7 @@ def assessUncertainty(df):
         ObservationStats, ObservationStatsNormed, ObservationRealizationHolder = meterUncertainty(row['cr_scfh_mean900'], row['MeterCode'], row['PipeSize_inch'], row['TestLocation'], row['OperatorSet'],
                                                                                                   field_recorded_mean,
                                                                                                   field_recorded_std,
-                                                                                                  NumberMonteCarloDraws=500,
+                                                                                                  NumberMonteCarloDraws=1000,
                                                                                                   hist=0,
                                                                                                   units='kgh')
         df.loc[idx, 'cr_kgh_CH4_mean900'] = ObservationStats[0]

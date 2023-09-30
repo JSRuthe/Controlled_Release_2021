@@ -15,7 +15,16 @@ matchedDF_Bridger, matchedDF_GHGSat, matchedDF_CarbonMapper, matchedDF_MAIR, mat
 
 cwd = os.getcwd()
 
+csvPath = os.path.join(cwd, 'matchedDF_Bridger_23822_300m.csv')
+matchedDF_Bridger.to_csv(csvPath)
 
+csvPath = os.path.join(cwd, 'matchedDF_GHGSat_23822_300m.csv')
+matchedDF_GHGSat.to_csv(csvPath)
+
+csvPath = os.path.join(cwd, 'matchedDF_CarbonMapper_23822_300m.csv')
+matchedDF_CarbonMapper.to_csv(csvPath)
+
+x = 1
 
 
 

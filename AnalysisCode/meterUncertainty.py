@@ -243,22 +243,41 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     else:
         if Operator == "CarbonMapper":
             ObservationStats =np.array([np.mean(ObservationRealizationHolder),
-            np.percentile(ObservationRealizationHolder, 16),
+            np.percentile(ObservationRealizationHolder, 2.5),
             # np.percentile(ObservationRealizationHolder, 5),
             # np.percentile(ObservationRealizationHolder, 25),
             # np.percentile(ObservationRealizationHolder, 50),
             # np.percentile(ObservationRealizationHolder, 75),
             # np.percentile(ObservationRealizationHolder, 95),
-            np.percentile(ObservationRealizationHolder, 84)]) #,
+            np.percentile(ObservationRealizationHolder, 97.5)]) #,
             # np.std(ObservationRealizationHolder)])            
             UncertaintyStats =np.array([np.mean(UncertaintyRealizationHolder),
-            np.percentile(UncertaintyRealizationHolder, 16),
+            np.percentile(UncertaintyRealizationHolder, 2.5),
             # np.percentile(ObservationRealizationHolder, 5),
             # np.percentile(ObservationRealizationHolder, 25),
             # np.percentile(ObservationRealizationHolder, 50),
             # np.percentile(ObservationRealizationHolder, 75),
             # np.percentile(ObservationRealizationHolder, 95),
-            np.percentile(UncertaintyRealizationHolder, 84)]) #,
+            np.percentile(UncertaintyRealizationHolder, 97.5)]) #,
+            # np.std(ObservationRealizationHolder)])
+        elif Operator == "GHGSat":
+            ObservationStats =np.array([np.mean(ObservationRealizationHolder),
+            np.percentile(ObservationRealizationHolder, 2.5),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(ObservationRealizationHolder, 97.5)]) #,
+            # np.std(ObservationRealizationHolder)])
+            UncertaintyStats =np.array([np.mean(UncertaintyRealizationHolder),
+            np.percentile(UncertaintyRealizationHolder, 2.5),
+            # np.percentile(ObservationRealizationHolder, 5),
+            # np.percentile(ObservationRealizationHolder, 25),
+            # np.percentile(ObservationRealizationHolder, 50),
+            # np.percentile(ObservationRealizationHolder, 75),
+            # np.percentile(ObservationRealizationHolder, 95),
+            np.percentile(UncertaintyRealizationHolder, 97.5)]) #,
             # np.std(ObservationRealizationHolder)])
         else:
             ObservationStats =np.array([np.mean(ObservationRealizationHolder),
@@ -285,13 +304,13 @@ def meterUncertainty(InputReleaseRate, MeterOption, PipeDiamOption, TestLocation
     else:
         if Operator == "CarbonMapper":
             ObservationStatsNormed =np.array([np.mean(ObservationRealizationHolder),
-            np.percentile(ObservationRealizationHolder, 16),
+            np.percentile(ObservationRealizationHolder, 2.5),
             # np.percentile(ObservationRealizationHolder, 5),
             # np.percentile(ObservationRealizationHolder, 25),
             # np.percentile(ObservationRealizationHolder, 50),
             # np.percentile(ObservationRealizationHolder, 75),
             # np.percentile(ObservationRealizationHolder, 95),
-            np.percentile(ObservationRealizationHolder, 84)])/ np.mean(ObservationRealizationHolder) #,
+            np.percentile(ObservationRealizationHolder, 97.5)])/ np.mean(ObservationRealizationHolder) #,
             # np.std(ObservationRealizationHolder)]) / np.mean(ObservationRealizationHolder)
         else:
             ObservationStatsNormed =np.array([np.mean(ObservationRealizationHolder),

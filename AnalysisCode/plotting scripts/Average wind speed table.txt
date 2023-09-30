@@ -1,0 +1,36 @@
+
+Average wind speed table
+
+    sonicDF_All['Day'] = sonicDF_All.index.day
+
+    dates_Bridger = [3,4]
+    sonic_Bridger = sonicDF_All[(sonicDF_All['Day'].isin(dates_Bridger)) &
+				  (sonicDF_All['OperatorSet'] == 'Bridger')]
+    sonic_lvls_Bridger = pd.pivot_table(sonic_Bridger,
+                                  index='Day',
+                                  values='Speed_MPS',
+                                  aggfunc= 'mean')
+
+    print('Bridger, mean WS = ', np.mean(sonic_Bridger['Speed_MPS'])
+
+    dates_CM = [30,31,3]
+    sonic_CM = sonicDF_All[(sonicDF_All['Day'].isin(dates_CM)) &
+				  (sonicDF_All['OperatorSet'] == 'CarbonMapper')]
+    sonic_lvls_CM = pd.pivot_table(sonic_CM,
+                                  index='Day',
+                                  values='Speed_MPS',
+                                  aggfunc= 'mean')
+
+    print('CM, mean WS = ', np.mean(sonic_CM['Speed_MPS'])
+
+    dates_GHGSat = [18,19,20,21,22]
+    sonic_GHGSat = sonicDF_All[(sonicDF_All['Day'].isin(dates_GHGSat)) &
+				  (sonicDF_All['OperatorSet'] == 'GHGSat')]
+    sonic_lvls_GHGSat = pd.pivot_table(sonic_GHGSat,
+                                  index='Day',
+                                  values='Speed_MPS',
+                                  aggfunc= 'mean')
+
+    print('GHGSat, mean WS = ', np.mean(sonic_GHGSat['Speed_MPS'])
+
+

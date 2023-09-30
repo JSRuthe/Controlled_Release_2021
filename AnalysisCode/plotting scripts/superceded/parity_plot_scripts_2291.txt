@@ -1,0 +1,72 @@
+
+	plt.subplots_adjust(hspace = 0.5)
+	plt.rc('font', **font_small)
+	fig, axes = plt.subplots(3,4, figsize=(10, 6), facecolor='w', edgecolor='k')
+
+## CARBON MAPPER - PARITY
+	matchedDF_CarbonMapper['FacilityEmissionRateUpper'] = matchedDF_CarbonMapper['FacilityEmissionRateUpper'].replace('#VALUE!',np.NaN)
+	matchedDF_CarbonMapper['FacilityEmissionRateLower'] = matchedDF_CarbonMapper['FacilityEmissionRateLower'].replace('#VALUE!',np.NaN)
+
+	for i in range(4):
+		for j in range(3):
+			if i == 0:
+				if j == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'HRRR')]
+					parity_plot(axes[i,j], plot_data, 'Bridger', plot_color = '#D2C295')
+				#if j == 3:
+			#		ax.plot([1,2,3],[4,5,6])
+			#		labels = [item.get_text() for item in ax.get_xticklabels()]
+			#		empty_string_labels = [''] * len(labels)
+			#			ax.set_xticklabels(empty_string_labels)
+			#		labels = [item.get_text() for item in ax.get_yticklabels()]
+			#		empty_string_labels = [''] * len(labels)
+			#		ax.set_yticklabels(empty_string_labels)
+				else:
+             				plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & (matchedDF_Bridger['tc_Classification'] == 'TP')]
+					parity_plot(axes[i,j], plot_data, 'Bridger', plot_color = '#8c1515')
+				
+			elif i ==1:
+				if j == 0:
+					plot_data = matchedDF_Bridger[(matchedDF_Bridger['UnblindingStage'] == (j + 1)) & 
+                                	           (matchedDF_Bridger['tc_Classification'] == 'TP') & 
+                                	           (matchedDF_Bridger['WindType'] == 'NAM12')]
+					parity_plot(axes[i-1,j], plot_data, 'Bridger', plot_color = '#53284f')
+			elif i == 2:
+				if j == 0:
+					plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (j + 1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+					parity_plot(axes[i-1,j], plot_data, 'CarbonMapper', plot_color = '#D2C295')
+				#if j == 3:
+			#		ax.plot([1,2,3],[4,5,6])
+			#		labels = [item.get_text() for item in ax.get_xticklabels()]
+			#		empty_string_labels = [''] * len(labels)
+			#			ax.set_xticklabels(empty_string_labels)
+			#		labels = [item.get_text() for item in ax.get_yticklabels()]
+			#		empty_string_labels = [''] * len(labels)
+			#		ax.set_yticklabels(empty_string_labels)
+				else:
+					plot_data = matchedDF_CarbonMapper[(matchedDF_CarbonMapper['UnblindingStage'] == (j + 1)) & (matchedDF_CarbonMapper['tc_Classification'] == 'TP')]
+					parity_plot(axes[i-1,j], plot_data, 'CarbonMapper', plot_color = '#8c1515')
+					
+			elif i == 3:	 
+				if j == 0:
+					plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & 
+						    	(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+						    	(matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 2000)]
+					parity_plot(axes[i-1,j], plot_data, 'GHGSat', plot_color = '#175e54')
+				#if j == 3:
+			#		ax.plot([1,2,3],[4,5,6])
+			#		labels = [item.get_text() for item in ax.get_xticklabels()]
+			#		empty_string_labels = [''] * len(labels)
+			#			ax.set_xticklabels(empty_string_labels)
+			#		labels = [item.get_text() for item in ax.get_yticklabels()]
+			#		empty_string_labels = [''] * len(labels)
+			#		ax.set_yticklabels(empty_string_labels)
+				else:
+					plot_data = matchedDF_GHGSat[(matchedDF_GHGSat['UnblindingStage'] == (j + 1)) & 
+						    	(matchedDF_GHGSat['tc_Classification'] == 'TP') &
+						    	(matchedDF_GHGSat['cr_kgh_CH4_mean30'] <= 2000)]
+					parity_plot(axes[i-1,j], plot_data, 'GHGSat', plot_color = '#8c1515')
+
+	plt.savefig('Allteams_parity_2291.svg', dpi = 300)
